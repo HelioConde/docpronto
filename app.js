@@ -53,6 +53,7 @@ function renderHistory() {
       <div class="item"><div><strong>${escapeHtml(proposal.client)}</strong>
         <small>${escapeHtml(proposal.number)} · ${formatCurrency(proposal.amount)}</small></div>
         <button class="secondary" type="button" data-proposal="${escapeHtml(proposal.id)}">Abrir</button>
+        <button class="secondary" type="button" data-delete="${escapeHtml(proposal.id)}" aria-label="Excluir proposta">Excluir</button>
       </div>`).join('')
     : '<div class="empty">As propostas salvas neste navegador aparecem aqui.</div>';
 }
@@ -83,6 +84,15 @@ form.addEventListener('submit', event => {
 });
 
 list.addEventListener('click', event => {
+  const removeButton = event.target.closest('[data-delete]');
+  if (removeButton) {
+    if (!window.confirm('Excluir esta proposta do histórico salvo neste navegador?')) return;
+    const id = removeButton.dataset.delete;
+    localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item => item.id !== id)));
+    renderHistory();
+    showToast('Proposta removida do histórico.');
+    return;
+  }
   const button = event.target.closest('[data-proposal]');
   if (!button) return;
   const proposal = readProposals().find(item => item.id === button.dataset.proposal);
