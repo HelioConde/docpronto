@@ -127,7 +127,7 @@ function renderProposal(proposal) {
     '<article class="proposal" id="proposal">' +
       '<small>PROPOSTA ' + escapeHtml(proposal.number) + '</small>' +
       '<h3>' + escapeHtml(proposal.business) + '</h3>' +
-      '<div class="proposal-meta">Preparada em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') + '</div>' +
+      '<div class="proposal-meta">Preparada em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') + '</div>' +
       (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') +
       '<p><b>Para:</b> ' + escapeHtml(proposal.client) + '</p>' +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
