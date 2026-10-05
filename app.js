@@ -7,6 +7,21 @@ const formTotal = document.querySelector('#form-total');
 const storageKey = 'docpronto-proposals';
 const maxItems = 10;
 
+const contactField = document.createElement('label');
+contactField.className = 'field';
+contactField.innerHTML = '<span>Telefone ou WhatsApp do negócio (opcional)</span><input name="businessPhone" type="tel" placeholder="(11) 99999-9999">';
+form.querySelector('[name="business"]').closest('label').after(contactField);
+const validityField = document.createElement('label');
+validityField.className = 'field';
+validityField.innerHTML = '<span>Proposta válida até</span><input name="validUntil" type="date" required>';
+form.querySelector('button[type="submit"]').before(validityField);
+const validityInput = validityField.querySelector('input');
+const localDate = date => new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const today = new Date();
+validityInput.min = localDate(today);
+validityInput.value = localDate(new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000));
+
+
 function escapeHtml(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -112,7 +127,8 @@ function renderProposal(proposal) {
     '<article class="proposal" id="proposal">' +
       '<small>PROPOSTA ' + escapeHtml(proposal.number) + '</small>' +
       '<h3>' + escapeHtml(proposal.business) + '</h3>' +
-      '<div class="proposal-meta">Preparada em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + '</div>' +
+      '<div class="proposal-meta">Preparada em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') + '</div>' +
+      (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') +
       '<p><b>Para:</b> ' + escapeHtml(proposal.client) + '</p>' +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
         '<thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead>' +
@@ -173,6 +189,8 @@ form.addEventListener('submit', event => {
     scope: items.map(item => item.description).join(', '),
     deadline: String(values.deadline || '').trim(),
     terms: String(values.terms || '').trim(),
+    businessPhone: String(values.businessPhone || '').trim(),
+    validUntil: values.validUntil,
     createdAt: createdAt
   };
 
