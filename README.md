@@ -1,5 +1,5 @@
 # DocPronto
 
-Protótipo focado em propostas e orçamentos para prestadores de serviço. Preenche dados do cliente, escopo, valor, prazo e condições; salva as últimas propostas neste navegador e permite reabri-las e imprimir/salvar como PDF.
+Protótipo de propostas e orçamentos para prestadores de serviço. Permite cadastrar cliente, prazo e condições, detalhar até 10 serviços ou materiais com quantidade e preço unitário, calcular o total automaticamente e imprimir ou salvar a proposta como PDF.
 
-Os documentos não substituem contratos nem aconselhamento jurídico. Pagamentos e exportação PDF avançada não estão conectados.
+As propostas recentes ficam salvas apenas no navegador usado para criá-las. O histórico permite reabrir e excluir propostas. Os dados continuam locais: não há contas, backend, pagamentos ou sincronização entre dispositivos. Propostas não substituem contratos nem aconselhamento jurídico.
