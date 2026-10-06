@@ -94,7 +94,8 @@ test('histórico permite buscar propostas sem consultar o banco a cada tecla', (
   const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
   assert.match(html, /id="proposal-search"/);
   assert.match(app, /const proposalSearch/);
-  assert.match(app, /proposalSearch\?\.addEventListener\('input', renderHistory\)/);
+  assert.match(app, /proposalSearch\?\.addEventListener\('input', \(\) =>/);
+  assert.match(app, /historyVisibleLimit = 10/);
   assert.match(app, /proposal\.client, proposal\.business, proposal\.number/);
 });
 
