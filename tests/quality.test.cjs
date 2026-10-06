@@ -50,6 +50,15 @@ test('marca a aplicação como acessível, sincronizável e com fallback local',
   assert.match(css, /@media\(max-width:680px\)/);
 });
 
+test('layout principal evita painel de histórico esticado e mantém o card do hero legível', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(css, /\.grid\{[^}]*align-items:start/);
+  assert.match(css, /\.hero-card small\{display:block/);
+  assert.match(css, /\.empty\{[^}]*text-align:center/);
+  assert.match(app, /Sua primeira proposta começa aqui/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
