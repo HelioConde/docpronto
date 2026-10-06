@@ -34,3 +34,36 @@
 .item-actions .secondary{padding:9px 10px;font-size:12px}
 .cancel-edit{width:100%;margin-top:8px}
 @media(max-width:560px){.item{align-items:flex-start;flex-direction:column;gap:9px}.item-actions{width:100%;justify-content:flex-start}.item-actions .secondary{flex:1}}
+
+.nav-actions{display:flex;align-items:center;gap:12px}
+.sync-status{color:var(--muted);font-size:12px;white-space:nowrap}
+.nav-actions .secondary{padding:9px 13px}
+.account-dialog{width:min(470px,calc(100vw - 32px));max-height:min(90vh,720px);overflow:auto;border:1px solid var(--line);border-radius:20px;padding:28px;background:var(--card);color:var(--ink);box-shadow:0 24px 80px #161a142e}
+.account-dialog::backdrop{background:#171a16a6;backdrop-filter:blur(3px)}
+.account-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.account-heading .eyebrow{display:block;margin-bottom:8px}
+.account-heading h2{font:800 25px/1.15 Manrope;margin:0;letter-spacing:-.8px}
+.dialog-close{width:36px;height:36px;flex:none;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--ink);font-size:22px;cursor:pointer}
+.account-dialog>.sub{line-height:1.6;margin:14px 0 20px}
+.account-dialog form{display:grid;gap:13px}
+.account-dialog form .field{margin:0}
+.account-dialog form .primary{width:100%;margin-top:2px}
+.account-links{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.account-links .secondary{padding:10px 14px}
+.text-button{border:0;background:transparent;color:var(--accent);font:600 13px 'DM Sans',sans-serif;text-decoration:underline;cursor:pointer;padding:8px 2px}
+.account-private-note{padding:12px 14px;border-radius:11px;background:var(--soft);color:var(--muted);font-size:13px;line-height:1.5}
+.account-message{min-height:22px;margin:14px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
+.account-dialog[open]{animation:dialog-in .16s ease-out}
+@keyframes dialog-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.local-import-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:18px 0 0;padding:13px 16px;border:1px solid #e9dfcb;border-radius:13px;background:var(--soft)}
+.local-import-banner p{margin:0;color:var(--ink);font-size:13px}
+.benefits{margin:8px 0 48px;padding:26px 0;border-top:1px solid var(--line)}
+.benefits h2{font:800 20px Manrope;letter-spacing:-.5px;margin:0 0 15px}
+.benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.benefit-grid article{display:grid;gap:6px;padding:16px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.benefit-grid strong{font:700 13px Manrope}
+.benefit-grid span{color:var(--muted);font-size:12px;line-height:1.5}
+button:focus-visible,input:focus-visible,dialog:focus-visible{outline:3px solid #95632766;outline-offset:2px}
+[hidden]{display:none!important}
+@media(max-width:680px){.nav{height:64px}.nav-actions{gap:8px}.sync-status{display:none}.nav-actions .secondary{padding:9px 11px;font-size:12px}.local-import-banner{align-items:flex-start;flex-direction:column}.local-import-banner .secondary{width:100%}.benefit-grid{grid-template-columns:1fr}.benefits{margin-bottom:32px}.account-dialog{padding:22px}}
+@media(prefers-reduced-motion:reduce){.account-dialog[open]{animation:none}}
