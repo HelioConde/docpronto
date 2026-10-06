@@ -27,9 +27,7 @@ jobs:
           KEY=$(python3 - <<'PY'
           import re
           text=open('supabase-config.js', encoding='utf-8').read()
-          m=re.search(r"anonKey\s*=\s*['\"]([^'\"]+)['\"]", text)
-          if not m:
-              m=re.search(r"SUPABASE_ANON_KEY[^'\"]*['\"]([^'\"]+)['\"]", text)
+          m=re.search(r"publishableKey\s*:\s*['\"]([^'\"]+)['\"]", text)
           if not m:
               raise SystemExit('Could not find public anon key')
           print(m.group(1))
