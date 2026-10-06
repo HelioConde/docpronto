@@ -28,7 +28,7 @@
       if (!Number.isFinite(unitPrice) || unitPrice < 0) {
         return { ok: false, error: 'Informe um preço unitário válido.', items: [], total: 0 };
       }
-      const subtotalCents = Math.round((quantity * unitPrice + Number.EPSILON) * 100);
+      const subtotalCents = Math.round((quantity * unitPrice + 1e-9) * 100);
       if (!Number.isSafeInteger(subtotalCents) || subtotalCents > 999999999999) {
         return { ok: false, error: 'O valor de um item excede o limite permitido.', items: [], total: 0 };
       }
