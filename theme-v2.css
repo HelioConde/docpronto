@@ -289,3 +289,17 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 @media(max-width:500px){.saved-client-item{align-items:flex-start;flex-direction:column}.saved-client-actions{width:100%}.saved-client-actions .secondary{flex:1}}
 
 @media(max-width:900px){.history-toolbar{grid-template-columns:minmax(0,1fr) minmax(130px,.65fr)}.history-export{width:100%}}
+
+
+/* Print hardening for long commercial proposals */
+@media print{
+  .proposal{width:100%!important;max-width:100%!important;overflow:visible!important}
+  .proposal-table-wrap{overflow:visible!important}
+  .proposal-table{width:100%!important;min-width:0!important;table-layout:fixed}
+  .proposal-table thead{display:table-header-group}
+  .proposal-table tr{break-inside:avoid;page-break-inside:avoid}
+  .proposal-table th:first-child,.proposal-table td:first-child{width:auto;overflow-wrap:anywhere}
+  .proposal-table th.number,.proposal-table td.number{width:18%;white-space:nowrap}
+  .document-totals,.proposal-details,.proposal-client-details,.proposal-notes{break-inside:avoid;page-break-inside:avoid}
+  .proposal-notes p{overflow-wrap:anywhere}
+}
