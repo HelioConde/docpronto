@@ -10,9 +10,9 @@ Revisão de código e da captura enviada em 6 de outubro de 2026. Os pontos abai
 - O formulário aceita itens, calcula totais, gera prévia e imprime/salva PDF.
 - Histórico, edição e uso como modelo cobrem os casos mais repetidos.
 - Desconto percentual/fixo, observações, identidade do negócio e dados reutilizáveis de clientes aproximam o produto de uso comercial real.
+- Clientes salvos podem ser usados ou excluídos pela conta, e serviços/materiais recorrentes reaproveitam o último preço unitário.
 - As respostas do cliente são atualizadas ao voltar para a aba e propostas encerradas só podem ser reabertas com invalidação explícita do link anterior.
 - A conta é opcional. A sincronização separa propostas por usuário no banco.
-- A imagem anexada mostrava a página sem CSS. Foi criado um caminho de stylesheet novo para contornar o cache do Pages.
 - O histórico carrega até 100 propostas, exibe 10 inicialmente e permite revelar as demais em blocos de 10. Possui busca por cliente/empresa/número, filtros de status, resumo comercial e exportação CSV.
 - A sincronização exige redirect URL e entrega de e-mail válidos no Supabase; a interface informa erros de configuração.
 
@@ -47,7 +47,7 @@ A auditoria automática do Supabase também reportou alertas em objetos preexist
 - Manter uso local sem conta reduz barreira; sincronizar passa a ser um benefício para quem retorna.
 - Os preços ilustrativos foram removidos porque não havia checkout ou cobrança. Isso evita prometer uma oferta que ainda não existe.
 - Próxima validação: observar criação da primeira proposta, exportação em PDF e retorno semanal com um grupo pequeno de prestadores.
-- Só depois de validar recorrência faz sentido testar recursos pagos, como identidade visual própria, modelos reutilizáveis e maior histórico. Pagamentos continuam fora do escopo.
+- Só depois de validar recorrência faz sentido testar recursos pagos. Cor de identidade, modelos reutilizáveis e histórico ampliado já fazem parte do MVP; logo, limites comerciais e cobrança continuam fora do escopo.
 
 ## Design
 
@@ -62,7 +62,7 @@ A auditoria automática do Supabase também reportou alertas em objetos preexist
 
 - Título, descrição, canonical e Open Graph foram definidos para o endereço do GitHub Pages.
 - Para crescer organicamente, criar páginas úteis (ex.: como montar orçamento de elétrica, pintura ou manutenção), com exemplos reais e links para o gerador.
-- Ainda faltam Search Console, sitemap e uma revisão de indexação após estabilizar o domínio. Não há dados para afirmar tráfego ou conversão.
+- `sitemap.xml` e `robots.txt` já estão publicados. Ainda faltam Search Console e uma revisão de indexação após estabilizar o produto. Não há dados para afirmar tráfego ou conversão.
 
 ## Próximas prioridades
 
