@@ -8,11 +8,13 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - cálculo de total e validade;
 - edição, duplicação como modelo e exclusão;
 - acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
-- filtro do histórico por status;
+- filtro do histórico por status e busca por cliente, empresa ou número;
+- resumo comercial com total de propostas, enviadas e valor aprovado;
+- aviso visual para propostas vencidas ou próximas da validade;
 - compartilhamento de resumo por WhatsApp e cópia rápida;
 - link público seguro para o cliente abrir a proposta;
 - aprovação ou recusa da proposta sem conta, protegida por token;
-- impressão/salvamento em PDF pelo navegador;
+- impressão/salvamento em PDF A4 pelo navegador, inclusive na proposta compartilhada;
 - modo local sem conta;
 - Supabase Auth;
 - sincronização das propostas em `docpronto_proposals`;
