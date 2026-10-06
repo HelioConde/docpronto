@@ -582,7 +582,7 @@ addItemButton.addEventListener('click', () => addItem());
 list.addEventListener('click', async event => {
   const removeButton = event.target.closest('[data-delete]');
   if (removeButton) {
-    if (!window.confirm('Excluir esta proposta do histórico salvo neste navegador?')) return;
+    if (!window.confirm(currentUser ? 'Excluir esta proposta da sua conta?' : 'Excluir esta proposta deste navegador?')) return;
     const id = removeButton.dataset.delete;
     if (currentUser) {
       const { error } = await supabaseClient.from(proposalTable).delete().eq('id', id);
@@ -603,7 +603,7 @@ list.addEventListener('click', async event => {
 
   const templateButton = event.target.closest('[data-template]');
   if (templateButton) {
-    const proposal = readProposals().find(item => item.id === templateButton.dataset.template);
+    const proposal = visibleProposals().find(item => item.id === templateButton.dataset.template);
     if (proposal) {
       beginEditing(proposal);
       editingId = null;
@@ -617,14 +617,14 @@ list.addEventListener('click', async event => {
 
   const editButton = event.target.closest('[data-edit]');
   if (editButton) {
-    const proposal = readProposals().find(item => item.id === editButton.dataset.edit);
+    const proposal = visibleProposals().find(item => item.id === editButton.dataset.edit);
     if (proposal) beginEditing(proposal);
     return;
   }
 
   const button = event.target.closest('[data-proposal]');
   if (!button) return;
-  const proposal = readProposals().find(item => item.id === button.dataset.proposal);
+  const proposal = visibleProposals().find(item => item.id === button.dataset.proposal);
   if (proposal) renderProposal(proposal);
 });
 
