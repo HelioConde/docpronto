@@ -10,10 +10,11 @@ O DocPronto já possui um MVP fullstack funcional:
 - modo local sem conta via `localStorage`;
 - Supabase Auth para sincronização entre dispositivos;
 - propostas persistidas em `docpronto_proposals`;
-- clientes reutilizáveis em `docpronto_clients`;
+- clientes reutilizáveis em `docpronto_clients`, com gerenciamento dos clientes salvos pela própria conta;
 - identidade do negócio sincronizada em `user_metadata` do Supabase Auth, sem tabela adicional;
 - status comercial: rascunho, enviada, aprovada e recusada;
 - desconto percentual ou fixo, observações e dados opcionais do cliente;
+- catálogo leve derivado do histórico para sugerir serviços/materiais e último preço sem nova tabela;
 - busca no histórico, resumo comercial com filtros rápidos, carregamento progressivo e exportação CSV;
 - sinalização de propostas expiradas ou próximas do vencimento;
 - link público protegido por token para o cliente;
@@ -78,5 +79,5 @@ A revisão visual de 2026-10-06 corrigiu:
 1. Homologar autenticação e isolamento entre duas contas.
 2. Validar o fluxo público completo de envio → abertura → aprovação/recusa.
 3. Revisar mobile e impressão com propostas reais.
-4. Adicionar identidade visual do prestador (logo/cores) depois da estabilidade do MVP.
+4. Avaliar logo do prestador apenas depois da homologação visual e do fluxo autenticado; cor personalizada já está disponível.
 5. Só então testar limites de plano, cobrança, lembretes e notificações.
