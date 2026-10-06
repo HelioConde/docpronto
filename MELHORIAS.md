@@ -34,8 +34,8 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 
 - [ ] Lembretes de propostas sem resposta.
 - [ ] Notificações push.
-- [ ] Integração com calendário/CRM.
-- [ ] Cobrança e limites comerciais somente se a recorrência justificar.
+- [~] Integração com calendário/CRM: exportação .ics de follow-up concluída; integração com CRM fica para depois da validação.
+- [x] Cobrança/limites comerciais removidos do roadmap atual; monetização definida por anúncios.
 - [ ] Domínio personalizado/branding avançado.
 
 ## Regra de priorização
