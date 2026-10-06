@@ -232,3 +232,8 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .document-totals .amount-line{margin:0;padding-top:12px;border-top:1px solid var(--line);color:var(--ink)}
 @media(max-width:500px){.discount-controls{grid-template-columns:1fr}.pricing-summary>div{padding:9px 11px}}
 @media print{.document-totals{break-inside:avoid}.document-totals>div{padding:7px 0}}
+
+.proposal-notes{margin:14px 0 0;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:#f8fafb}
+.proposal-notes p{margin:5px 0 0;color:#53616b;font-size:12px;line-height:1.55;white-space:pre-wrap}
+.public-notes{margin-top:16px}
+@media print{.proposal-notes{background:#fff;border-color:#ddd;break-inside:avoid}}
