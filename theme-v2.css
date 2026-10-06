@@ -161,3 +161,7 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .validity-warning{background:#fff4db;color:#805b12}
 .validity-expired{background:#f8eaea;color:var(--danger)}
 @media(max-width:560px){.history-summary{grid-template-columns:1fr 1fr}.summary-approved{grid-column:1/-1}}
+
+.summary-card.is-active{border-color:#9fc1c9;background:#eaf4f6;box-shadow:inset 0 0 0 1px #b9d4da}
+.summary-card.is-active span{color:var(--accent-strong)}
+.summary-card.is-active:not(.summary-approved) strong{color:var(--accent-strong)}
