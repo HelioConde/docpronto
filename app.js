@@ -20,6 +20,8 @@ const localImportButton = document.querySelector('#local-import');
 const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const proposalSearch = document.querySelector('#proposal-search');
 const historySummary = document.querySelector('#history-summary');
+const businessProfileForm = document.querySelector('#business-profile-form');
+const brandColorValue = document.querySelector('#brand-color-value');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
 const pageParams = new URLSearchParams(location.search);
@@ -212,12 +214,47 @@ function visibleProposals() {
   return currentUser ? cloudProposals : readProposals();
 }
 
+const defaultBrandColor = '#245d6c';
+
+function normalizeBrandColor(value) {
+  const color = String(value || '').trim();
+  return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : defaultBrandColor;
+}
+
+function accountBusinessProfile() {
+  const metadata = currentUser?.user_metadata || {};
+  return {
+    businessName: String(metadata.docpronto_business_name || '').trim(),
+    businessPhone: String(metadata.docpronto_business_phone || '').trim(),
+    brandColor: normalizeBrandColor(metadata.docpronto_brand_color)
+  };
+}
+
+function renderBusinessProfileForm() {
+  if (!businessProfileForm || !currentUser) return;
+  if (businessProfileForm.contains(document.activeElement)) return;
+  const profile = accountBusinessProfile();
+  businessProfileForm.elements.businessName.value = profile.businessName;
+  businessProfileForm.elements.businessPhone.value = profile.businessPhone;
+  businessProfileForm.elements.brandColor.value = profile.brandColor;
+  if (brandColorValue) brandColorValue.textContent = profile.brandColor.toUpperCase();
+}
+
+
 function prefillBusinessFields(proposals) {
-  if (editingId || !Array.isArray(proposals) || proposals.length === 0) return;
+  if (editingId) return;
   const businessInput = form.querySelector('[name="business"]');
   const phoneInput = form.querySelector('[name="businessPhone"]');
   if (!businessInput || businessInput.value.trim()) return;
 
+  const profile = accountBusinessProfile();
+  if (profile.businessName) {
+    businessInput.value = profile.businessName;
+    if (phoneInput && !phoneInput.value.trim()) phoneInput.value = profile.businessPhone;
+    return;
+  }
+
+  if (!Array.isArray(proposals) || proposals.length === 0) return;
   const recent = proposals
     .slice()
     .sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))
@@ -400,6 +437,7 @@ function updateAccountUi() {
   passwordRecoveryForm.hidden = !passwordRecovery;
   if (currentUser) {
     document.querySelector('#account-email').textContent = currentUser.email || 'Conta conectada';
+    renderBusinessProfileForm();
     localImportBanner.hidden = localCount === 0;
     document.querySelector('#local-import-count').textContent = String(localCount);
   } else {
@@ -548,6 +586,45 @@ function initAccount() {
     }
   });
 
+  businessProfileForm?.addEventListener('input', event => {
+    if (event.target?.name === 'brandColor' && brandColorValue) {
+      brandColorValue.textContent = normalizeBrandColor(event.target.value).toUpperCase();
+    }
+  });
+
+  businessProfileForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!supabaseClient || !currentUser) return;
+    const submit = businessProfileForm.querySelector('[type="submit"]');
+    submit.disabled = true;
+    showAccountMessage('Salvando identidade do negócio…');
+    try {
+      const businessName = businessProfileForm.elements.businessName.value.trim();
+      const businessPhone = businessProfileForm.elements.businessPhone.value.trim();
+      const brandColor = normalizeBrandColor(businessProfileForm.elements.brandColor.value);
+      const { data, error } = await supabaseClient.auth.updateUser({
+        data: {
+          docpronto_business_name: businessName,
+          docpronto_business_phone: businessPhone,
+          docpronto_brand_color: brandColor
+        }
+      });
+      if (error) throw error;
+      if (data.user) currentUser = data.user;
+      const businessInput = form.querySelector('[name="business"]');
+      const phoneInput = form.querySelector('[name="businessPhone"]');
+      if (businessInput && !businessInput.value.trim()) businessInput.value = businessName;
+      if (phoneInput && !phoneInput.value.trim()) phoneInput.value = businessPhone;
+      renderBusinessProfileForm();
+      showAccountMessage('Identidade salva. Ela será usada nas novas propostas.');
+      showToast('Identidade do negócio atualizada.');
+    } catch (error) {
+      showAccountMessage(authErrorText(error));
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
   document.querySelector('#sign-out').addEventListener('click', async () => {
     if (!supabaseClient) return;
     const { error } = await supabaseClient.auth.signOut();
@@ -572,12 +649,14 @@ function initAccount() {
     }
     if (authEvent === 'USER_UPDATED') passwordRecovery = false;
     const user = session?.user || null;
-    if (user?.id === activeUserId) {
+    const sameUser = Boolean(user?.id && user.id === activeUserId);
+    currentUser = user;
+    if (sameUser) {
       updateAccountUi();
+      prefillBusinessFields(cloudProposals);
       return;
     }
     activeUserId = user?.id || null;
-    currentUser = user;
     cloudProposals = [];
     cloudClients = [];
     renderClientSuggestions();
@@ -758,10 +837,11 @@ function renderProposal(proposal) {
 
   openedProposalId = proposal.id;
   const status = proposal.status || 'draft';
+  const brandColor = normalizeBrandColor(proposal.brandColor);
   const shareText = proposalShareText(proposal);
   const whatsappPhone = normalizeWhatsAppPhone(proposal.clientPhone);
   result.innerHTML =
-    '<article class="proposal" id="proposal">' +
+    '<article class="proposal" id="proposal" style="--proposal-accent:' + brandColor + '">' +
       '<header class="proposal-document-head">' +
         '<div><span class="proposal-document-brand">DocPronto.</span><small>PROPOSTA ' + escapeHtml(proposal.number) + '</small></div>' +
         '<span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span>' +
@@ -925,6 +1005,7 @@ form.addEventListener('submit', async event => {
     terms: String(values.terms || '').trim(),
     businessPhone: String(values.businessPhone || '').trim(),
     validUntil: values.validUntil,
+    brandColor: existing?.brandColor || accountBusinessProfile().brandColor,
     status: existing?.status || 'draft'
   };
   const proposal = existing
@@ -1087,6 +1168,8 @@ function publicStatusText(status) {
 
 function renderPublicProposal(proposal) {
   const container = document.querySelector('#public-proposal-content');
+  const brandColor = normalizeBrandColor(proposal.brandColor);
+  container.style.setProperty('--proposal-accent', brandColor);
   document.title = 'Proposta ' + proposal.number + ' · ' + proposal.business;
   const items = Array.isArray(proposal.items) ? proposal.items : [];
   const rows = items.map(item =>
