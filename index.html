@@ -121,7 +121,10 @@ Sem perder a tarde.</h1>
 
       <section class="panel">
         <h2>Histórico e prévia</h2>
-        <p class="sub">Abra uma proposta para imprimir ou salvar como PDF. Entre para acessar seus documentos na nuvem.</p>
+        <p class="sub">Abra uma proposta, acompanhe o andamento comercial e compartilhe com o cliente.</p>
+        <div class="history-toolbar">
+          <label><span>Status</span><select id="proposal-status-filter"><option value="all">Todas</option><option value="draft">Rascunho</option><option value="sent">Enviadas</option><option value="approved">Aprovadas</option><option value="rejected">Recusadas</option></select></label>
+        </div>
         <div id="list" class="items"></div>
         <div id="result" class="result"></div>
       </section>
