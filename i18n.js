@@ -326,7 +326,8 @@
         const parent = root.parentElement;
         if (!parent || ['SCRIPT','STYLE','NOSCRIPT'].includes(parent.tagName)) return;
         if (activeLocale === 'pt-BR' && originalText.has(root)) {
-          root.nodeValue = originalText.get(root);
+          const original = originalText.get(root);
+          if (root.nodeValue !== original) root.nodeValue = original;
         } else {
           const next = translateValue(root.nodeValue);
           if (next !== root.nodeValue) {
@@ -344,7 +345,8 @@
         const parent = node.parentElement;
         if (!parent || ['SCRIPT','STYLE','NOSCRIPT'].includes(parent.tagName)) continue;
         if (activeLocale === 'pt-BR' && originalText.has(node)) {
-          node.nodeValue = originalText.get(node);
+          const original = originalText.get(node);
+          if (node.nodeValue !== original) node.nodeValue = original;
         } else {
           const next = translateValue(node.nodeValue);
           if (next !== node.nodeValue) {
@@ -364,7 +366,7 @@
             originalAttributes.set(el, saved);
           }
           if (activeLocale === 'pt-BR' && saved[attr] != null) {
-            el.setAttribute(attr, saved[attr]);
+            if (el.getAttribute(attr) !== saved[attr]) el.setAttribute(attr, saved[attr]);
           } else {
             const after = translateValue(before);
             if (after !== before) {
