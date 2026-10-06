@@ -2,6 +2,16 @@
 
 Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 
+## Status de desenvolvimento
+
+**MVP técnico concluído e publicado.** O DocPronto sai da fase de desenvolvimento principal e entra em **homologação humana / validação pós-MVP**.
+
+- Static QA, Quality Checks, Browser E2E e GitHub Pages aprovados.
+- Edge Functions públicas, feedback beta, RLS e fluxo de aprovação estão publicados no Supabase.
+- PT-BR/EN, PWA/offline, backup, PDF, branding, follow-up, timeline e anúncios preparados concluídos.
+- Pendências humanas foram movidas para a [issue #1 — Homologação humana e validação real](https://github.com/HelioConde/docpronto/issues/1).
+- Novas automações comerciais/CRM ficam pausadas até surgir feedback real, bug crítico ou requisito de segurança.
+
 ## Estado atual
 
 - composição de orçamento com até 10 itens;
