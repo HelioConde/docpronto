@@ -102,11 +102,11 @@
         <form id="form">
           <label class="field">
             <span>Nome do seu negócio</span>
-            <input name="business" type="text" placeholder="Ex.: Conde Elétrica" autocomplete="organization" required>
+            <input name="business" type="text" maxlength="80" placeholder="Ex.: Conde Elétrica" autocomplete="organization" required>
           </label>
           <label class="field">
             <span>Cliente</span>
-            <input name="client" type="text" list="client-suggestions" placeholder="Ex.: João Silva" autocomplete="name" required>
+            <input name="client" type="text" maxlength="100" list="client-suggestions" placeholder="Ex.: João Silva" autocomplete="name" required>
             <small class="field-help client-helper">Ao entrar na conta, clientes usados antes aparecem como sugestão.</small>
           </label>
           <datalist id="client-suggestions"></datalist>
@@ -121,11 +121,11 @@
 
           <label class="field">
             <span>Prazo de execução</span>
-            <input name="deadline" type="text" placeholder="Ex.: 2 dias úteis" required>
+            <input name="deadline" type="text" maxlength="120" placeholder="Ex.: 2 dias úteis" required>
           </label>
           <label class="field">
             <span>Condições de pagamento</span>
-            <input name="terms" type="text" placeholder="Ex.: 50% no início e 50% na entrega" required>
+            <input name="terms" type="text" maxlength="200" placeholder="Ex.: 50% no início e 50% na entrega" required>
           </label>
           <button class="primary" type="submit">Gerar proposta</button>
           <p class="autosave-note">Seu preenchimento é salvo automaticamente neste dispositivo até você gerar a proposta.</p>
