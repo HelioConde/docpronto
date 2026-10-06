@@ -305,6 +305,17 @@
           <label><span>Ordenar</span><select id="proposal-sort"><option value="recent">Mais recentes</option><option value="oldest">Mais antigas</option><option value="value-desc">Maior valor</option><option value="expiry">Vencimento próximo</option></select></label>
           <button id="export-csv" class="secondary history-export" type="button">Exportar CSV</button>
         </div>
+        <div id="local-backup-controls" class="local-backup-controls">
+          <div>
+            <strong>Backup local</strong>
+            <small>O arquivo inclui os dados das propostas salvas neste dispositivo.</small>
+          </div>
+          <div class="local-backup-actions">
+            <button id="export-backup" class="secondary" type="button">Exportar backup</button>
+            <input id="import-backup-file" type="file" accept="application/json,.json" hidden>
+            <button id="import-backup" class="secondary" type="button">Restaurar backup</button>
+          </div>
+        </div>
         <div id="list" class="items"></div>
         <button id="history-more" class="secondary history-more" type="button" hidden>Mostrar mais</button>
         <div id="result" class="result"></div>
