@@ -5,6 +5,7 @@ const itemFields = document.querySelector('#item-fields');
 const addItemButton = document.querySelector('#add-item');
 const formTotal = document.querySelector('#form-total');
 const storageKey = 'docpronto-proposals';
+const composerDraftKey = 'docpronto-composer-draft-v1';
 const maxItems = 10;
 const accountDialog = document.querySelector('#account-dialog');
 const accountOpenButton = document.querySelector('#account-open');
@@ -63,8 +64,92 @@ function defaultValidityDate() {
   return localDate(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
 }
 
+function readComposerDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(composerDraftKey) || 'null');
+    return draft && typeof draft === 'object' ? draft : null;
+  } catch {
+    return null;
+  }
+}
+
+function serializeComposerDraft() {
+  return {
+    business: form.querySelector('[name="business"]')?.value || '',
+    businessPhone: form.querySelector('[name="businessPhone"]')?.value || '',
+    client: form.querySelector('[name="client"]')?.value || '',
+    clientPhone: form.querySelector('[name="clientPhone"]')?.value || '',
+    deadline: form.querySelector('[name="deadline"]')?.value || '',
+    terms: form.querySelector('[name="terms"]')?.value || '',
+    validUntil: validityInput?.value || '',
+    items: Array.from(itemFields.querySelectorAll('.line-item')).map(row => ({
+      description: row.querySelector('[data-description]')?.value || '',
+      quantity: row.querySelector('[data-quantity]')?.value || '1',
+      unitPrice: row.querySelector('[data-unit-price]')?.value || ''
+    })),
+    savedAt: Date.now()
+  };
+}
+
+function saveComposerDraft() {
+  if (editingId || publicProposalMode) return;
+  const draft = serializeComposerDraft();
+  const hasContent = [
+    draft.business, draft.businessPhone, draft.client, draft.clientPhone,
+    draft.deadline, draft.terms
+  ].some(value => String(value).trim()) ||
+    draft.items.some(item => String(item.description).trim() || String(item.unitPrice).trim());
+  if (!hasContent) {
+    localStorage.removeItem(composerDraftKey);
+    return;
+  }
+  localStorage.setItem(composerDraftKey, JSON.stringify(draft));
+}
+
+function clearComposerDraft() {
+  localStorage.removeItem(composerDraftKey);
+}
+
+function restoreComposerDraft() {
+  const draft = readComposerDraft();
+  if (!draft) return false;
+  const business = form.querySelector('[name="business"]');
+  const businessPhone = form.querySelector('[name="businessPhone"]');
+  const client = form.querySelector('[name="client"]');
+  const clientPhone = form.querySelector('[name="clientPhone"]');
+  const deadline = form.querySelector('[name="deadline"]');
+  const terms = form.querySelector('[name="terms"]');
+
+  if (business) business.value = draft.business || business.value;
+  if (businessPhone) businessPhone.value = draft.businessPhone || '';
+  if (client) client.value = draft.client || '';
+  if (clientPhone) clientPhone.value = draft.clientPhone || '';
+  if (deadline) deadline.value = draft.deadline || '';
+  if (terms) terms.value = draft.terms || '';
+  if (draft.validUntil) validityInput.value = draft.validUntil;
+
+  if (Array.isArray(draft.items) && draft.items.length) {
+    itemFields.innerHTML = '';
+    draft.items.slice(0, maxItems).forEach(item => addItem({
+      description: item.description || '',
+      quantity: item.quantity || '1',
+      unitPrice: item.unitPrice || ''
+    }));
+  }
+  updateTotal();
+  return true;
+}
+
+let composerDraftTimer = null;
+function scheduleComposerDraftSave() {
+  if (editingId || publicProposalMode) return;
+  window.clearTimeout(composerDraftTimer);
+  composerDraftTimer = window.setTimeout(saveComposerDraft, 250);
+}
+
 function resetComposer() {
   editingId = null;
+  clearComposerDraft();
   form.reset();
   itemFields.innerHTML = '';
   addItem();
@@ -75,6 +160,7 @@ function resetComposer() {
 }
 
 function beginEditing(proposal) {
+  clearComposerDraft();
   editingId = proposal.id;
   form.querySelector('[name="business"]').value = proposal.business || '';
   form.querySelector('[name="businessPhone"]').value = proposal.businessPhone || '';
@@ -853,6 +939,7 @@ form.addEventListener('submit', async event => {
       renderProposal(saved);
       renderHistory();
       if (existing) resetComposer();
+      else clearComposerDraft();
       showToast(existing ? 'Proposta atualizada na nuvem.' : 'Proposta salva na nuvem.');
     } catch {
       showAccountMessage('Falha ao salvar na nuvem. Confira a conexão; os dados continuam no formulário.');
@@ -870,10 +957,13 @@ form.addEventListener('submit', async event => {
   renderProposal(proposal);
   renderHistory();
   if (existing) resetComposer();
+  else clearComposerDraft();
   showToast(existing ? 'Proposta atualizada neste navegador.' : 'Proposta salva neste navegador.');
 });
 
 itemFields.addEventListener('input', updateTotal);
+form.addEventListener('input', scheduleComposerDraftSave);
+form.addEventListener('change', scheduleComposerDraftSave);
 itemFields.addEventListener('click', event => {
   const removeButton = event.target.closest('.remove-item');
   if (!removeButton || itemFields.querySelectorAll('.line-item').length <= 1) return;
@@ -1086,6 +1176,8 @@ if (publicProposalMode) {
 } else {
   addItem();
   prefillBusinessFields(readProposals());
+  const restoredDraft = restoreComposerDraft();
   renderHistory();
   initAccount();
+  if (restoredDraft) window.setTimeout(() => showToast('Rascunho recuperado.'), 80);
 }
