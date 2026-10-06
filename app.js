@@ -12,6 +12,7 @@ const discountTypeInput = document.querySelector('#discount-type');
 const discountValueInput = document.querySelector('#discount-value');
 const storageKey = 'docpronto-proposals';
 const composerDraftKey = 'docpronto-composer-draft-v1';
+const businessLogoStorageKey = 'docpronto-business-logo-v1';
 const maxItems = 10;
 const proposalTemplates = Object.freeze({
   electrical: {
@@ -75,6 +76,10 @@ const exportCsvButton = document.querySelector('#export-csv');
 const clearComposerButton = document.querySelector('#clear-composer');
 const proposalTemplateSelect = document.querySelector('#proposal-template');
 const applyTemplateButton = document.querySelector('#apply-template');
+const businessLogoInput = document.querySelector('#business-logo-input');
+const businessLogoChoose = document.querySelector('#business-logo-choose');
+const businessLogoRemove = document.querySelector('#business-logo-remove');
+const businessLogoPreview = document.querySelector('#business-logo-preview');
 const businessProfileForm = document.querySelector('#business-profile-form');
 const brandColorValue = document.querySelector('#brand-color-value');
 const savedClientsList = document.querySelector('#saved-clients-list');
@@ -94,6 +99,7 @@ let passwordRecovery = false;
 let openedProposalId = null;
 let lastCloudRefreshAt = 0;
 let historyVisibleLimit = 10;
+let currentBusinessLogo = '';
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
@@ -319,6 +325,111 @@ function readProposals() {
 function visibleProposals() {
   return currentUser ? cloudProposals : readProposals();
 }
+
+function safeBusinessLogo(value) {
+  const logo = String(value || '').trim();
+  if (!logo || logo.length > 350000) return '';
+  return /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(logo) ? logo : '';
+}
+
+function readStoredBusinessLogo() {
+  try {
+    return safeBusinessLogo(localStorage.getItem(businessLogoStorageKey) || '');
+  } catch {
+    return '';
+  }
+}
+
+function renderBusinessLogoControl() {
+  if (!businessLogoPreview) return;
+  const image = businessLogoPreview.querySelector('img');
+  const hasLogo = Boolean(currentBusinessLogo);
+  businessLogoPreview.hidden = !hasLogo;
+  if (image) image.src = hasLogo ? currentBusinessLogo : '';
+  if (businessLogoChoose) businessLogoChoose.textContent = uiText(hasLogo ? 'Trocar logo' : 'Adicionar logo');
+}
+
+function storeBusinessLogo(value) {
+  currentBusinessLogo = safeBusinessLogo(value);
+  try {
+    if (currentBusinessLogo) localStorage.setItem(businessLogoStorageKey, currentBusinessLogo);
+    else localStorage.removeItem(businessLogoStorageKey);
+  } catch (error) {
+    console.warn('DocPronto não conseguiu salvar a logo localmente:', error);
+  }
+  renderBusinessLogoControl();
+}
+
+function compressBusinessLogo(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      reject(new Error('invalid_type'));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      reject(new Error('too_large'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read_failed'));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error('decode_failed'));
+      image.onload = () => {
+        const scale = Math.min(1, 640 / image.naturalWidth, 320 / image.naturalHeight);
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          reject(new Error('canvas_unavailable'));
+          return;
+        }
+        context.clearRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+        const output = safeBusinessLogo(canvas.toDataURL('image/webp', 0.88));
+        if (!output) {
+          reject(new Error('encode_failed'));
+          return;
+        }
+        resolve(output);
+      };
+      image.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+currentBusinessLogo = readStoredBusinessLogo();
+renderBusinessLogoControl();
+
+businessLogoChoose?.addEventListener('click', () => businessLogoInput?.click());
+
+businessLogoInput?.addEventListener('change', async () => {
+  const file = businessLogoInput.files?.[0];
+  if (!file) return;
+  businessLogoChoose.disabled = true;
+  try {
+    storeBusinessLogo(await compressBusinessLogo(file));
+    showToast('Logo pronta para as próximas propostas.');
+  } catch (error) {
+    console.error(error);
+    showToast(error?.message === 'too_large'
+      ? 'A logo deve ter no máximo 2 MB.'
+      : 'Use uma imagem PNG, JPG ou WebP válida.');
+  } finally {
+    businessLogoChoose.disabled = false;
+    businessLogoInput.value = '';
+  }
+});
+
+businessLogoRemove?.addEventListener('click', () => {
+  storeBusinessLogo('');
+  showToast('Logo removida das próximas propostas.');
+});
 
 const defaultBrandColor = '#245d6c';
 
@@ -1302,6 +1413,7 @@ function renderProposal(proposal) {
   openedProposalId = proposal.id;
   const status = proposal.status || 'draft';
   const brandColor = normalizeBrandColor(proposal.brandColor);
+  const businessLogo = safeBusinessLogo(proposal.businessLogo);
   const clientDetails = [
     proposal.clientDocument ? '<span><b>Documento:</b> ' + escapeHtml(proposal.clientDocument) + '</span>' : '',
     proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
@@ -1326,7 +1438,10 @@ function renderProposal(proposal) {
         '<span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span>' +
       '</header>' +
       '<div class="proposal-heading">' +
-        '<div><span class="proposal-label">EMPRESA</span><h3>' + escapeHtml(proposal.business) + '</h3>' + (proposal.businessPhone ? '<p>' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
+        '<div class="proposal-business-identity">' +
+          (businessLogo ? '<img class="proposal-business-logo" src="' + escapeHtml(businessLogo) + '" alt="Logo de ' + escapeHtml(proposal.business) + '">' : '') +
+          '<div><span class="proposal-label">EMPRESA</span><h3>' + escapeHtml(proposal.business) + '</h3>' + (proposal.businessPhone ? '<p>' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
+        '</div>' +
         '<div class="proposal-client-block"><span class="proposal-label">CLIENTE</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
       '</div>' +
       '<div class="proposal-meta">' + escapeHtml(proposalMetaText) + '</div>' +
@@ -1555,6 +1670,7 @@ form.addEventListener('submit', async event => {
     businessPhone: String(values.businessPhone || '').trim(),
     validUntil: values.validUntil,
     brandColor: existing?.brandColor || accountBusinessProfile().brandColor,
+    businessLogo: currentBusinessLogo,
     status: existing?.status || 'draft'
   };
   const proposal = existing
@@ -1802,6 +1918,7 @@ function publicStatusText(status) {
 function renderPublicProposal(proposal) {
   const container = document.querySelector('#public-proposal-content');
   const brandColor = normalizeBrandColor(proposal.brandColor);
+  const businessLogo = safeBusinessLogo(proposal.businessLogo);
   const publicClientDetails = [
     proposal.clientDocument ? '<span><b>Documento:</b> ' + escapeHtml(proposal.clientDocument) + '</span>' : '',
     proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
@@ -1823,7 +1940,9 @@ function renderPublicProposal(proposal) {
     : Boolean(proposal.validUntil && proposal.validUntil < localDate(new Date()));
   const canRespond = proposal.status === 'sent' && !expired;
   container.innerHTML =
-    '<div class="public-proposal-head"><div><span class="proposal-document-brand">DocPronto.</span><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div>' +
+    '<div class="public-proposal-head"><div class="public-business-identity">' +
+      (businessLogo ? '<img class="proposal-business-logo public-business-logo" src="' + escapeHtml(businessLogo) + '" alt="Logo de ' + escapeHtml(proposal.business) + '">' : '') +
+      '<div><span class="proposal-document-brand">DocPronto.</span><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div></div>' +
     '<span class="proposal-status status-' + escapeHtml(proposal.status) + '">' + publicStatusText(proposal.status) + '</span></div>' +
     '<div class="public-client"><span class="proposal-label">PREPARADA PARA</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
     (publicClientDetails ? '<div class="proposal-client-details public-client-details">' + publicClientDetails + '</div>' : '') +
