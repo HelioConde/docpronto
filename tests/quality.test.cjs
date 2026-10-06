@@ -271,6 +271,26 @@ test('novos links públicos escondem o token no fragmento e bloqueiam indexaçã
   assert.match(app, /no-referrer/);
 });
 
+test('respostas do cliente atualizam ao voltar para a aba e guardam data da resposta', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(app, /respondedAt: row\.responded_at/);
+  assert.match(app, /window\.addEventListener\('focus', refreshCloudIfStale\)/);
+  assert.match(app, /document\.visibilityState === 'visible'/);
+  assert.match(app, /Respondida em/);
+  assert.match(css, /\.response-time/);
+});
+
+test('reabrir proposta encerrada invalida o link público anterior', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(app, /data-reopen/);
+  assert.match(app, /share_token_hash: null/);
+  assert.match(app, /O link público anterior será invalidado/);
+  assert.match(app, /proposal-status-select[^\n]+disabled/);
+  assert.match(css, /\[data-reopen\]/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
