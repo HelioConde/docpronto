@@ -1,0 +1,94 @@
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
+
+const allowedOrigins = new Set([
+  "https://helioconde.github.io",
+  "http://localhost:8000",
+  "http://127.0.0.1:8000",
+]);
+
+function corsHeaders(origin: string | null) {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+  if (origin && allowedOrigins.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
+function json(status: number, body: Record<string, unknown>, origin: string | null) {
+  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders(origin), "Content-Type": "application/json" } });
+}
+async function hashText(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+function getSecretKey() {
+  const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeys) {
+    try {
+      const parsed: unknown = JSON.parse(secretKeys);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        const key = (parsed as Record<string, unknown>).default;
+        if (typeof key === "string" && key) return key;
+      }
+    } catch {}
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+}
+
+Deno.serve(async (request: Request) => {
+  const origin = request.headers.get("origin");
+  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(origin) });
+  if (request.method !== "POST") return json(405, { error: "Método não permitido." }, origin);
+  if (origin && !allowedOrigins.has(origin)) return json(403, { error: "Origem não permitida." }, origin);
+
+  let input: Record<string, unknown>;
+  try {
+    const parsed: unknown = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return json(400, { error: "Pedido inválido." }, origin);
+    input = parsed as Record<string, unknown>;
+  } catch {
+    return json(400, { error: "Pedido inválido." }, origin);
+  }
+
+  const proposalId = typeof input.proposalId === "string" ? input.proposalId.trim() : "";
+  const token = typeof input.token === "string" ? input.token.trim() : "";
+  const decision = input.decision === "approved" || input.decision === "rejected" ? input.decision : "";
+  if (!/^[0-9a-f-]{36}$/i.test(proposalId) || !/^[A-Za-z0-9_-]{32}$/.test(token) || !decision) {
+    return json(400, { error: "Resposta inválida." }, origin);
+  }
+
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = getSecretKey();
+  if (!url || !key) return json(503, { error: "Serviço indisponível." }, origin);
+  const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const tokenHash = await hashText(token);
+
+  const { data: current, error: readError } = await client
+    .from("docpronto_proposals")
+    .select("id,status,proposal_data")
+    .eq("id", proposalId)
+    .eq("share_token_hash", tokenHash)
+    .maybeSingle();
+  if (readError) return json(503, { error: "Não foi possível responder agora." }, origin);
+  if (!current) return json(404, { error: "Proposta indisponível." }, origin);
+  if (current.status !== "sent") return json(409, { error: "Esta proposta já recebeu uma resposta ou foi alterada." }, origin);
+
+  const validUntil = typeof current.proposal_data?.validUntil === "string" ? current.proposal_data.validUntil : "";
+  if (validUntil && Date.parse(validUntil + "T23:59:59Z") < Date.now()) {
+    return json(410, { error: "Esta proposta expirou." }, origin);
+  }
+
+  const { data, error } = await client
+    .from("docpronto_proposals")
+    .update({ status: decision, responded_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", proposalId)
+    .eq("share_token_hash", tokenHash)
+    .eq("status", "sent")
+    .select("id,status,responded_at")
+    .maybeSingle();
+
+  if (error) return json(503, { error: "Não foi possível salvar a resposta." }, origin);
+  if (!data) return json(409, { error: "A proposta foi alterada antes da sua resposta." }, origin);
+  return json(200, { status: data.status, respondedAt: data.responded_at }, origin);
+});
