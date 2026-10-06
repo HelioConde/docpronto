@@ -327,3 +327,17 @@ html[lang="en"] .hero h1{max-width:780px}
 .template-controls select{min-width:155px;height:38px;padding:0 30px 0 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font:600 11px Inter,sans-serif}
 .template-controls .secondary{height:38px;padding:0 12px}
 @media(max-width:620px){.template-picker{grid-template-columns:1fr}.template-controls{display:grid;grid-template-columns:1fr auto}.template-controls select{min-width:0;width:100%}}
+
+.business-logo-field{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin:8px 0 15px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fbfcfc}
+.business-logo-copy{display:grid;gap:3px}
+.business-logo-copy strong{font:700 11px Manrope}
+.business-logo-copy small{color:var(--muted);font-size:9px;line-height:1.4}
+.business-logo-actions{display:flex;align-items:center;gap:8px}
+.business-logo-preview{display:flex;align-items:center;gap:7px}
+.business-logo-preview img{width:58px;height:38px;padding:3px;border:1px solid var(--line);border-radius:7px;background:#fff;object-fit:contain}
+.business-logo-preview .text-button{font-size:9px}
+.proposal-business-identity,.public-business-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.proposal-business-logo{display:block;width:auto;max-width:96px;height:auto;max-height:54px;object-fit:contain}
+.public-business-logo{max-width:110px;max-height:62px}
+@media(max-width:620px){.business-logo-field{grid-template-columns:1fr}.business-logo-actions{justify-content:flex-start}.proposal-business-identity,.public-business-identity{align-items:flex-start;flex-direction:column;gap:7px}.proposal-business-logo{max-width:84px;max-height:48px}}
+@media print{.proposal-business-logo{max-width:90px;max-height:50px}}
