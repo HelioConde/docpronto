@@ -12,6 +12,7 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
 - filtro do histórico por status (incluindo vencidas), busca por cliente/empresa/número e ordenação por data, valor ou vencimento;
 - resumo comercial com total de propostas, enviadas e valor aprovado;
+- fila de follow-up para propostas enviadas há 3 dias ou mais sem resposta, com filtro e ação rápida de retorno;
 - histórico progressivo em blocos de 10 e exportação do histórico em CSV compatível com Excel;
 - aviso visual para propostas vencidas ou próximas da validade;
 - compartilhamento de resumo por WhatsApp e cópia rápida;
