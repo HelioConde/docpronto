@@ -258,3 +258,6 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .proposal-status-select:disabled{opacity:.72;background:#f3f5f6;color:#68747c;cursor:not-allowed}
 .item-actions [data-reopen]{background:#fff8e8;color:#7b5a18;border-color:#ead9ad}
 .item-actions [data-reopen]:hover{background:#fff2d0;color:#654812}
+
+.history-more{width:100%;margin-top:10px;padding:10px 12px;background:#f7fafb;color:var(--accent);border:1px solid var(--line)}
+.history-more:hover{background:#edf5f6}
