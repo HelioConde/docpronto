@@ -259,6 +259,18 @@ test('dados opcionais do cliente são reutilizados e aparecem na proposta', () =
   assert.match(publicFn, /clientAddress:/);
 });
 
+test('novos links públicos escondem o token no fragmento e bloqueiam indexação', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(html, /meta name="robots" content="index,follow"/);
+  assert.match(html, /meta name="referrer" content="strict-origin-when-cross-origin"/);
+  assert.match(app, /new URLSearchParams\(location\.hash\.replace/);
+  assert.match(app, /hashParams\.get\('token'\)/);
+  assert.match(app, /url\.hash = shareParams\.toString\(\)/);
+  assert.match(app, /noindex,nofollow,noarchive/);
+  assert.match(app, /no-referrer/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
