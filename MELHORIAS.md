@@ -20,11 +20,11 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 
 ## P1 — produto
 
-- [x] Logo do prestador no documento/PDF com processamento local e snapshot por proposta; retorno no link público preparado no código, aguardando deploy da Edge Function quando o Supabase voltar.
+- [x] Logo do prestador no documento/PDF com processamento local e snapshot por proposta, incluindo retorno sanitizado no link público com a Edge Function publicada.
 - [x] Modelos rápidos de proposta por categoria (elétrica, hidráulica, pintura e serviço digital), sem preços pré-definidos.
 - [x] Criar novo orçamento para cliente salvo em um clique, sempre saindo de eventual modo de edição.
-- [x] Aceite textual opcional do cliente com nome registrado na aprovação; frontend e Edge Functions preparados, aguardando deploy no Supabase real.
-- [x] Histórico de mudanças de status com timeline local/nuvem; respostas do cliente preparadas no código da Edge Function, aguardando deploy quando o Supabase voltar.
+- [x] Aceite textual opcional do cliente com nome registrado na aprovação e Edge Function publicada no Supabase.
+- [x] Histórico de mudanças de status com timeline local/nuvem e respostas do cliente registradas pela Edge Function publicada.
 - [x] Dashboard simples de conversão: aprovadas ÷ propostas que já entraram no funil de envio.
 - [x] Fila visual de follow-up para propostas enviadas há 3 dias ou mais sem resposta, com ação rápida de WhatsApp/cópia.
 - [x] PWA instalável com manifest, service worker e modo local disponível offline após a primeira abertura.
