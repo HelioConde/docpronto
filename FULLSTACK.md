@@ -11,7 +11,9 @@ O DocPronto já possui um MVP fullstack funcional:
 - Supabase Auth para sincronização entre dispositivos;
 - propostas persistidas em `docpronto_proposals`;
 - clientes reutilizáveis em `docpronto_clients`;
+- identidade do negócio sincronizada em `user_metadata` do Supabase Auth, sem tabela adicional;
 - status comercial: rascunho, enviada, aprovada e recusada;
+- desconto percentual ou fixo, observações e dados opcionais do cliente;
 - busca no histórico e resumo comercial com filtros rápidos;
 - sinalização de propostas expiradas ou próximas do vencimento;
 - link público protegido por token para o cliente;
@@ -27,7 +29,7 @@ O backend compartilhado é o projeto Supabase `pizzaria-db`. O DocPronto usa ape
 
 A tabela de propostas concede ao papel `authenticated` apenas SELECT, INSERT, UPDATE e DELETE. O frontend usa somente chave publishable.
 
-Os links públicos não expõem acesso direto à tabela: o token bruto fica somente no link do cliente e o banco armazena apenas SHA-256. As Edge Functions usam credencial privilegiada apenas no servidor e retornam um payload sanitizado.
+Os links públicos não expõem acesso direto à tabela: o token bruto fica somente no link do cliente e o banco armazena apenas SHA-256. Novos links usam o fragmento `#` para evitar enviar o token ao GitHub Pages; links antigos em query string continuam compatíveis. As Edge Functions usam credencial privilegiada apenas no servidor e retornam um payload sanitizado.
 
 ## Fluxo principal
 
