@@ -448,7 +448,7 @@ test('feedback beta entra na fila local sem backend e não pede dados pessoais',
   await page.locator('#beta-feedback-open').click();
   await expect(page.locator('#beta-feedback-dialog')).toBeVisible();
 
-  await page.locator('#beta-feedback-form input[name="rating"][value="5"]').check();
+  await page.locator('#beta-feedback-form label').filter({ hasText: /^5$/ }).click();
   await page.locator('#beta-feedback-form select[name="category"]').selectOption('idea');
   await page.locator('#beta-feedback-form textarea[name="comment"]').fill('Fluxo rápido e fácil de entender.');
   await expect(page.locator('#beta-feedback-count')).toHaveText('33');
