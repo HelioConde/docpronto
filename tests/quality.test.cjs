@@ -342,6 +342,22 @@ test('usuário autenticado pode gerar e enviar o link seguro direto no WhatsApp'
   assert.match(css, /#send-client-link-whatsapp/);
 });
 
+test('conta permite usar e excluir clientes salvos sem alterar propostas existentes', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /id="saved-clients-list"/);
+  assert.match(html, /id="saved-clients-count"/);
+  assert.match(app, /function renderSavedClients/);
+  assert.match(app, /function fillClientFromRecord/);
+  assert.match(app, /data-client-use/);
+  assert.match(app, /data-client-delete/);
+  assert.match(app, /savedClientsList\?\.addEventListener\('click'/);
+  assert.match(app, /\.from\('docpronto_clients'\)[\s\S]*\.delete\(\)/);
+  assert.match(app, /As propostas existentes não serão alteradas/);
+  assert.match(css, /\.saved-clients/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
