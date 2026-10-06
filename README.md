@@ -59,13 +59,9 @@ Veja `FULLSTACK.md` para arquitetura e próximos passos.
 
 ## QA no navegador
 
-Além dos testes unitários/integração Node, o DocPronto agora usa **Playwright + Chromium** para cobrir:
+Além dos testes unitários/integração Node, o DocPronto usa **Playwright + Chromium** para cobrir criação local, rascunho, busca/edição/status/CSV, templates, logo, PDF A4 longo, PWA offline, feedback beta, backup/restauração, calendário e acessibilidade básica.
 
-- criação local completa de proposta;
-- persistência de rascunho após recarregar;
-- busca, edição, mudança de status e exportação CSV;
-- página pública sanitizada;
-- aprovação de proposta pelo cliente.
+O backend também foi homologado contra o Supabase real: o isolamento RLS foi validado em duas identidades autenticadas dentro de uma transação com rollback, e o fluxo público de produção abriu uma proposta, registrou aprovação com aceite textual e retornou o estado aprovado com timeline persistida. Os dados QA usados nesse smoke foram apagados ao final.
 
 Execute com `npm install` e `npm run test:e2e`.
 
