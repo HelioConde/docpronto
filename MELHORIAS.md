@@ -1,0 +1,42 @@
+# Melhorias — DocPronto
+
+Atualizado em 2026-10-06.
+
+Este é o backlog oficial do produto. A prioridade é homologar o que já existe antes de ampliar o escopo.
+
+## P0 — homologação
+
+- [x] Criar propostas no modo local sem cadastro.
+- [x] Editar, duplicar, excluir e alterar status.
+- [x] Busca, filtros, ordenação e exportação CSV.
+- [x] Link público seguro com aprovação/recusa.
+- [x] Clientes reutilizáveis e identidade do negócio.
+- [x] Browser E2E em Chromium para o fluxo local e proposta pública.
+- [x] Smoke responsivo automatizado em 360 px, 768 px e 1440 px.
+- [ ] Homologar cadastro, login, recuperação de senha e sessão expirada com conta real.
+- [ ] Homologar isolamento entre duas contas reais.
+- [ ] Testar envio real de link público em navegador separado contra o backend de produção.
+- [ ] Revisar PDF A4 com proposta longa, desconto, observações e dados completos.
+
+## P1 — produto
+
+- [ ] Logo do prestador no documento.
+- [ ] Modelos de proposta reutilizáveis por categoria.
+- [ ] Duplicar cliente com novo orçamento em um clique.
+- [ ] Campo opcional de assinatura/aceite textual do cliente.
+- [ ] Histórico de mudanças de status.
+- [ ] Dashboard simples de conversão: enviadas → aprovadas.
+- [ ] PWA instalável.
+- [ ] Feedback beta dentro do produto.
+
+## P2 — depois da validação
+
+- [ ] Lembretes de propostas sem resposta.
+- [ ] Notificações push.
+- [ ] Integração com calendário/CRM.
+- [ ] Cobrança e limites comerciais somente se a recorrência justificar.
+- [ ] Domínio personalizado/branding avançado.
+
+## Regra de priorização
+
+Não adicionar checkout, plano pago ou automações complexas antes de concluir P0 com usuários reais. O valor central do DocPronto continua sendo: criar, enviar e acompanhar uma proposta profissional com pouca fricção.
