@@ -86,6 +86,8 @@ jobs:
           grep -qi 'docpronto-beta-feedback-queue-v1' beta-feedback.js
           grep -qi 'MAX_QUEUE = 20' beta-feedback.js
           grep -qi 'docpronto_beta_feedback' supabase/functions/beta-feedback/index.ts
+          grep -qi 'downloadFollowUpCalendar' app.js
+          grep -qi 'data-followup-calendar' app.js
           grep -qi 'proposal-template' index.html
           grep -qi 'proposalTemplates' app.js
           grep -qi 'applyProposalTemplate' app.js
