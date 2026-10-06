@@ -12,11 +12,7 @@ Tables:
 All document and client data is owner-scoped with RLS.
 
 ## Production path
-1. Add Supabase Auth.
-2. Move browser-only history into the database.
-3. Persist clients, proposals and line items.
-4. Generate printable/PDF output client-side or through a safe backend worker.
-5. Add plan limits and branding options.
+Supabase Auth, cloud proposal persistence, local import and printable/PDF output are already connected. Proposal records now include a commercial status (draft/sent/approved/rejected), with owner-only RLS and local fallback. The next production steps are reusable client records, proposal branding, plan limits and a client-facing acceptance flow.
 
 ## QA gates
 Money precision, totals/discounts, reload persistence, print layout, long customer names, empty line items, mobile forms and cross-account isolation are mandatory.
