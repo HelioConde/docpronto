@@ -17,6 +17,7 @@ const syncStatus = document.querySelector('#sync-status');
 const localImportBanner = document.querySelector('#local-import-banner');
 const localImportButton = document.querySelector('#local-import');
 const proposalStatusFilter = document.querySelector('#proposal-status-filter');
+const proposalSearch = document.querySelector('#proposal-search');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
 const pageParams = new URLSearchParams(location.search);
@@ -689,9 +690,15 @@ function renderProposal(proposal) {
 
 function renderHistory() {
   const selectedStatus = proposalStatusFilter?.value || 'all';
+  const searchTerm = String(proposalSearch?.value || '').trim().toLocaleLowerCase('pt-BR');
   const source = currentUser ? cloudProposals : readProposals().slice().reverse();
   const proposals = source
     .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
+    .filter(proposal => {
+      if (!searchTerm) return true;
+      return [proposal.client, proposal.business, proposal.number]
+        .some(value => String(value || '').toLocaleLowerCase('pt-BR').includes(searchTerm));
+    })
     .slice(0, 10);
   const emptyTitle = source.length ? 'Nenhuma proposta neste status' : 'Sua primeira proposta começa aqui';
   const emptyText = source.length
@@ -805,6 +812,7 @@ itemFields.addEventListener('click', event => {
 });
 addItemButton.addEventListener('click', () => addItem());
 proposalStatusFilter?.addEventListener('change', renderHistory);
+proposalSearch?.addEventListener('input', renderHistory);
 
 list.addEventListener('change', async event => {
   const select = event.target.closest('[data-status-id]');
