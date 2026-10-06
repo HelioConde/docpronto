@@ -4,16 +4,63 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f8f5">
-  <meta name="description" content="Crie propostas e orçamentos profissionais para seus clientes em poucos minutos.">
-  <title>DocPronto — Propostas que passam confiança</title>
+  <meta name="description" content="Crie propostas profissionais, detalhe serviços e materiais e salve em PDF ou na nuvem.">
+  <meta property="og:title" content="DocPronto — propostas profissionais sem complicação">
+  <meta property="og:description" content="Monte orçamentos claros, acompanhe propostas e salve em PDF.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://helioconde.github.io/docpronto/">
+  <link rel="canonical" href="https://helioconde.github.io/docpronto/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>DocPronto — Propostas profissionais sem complicação</title>
   <link rel="stylesheet" href="theme-v2.css">
 </head>
 <body>
   <div class="wrap">
     <header class="nav">
-      <a class="brand" href="./">DocPronto<i>.</i></a>
-      <span class="navnote">Protótipo interativo · dados salvos no navegador</span>
+      <a class="brand" href="./" aria-label="DocPronto, página inicial">DocPronto<i>.</i></a>
+      <div class="nav-actions">
+        <span id="sync-status" class="sync-status" role="status">Salvo neste dispositivo</span>
+        <button id="account-open" class="secondary" type="button">Entrar / sincronizar</button>
+      </div>
     </header>
+
+    <dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title">
+      <div class="account-heading">
+        <div>
+          <span class="eyebrow">SUA CONTA DOC PRONTO</span>
+          <h2 id="account-title">Acesse de qualquer dispositivo</h2>
+        </div>
+        <button id="account-close" class="dialog-close" type="button" aria-label="Fechar">×</button>
+      </div>
+      <p class="sub">Entre para salvar suas propostas com segurança na nuvem. Sem conta, você continua usando o DocPronto neste dispositivo.</p>
+      <form id="auth-form">
+        <label class="field">
+          <span>E-mail</span>
+          <input name="email" type="email" autocomplete="email" required>
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input name="password" type="password" autocomplete="current-password" minlength="8" required>
+        </label>
+        <button class="primary" type="submit">Entrar</button>
+        <div class="account-links">
+          <button id="sign-up" class="secondary" type="button">Criar conta</button>
+          <button id="reset-password" class="text-button" type="button">Esqueci a senha</button>
+        </div>
+      </form>
+      <div id="account-profile" hidden>
+        <p>Conectado como <strong id="account-email"></strong></p>
+        <p class="account-private-note">Suas propostas ficam privadas na sua conta.</p>
+        <button id="sign-out" class="secondary" type="button">Sair da conta</button>
+      </div>
+      <p id="account-message" class="account-message" role="status" aria-live="polite"></p>
+    </dialog>
+
+    <div id="local-import-banner" class="local-import-banner" hidden>
+      <p>Encontramos <strong id="local-import-count">0</strong> propostas salvas neste dispositivo.</p>
+      <button id="local-import" class="secondary" type="button">Importar para minha conta</button>
+    </div>
 
     <section class="hero">
       <div>
@@ -73,19 +120,19 @@ Sem perder a tarde.</h1>
       </section>
     </main>
 
-    <section class="plans">
-      <div class="plans-top">
-        <h2>Um modelo simples para começar</h2>
-        <p>Exemplos de planos; nenhuma cobrança está ativa.</p>
-      </div>
-      <div class="plan-grid">
-        <article class="plan"><strong>Avulso</strong><div class="price">R$ 4,90</div><small>Exportação de um orçamento</small></article>
-        <article class="plan"><strong>Profissional</strong><div class="price">R$ 19/mês</div><small>Modelos e documentos ilimitados</small></article>
+    <section class="benefits" aria-labelledby="benefits-title">
+      <h2 id="benefits-title">Da proposta ao PDF, sem complicação</h2>
+      <div class="benefit-grid">
+        <article><strong>Valores transparentes</strong><span>Detalhe até 10 serviços ou materiais por proposta.</span></article>
+        <article><strong>Seu histórico com você</strong><span>Use o dispositivo atual ou entre para sincronizar na nuvem.</span></article>
+        <article><strong>Pronto para enviar</strong><span>Imprima ou salve em PDF com um clique.</span></article>
       </div>
     </section>
-    <footer class="foot">Protótipo para validação. Os dados ficam neste navegador. Integrações, contas e pagamentos ainda não estão conectados.</footer>
+    <footer class="foot">Sem conta, as propostas ficam neste dispositivo. Ao entrar, elas são salvas na sua conta. Cobranças ainda não estão ativas.</footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite">Salvo neste navegador</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
