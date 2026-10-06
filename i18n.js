@@ -261,6 +261,15 @@
   "Empresa": "Business",
   "Validade": "Validity"
 });
+  Object.assign(translations, {
+  "Aguardando resposta": "Awaiting response",
+  "Aprovar proposta": "Approve proposal",
+  "Recusar": "Reject",
+  "Emitida em": "Issued on",
+  "válida até": "valid until",
+  "respondida em": "responded on",
+  "Condições de pagamento:": "Payment terms:"
+});
   const reverse = Object.fromEntries(Object.entries(translations).map(([pt, en]) => [en, pt]));
   let activeLocale = localStorage.getItem(storageKey) === 'en' ? 'en' : 'pt-BR';
   let applying = false;
