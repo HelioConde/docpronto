@@ -61,6 +61,9 @@ jobs:
           grep -qi 'data-language="en"' index.html
           grep -qi 'i18n.js' index.html
           grep -qi 'rel="canonical"' index.html
+          grep -qi 'property="og:locale"' index.html
+          grep -qi '"@type":"WebApplication"' index.html
+          grep -qi '"isAccessibleForFree":true' index.html
           grep -qi 'supabase-config.js' index.html
           grep -qi 'proposal-status-filter' index.html
           grep -qi 'value="followup"' index.html
