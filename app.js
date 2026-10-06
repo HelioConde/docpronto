@@ -86,6 +86,9 @@ function serializeComposerDraft() {
     businessPhone: form.querySelector('[name="businessPhone"]')?.value || '',
     client: form.querySelector('[name="client"]')?.value || '',
     clientPhone: form.querySelector('[name="clientPhone"]')?.value || '',
+    clientEmail: form.querySelector('[name="clientEmail"]')?.value || '',
+    clientDocument: form.querySelector('[name="clientDocument"]')?.value || '',
+    clientAddress: form.querySelector('[name="clientAddress"]')?.value || '',
     deadline: form.querySelector('[name="deadline"]')?.value || '',
     terms: form.querySelector('[name="terms"]')?.value || '',
     notes: form.querySelector('[name="notes"]')?.value || '',
@@ -106,6 +109,7 @@ function saveComposerDraft() {
   const draft = serializeComposerDraft();
   const hasContent = [
     draft.business, draft.businessPhone, draft.client, draft.clientPhone,
+    draft.clientEmail, draft.clientDocument, draft.clientAddress,
     draft.deadline, draft.terms, draft.notes
   ].some(value => String(value).trim()) ||
     draft.items.some(item => String(item.description).trim() || String(item.unitPrice).trim());
@@ -127,6 +131,9 @@ function restoreComposerDraft() {
   const businessPhone = form.querySelector('[name="businessPhone"]');
   const client = form.querySelector('[name="client"]');
   const clientPhone = form.querySelector('[name="clientPhone"]');
+  const clientEmail = form.querySelector('[name="clientEmail"]');
+  const clientDocument = form.querySelector('[name="clientDocument"]');
+  const clientAddress = form.querySelector('[name="clientAddress"]');
   const deadline = form.querySelector('[name="deadline"]');
   const terms = form.querySelector('[name="terms"]');
   const notes = form.querySelector('[name="notes"]');
@@ -135,6 +142,10 @@ function restoreComposerDraft() {
   if (businessPhone) businessPhone.value = draft.businessPhone || '';
   if (client) client.value = draft.client || '';
   if (clientPhone) clientPhone.value = draft.clientPhone || '';
+  if (clientEmail) clientEmail.value = draft.clientEmail || '';
+  if (clientDocument) clientDocument.value = draft.clientDocument || '';
+  if (clientAddress) clientAddress.value = draft.clientAddress || '';
+  if (draft.clientEmail || draft.clientDocument || draft.clientAddress) document.querySelector('.client-extra')?.setAttribute('open', '');
   if (deadline) deadline.value = draft.deadline || '';
   if (terms) terms.value = draft.terms || '';
   if (notes) notes.value = draft.notes || '';
@@ -190,6 +201,10 @@ function beginEditing(proposal) {
   form.querySelector('[name="businessPhone"]').value = proposal.businessPhone || '';
   form.querySelector('[name="client"]').value = proposal.client || '';
   form.querySelector('[name="clientPhone"]').value = proposal.clientPhone || '';
+  form.querySelector('[name="clientEmail"]').value = proposal.clientEmail || '';
+  form.querySelector('[name="clientDocument"]').value = proposal.clientDocument || '';
+  form.querySelector('[name="clientAddress"]').value = proposal.clientAddress || '';
+  if (proposal.clientEmail || proposal.clientDocument || proposal.clientAddress) document.querySelector('.client-extra')?.setAttribute('open', '');
   form.querySelector('[name="deadline"]').value = proposal.deadline || '';
   form.querySelector('[name="terms"]').value = proposal.terms || '';
   form.querySelector('[name="notes"]').value = proposal.notes || '';
@@ -328,7 +343,7 @@ async function loadCloudClients() {
   const ownerId = currentUser.id;
   const { data, error } = await supabaseClient
     .from('docpronto_clients')
-    .select('id,name,name_key,phone,email,updated_at')
+    .select('id,name,name_key,phone,email,document,address,updated_at')
     .order('updated_at', { ascending: false })
     .limit(100);
   if (currentUser?.id !== ownerId) return;
@@ -346,22 +361,25 @@ async function syncClientRecord(proposal) {
   if (!name) return;
   const nameKey = name.toLocaleLowerCase('pt-BR');
   const phone = String(proposal.clientPhone || '').trim() || null;
+  const email = String(proposal.clientEmail || '').trim() || null;
+  const documentValue = String(proposal.clientDocument || '').trim() || null;
+  const address = String(proposal.clientAddress || '').trim() || null;
   const existing = cloudClients.find(client => client.name_key === nameKey);
 
   if (existing) {
     const { data, error } = await supabaseClient
       .from('docpronto_clients')
-      .update({ name, phone, updated_at: new Date().toISOString() })
+      .update({ name, phone, email, document: documentValue, address, updated_at: new Date().toISOString() })
       .eq('id', existing.id)
-      .select('id,name,name_key,phone,email,updated_at')
+      .select('id,name,name_key,phone,email,document,address,updated_at')
       .single();
     if (error) throw error;
     cloudClients = [data, ...cloudClients.filter(client => client.id !== data.id)];
   } else {
     const { data, error } = await supabaseClient
       .from('docpronto_clients')
-      .insert({ user_id: currentUser.id, name, phone })
-      .select('id,name,name_key,phone,email,updated_at')
+      .insert({ user_id: currentUser.id, name, phone, email, document: documentValue, address })
+      .select('id,name,name_key,phone,email,document,address,updated_at')
       .single();
     if (error) throw error;
     cloudClients = [data, ...cloudClients];
@@ -376,6 +394,10 @@ function applySavedClient() {
   const client = cloudClients.find(item => item.name_key === key);
   if (!client) return;
   form.querySelector('[name="clientPhone"]').value = client.phone || '';
+  form.querySelector('[name="clientEmail"]').value = client.email || '';
+  form.querySelector('[name="clientDocument"]').value = client.document || '';
+  form.querySelector('[name="clientAddress"]').value = client.address || '';
+  if (client.email || client.document || client.address) document.querySelector('.client-extra')?.setAttribute('open', '');
   showToast('Dados do cliente preenchidos.');
 }
 
@@ -1053,6 +1075,9 @@ form.addEventListener('submit', async event => {
     business: String(values.business || '').trim(),
     client: String(values.client || '').trim(),
     clientPhone: String(values.clientPhone || '').trim(),
+    clientEmail: String(values.clientEmail || '').trim(),
+    clientDocument: String(values.clientDocument || '').trim(),
+    clientAddress: String(values.clientAddress || '').trim(),
     items: items,
     subtotal: subtotal,
     discountType: ['percent', 'fixed'].includes(values.discountType) ? values.discountType : 'none',
