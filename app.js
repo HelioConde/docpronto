@@ -978,6 +978,41 @@ function proposalShareText(proposal) {
   return `Olá, ${proposal.client}! Segue a proposta ${proposal.number} da ${proposal.business}, no valor de ${formatCurrency(total)}. Validade: ${validUntil}. Posso te enviar o PDF por aqui.`;
 }
 
+function buildClientShareUrl(proposalId, token) {
+  const url = new URL(location.href);
+  url.search = '';
+  const shareParams = new URLSearchParams();
+  shareParams.set('proposta', proposalId);
+  shareParams.set('token', token);
+  url.hash = shareParams.toString();
+  return url.toString();
+}
+
+async function publishClientProposal(proposal, { confirmReplacement = true } = {}) {
+  if (!supabaseClient || !currentUser) throw new Error('Entre na sua conta para criar um link.');
+  if (proposal.status === 'sent' && confirmReplacement &&
+      !window.confirm('Gerar um novo link invalida o link anterior. Continuar?')) {
+    return null;
+  }
+
+  const token = generateShareToken();
+  const { error } = await supabaseClient
+    .from(proposalTable)
+    .update({
+      share_token_hash: await sha256Hex(token),
+      status: 'sent',
+      responded_at: null,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', proposal.id);
+  if (error) throw error;
+
+  const updated = { ...proposal, status: 'sent', respondedAt: null, updatedAt: Date.now() };
+  cloudProposals = cloudProposals.map(item => item.id === proposal.id ? updated : item);
+  return { url: buildClientShareUrl(proposal.id, token), updated };
+}
+
+
 function renderProposal(proposal) {
   const items = Array.isArray(proposal.items) && proposal.items.length
     ? proposal.items
@@ -1032,9 +1067,10 @@ function renderProposal(proposal) {
       '<div class="proposal-actions">' +
         '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
         '<button class="secondary" id="copy-proposal-summary" type="button">Copiar resumo</button>' +
-        '<a class="secondary" id="share-whatsapp" target="_blank" rel="noopener">Enviar no WhatsApp</a>' +
+        '<a class="secondary" id="share-whatsapp" target="_blank" rel="noopener">' + (currentUser ? 'Enviar resumo' : 'Enviar no WhatsApp') + '</a>' +
         (currentUser && (status === 'draft' || status === 'sent')
-          ? '<button class="secondary" id="create-client-link" type="button">' + (status === 'sent' ? 'Gerar novo link' : 'Criar link para cliente') + '</button>'
+          ? '<button class="secondary" id="send-client-link-whatsapp" type="button">Enviar proposta no WhatsApp</button>' +
+            '<button class="secondary" id="create-client-link" type="button">' + (status === 'sent' ? 'Gerar novo link' : 'Copiar link do cliente') + '</button>'
           : '') +
       '</div>' +
       ((status === 'approved' || status === 'rejected')
@@ -1059,38 +1095,48 @@ function renderProposal(proposal) {
   document.querySelector('#share-whatsapp').href = 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(shareText);
   const clientLinkButton = document.querySelector('#create-client-link');
   clientLinkButton?.addEventListener('click', async () => {
-    if (status === 'sent' && !window.confirm('Gerar um novo link invalida o link anterior. Continuar?')) return;
-    const token = generateShareToken();
     clientLinkButton.disabled = true;
     try {
-      const { error } = await supabaseClient
-        .from(proposalTable)
-        .update({
-          share_token_hash: await sha256Hex(token),
-          status: 'sent',
-          responded_at: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', proposal.id);
-      if (error) throw error;
-
-      const url = new URL(location.href);
-      url.search = '';
-      const shareParams = new URLSearchParams();
-      shareParams.set('proposta', proposal.id);
-      shareParams.set('token', token);
-      url.hash = shareParams.toString();
-      await navigator.clipboard.writeText(url.toString());
-
-      const updated = { ...proposal, status: 'sent', respondedAt: null, updatedAt: Date.now() };
-      cloudProposals = cloudProposals.map(item => item.id === proposal.id ? updated : item);
+      const published = await publishClientProposal(proposal);
+      if (!published) {
+        clientLinkButton.disabled = false;
+        return;
+      }
+      await navigator.clipboard.writeText(published.url);
       renderHistory();
-      renderProposal(updated);
+      renderProposal(published.updated);
       showToast('Link do cliente copiado. A proposta foi marcada como enviada.');
     } catch (error) {
       console.error(error);
       clientLinkButton.disabled = false;
-      showToast('Não foi possível criar o link do cliente.');
+      showToast('Não foi possível criar ou copiar o link do cliente.');
+    }
+  });
+
+  const sendClientLinkButton = document.querySelector('#send-client-link-whatsapp');
+  sendClientLinkButton?.addEventListener('click', async () => {
+    const whatsappWindow = window.open('about:blank', '_blank');
+    if (whatsappWindow) whatsappWindow.opener = null;
+    sendClientLinkButton.disabled = true;
+    try {
+      const published = await publishClientProposal(proposal);
+      if (!published) {
+        whatsappWindow?.close();
+        sendClientLinkButton.disabled = false;
+        return;
+      }
+      const message = proposalShareText(published.updated) +
+        '\n\nAbra a proposta para ver os detalhes e responder: ' + published.url;
+      const target = 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(message);
+      renderHistory();
+      renderProposal(published.updated);
+      if (whatsappWindow) whatsappWindow.location.href = target;
+      else window.location.href = target;
+    } catch (error) {
+      console.error(error);
+      whatsappWindow?.close();
+      sendClientLinkButton.disabled = false;
+      showToast('Não foi possível preparar o envio da proposta.');
     }
   });
 }
