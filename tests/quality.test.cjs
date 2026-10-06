@@ -90,3 +90,17 @@ test('aceite público usa token hash e Edge Functions sem expor a tabela diretam
   assert.match(responseFn, /status: decision/);
   assert.match(responseFn, /\.eq\("status", "sent"\)/);
 });
+
+
+test('clientes reutilizáveis têm grant mínimo, chave normalizada e UI de sugestão', () => {
+  const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006063000_reusable_clients.sql');
+  const sql = fs.readFileSync(migrationPath, 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(sql, /generated always as \(lower\(trim\(name\)\)\) stored/i);
+  assert.match(sql, /revoke all privileges on table public\.docpronto_clients from public, anon, authenticated/i);
+  assert.match(sql, /grant select, insert, update, delete on table public\.docpronto_clients to authenticated/i);
+  assert.match(html, /client-suggestions/);
+  assert.match(app, /syncClientRecord/);
+  assert.match(app, /loadCloudClients/);
+});
