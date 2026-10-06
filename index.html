@@ -138,6 +138,23 @@
             <small class="field-help client-helper">Ao entrar na conta, clientes usados antes aparecem como sugestão.</small>
           </label>
           <datalist id="client-suggestions"></datalist>
+          <details class="client-extra">
+            <summary>Adicionar dados do cliente</summary>
+            <div class="client-extra-grid">
+              <label class="field">
+                <span>E-mail</span>
+                <input name="clientEmail" type="email" maxlength="160" autocomplete="email" placeholder="cliente@exemplo.com">
+              </label>
+              <label class="field">
+                <span>CPF / CNPJ / documento</span>
+                <input name="clientDocument" type="text" maxlength="30" placeholder="Opcional">
+              </label>
+              <label class="field client-address-field">
+                <span>Endereço</span>
+                <textarea name="clientAddress" maxlength="240" placeholder="Rua, número, bairro, cidade"></textarea>
+              </label>
+            </div>
+          </details>
 
           <fieldset class="line-items-fieldset">
             <legend>Serviços e materiais</legend>
