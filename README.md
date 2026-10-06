@@ -62,3 +62,8 @@ Execute com `npm install` e `npm run test:e2e`.
 ## Roadmap
 
 O backlog priorizado de homologação e evolução fica em [MELHORIAS.md](./MELHORIAS.md).
+
+
+## PWA / modo offline
+
+O DocPronto pode ser instalado como aplicativo em navegadores compatíveis. Depois da primeira abertura, o shell principal fica em cache e o modo local continua disponível sem conexão. Recursos de nuvem, login e sincronização continuam exigindo internet.
