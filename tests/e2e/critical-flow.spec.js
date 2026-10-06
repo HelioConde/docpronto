@@ -488,3 +488,39 @@ test('proposta enviada exporta follow-up em ICS', async ({ page }) => {
   expect(content).toContain('DTSTART;VALUE=DATE:');
   expect(content).toContain('END:VCALENDAR');
 });
+
+
+test('smoke de acessibilidade básico', async ({ page }) => {
+  await localMode(page);
+
+  const result = await page.evaluate(() => {
+    const ids = Array.from(document.querySelectorAll('[id]')).map(el => el.id).filter(Boolean);
+    const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+
+    const imagesMissingAlt = Array.from(document.querySelectorAll('img'))
+      .filter(img => !img.hasAttribute('alt'))
+      .length;
+
+    const dialogsMissingName = Array.from(document.querySelectorAll('dialog'))
+      .filter(dialog => !dialog.hasAttribute('aria-label') && !dialog.hasAttribute('aria-labelledby'))
+      .length;
+
+    const buttonsMissingName = Array.from(document.querySelectorAll('button'))
+      .filter(button => !button.hidden)
+      .filter(button => !button.getAttribute('aria-label') && !button.textContent.trim())
+      .length;
+
+    return { duplicates, imagesMissingAlt, dialogsMissingName, buttonsMissingName };
+  });
+
+  expect(result.duplicates).toEqual([]);
+  expect(result.imagesMissingAlt).toBe(0);
+  expect(result.dialogsMissingName).toBe(0);
+  expect(result.buttonsMissingName).toBe(0);
+
+  await page.locator('#beta-feedback-open').click();
+  await expect(page.locator('#beta-feedback-dialog')).toBeVisible();
+  await expect(page.locator('#beta-feedback-form input[name="rating"][value="1"]')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#beta-feedback-dialog')).not.toBeVisible();
+});
