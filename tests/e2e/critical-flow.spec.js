@@ -275,3 +275,23 @@ test('dashboard calcula conversão comercial sem contar rascunhos', async ({ pag
   await expect(card).toContainText('50%');
   await expect(card).toContainText('2 / 4');
 });
+
+
+test('modelo rápido preenche estrutura sem alterar cliente ou negócio', async ({ page }) => {
+  await localMode(page);
+  await page.locator('[name="business"]').fill('Conde Elétrica');
+  await page.locator('[name="client"]').fill('Cliente Modelo');
+
+  await page.locator('#proposal-template').selectOption('electrical');
+  await expect(page.locator('#apply-template')).toBeEnabled();
+  await page.locator('#apply-template').click();
+
+  await expect(page.locator('[name="business"]')).toHaveValue('Conde Elétrica');
+  await expect(page.locator('[name="client"]')).toHaveValue('Cliente Modelo');
+  await expect(page.locator('.line-item')).toHaveCount(3);
+  await expect(page.locator('.line-item').nth(0).locator('[data-description]')).toHaveValue('Visita técnica e diagnóstico');
+  await expect(page.locator('.line-item').nth(1).locator('[data-description]')).toHaveValue('Instalação ou manutenção elétrica');
+  await expect(page.locator('[name="deadline"]')).toHaveValue('Até 3 dias úteis após aprovação');
+  await expect(page.locator('[name="terms"]')).toHaveValue('50% no início e 50% na conclusão');
+  await expect(page.locator('.line-item').first().locator('[data-unit-price]')).toBeFocused();
+});
