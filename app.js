@@ -397,8 +397,8 @@ function readFormItems() {
 }
 
 function updateTotal() {
-  const total = readFormItems().reduce((sum, item) => sum + item.subtotal, 0);
-  formTotal.textContent = formatCurrency(total);
+  const validation = DocProntoCore.validateItems(readFormItems(), maxItems);
+  formTotal.textContent = formatCurrency(validation.total);
 }
 
 function updateItemControls() {
@@ -495,21 +495,13 @@ form.addEventListener('submit', async event => {
   if (!form.reportValidity()) return;
 
   const values = Object.fromEntries(new FormData(form));
-  const items = readFormItems();
-  const invalidItem = items.some(item =>
-    !item.description || !Number.isFinite(item.quantity) || item.quantity <= 0 ||
-    !Number.isFinite(item.unitPrice) || item.unitPrice < 0
-  );
-  if (invalidItem) {
-    showToast('Confira a descrição, a quantidade e o preço de cada item.');
+  const validation = DocProntoCore.validateItems(readFormItems(), maxItems);
+  if (!validation.ok) {
+    showToast(validation.error);
     return;
   }
-
-  const total = items.reduce((sum, item) => sum + item.subtotal, 0);
-  if (!Number.isFinite(total)) {
-    showToast('Confira os valores informados no orçamento.');
-    return;
-  }
+  const items = validation.items;
+  const total = validation.total;
 
   const now = Date.now();
   const proposals = visibleProposals();
