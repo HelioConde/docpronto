@@ -11,6 +11,7 @@ const accountOpenButton = document.querySelector('#account-open');
 const accountCloseButton = document.querySelector('#account-close');
 const accountForm = document.querySelector('#auth-form');
 const accountProfile = document.querySelector('#account-profile');
+const passwordRecoveryForm = document.querySelector('#password-recovery-form');
 const accountMessage = document.querySelector('#account-message');
 const syncStatus = document.querySelector('#sync-status');
 const localImportBanner = document.querySelector('#local-import-banner');
@@ -20,6 +21,7 @@ const proposalTable = 'docpronto_proposals';
 let currentUser = null;
 let cloudProposals = [];
 let cloudLoading = false;
+let passwordRecovery = false;
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
@@ -190,8 +192,9 @@ function updateAccountUi() {
   syncStatus.textContent = currentUser
     ? (cloudLoading ? 'Carregando propostas…' : 'Nuvem · ' + currentUser.email)
     : (supabaseClient ? 'Salvo neste dispositivo' : 'Modo local');
-  accountForm.hidden = !supabaseClient || Boolean(currentUser);
-  accountProfile.hidden = !currentUser;
+  accountForm.hidden = !supabaseClient || Boolean(currentUser) || passwordRecovery;
+  accountProfile.hidden = !currentUser || passwordRecovery;
+  passwordRecoveryForm.hidden = !passwordRecovery;
   if (currentUser) {
     document.querySelector('#account-email').textContent = currentUser.email || 'Conta conectada';
     localImportBanner.hidden = localCount === 0;
@@ -321,6 +324,27 @@ function initAccount() {
     }
   });
 
+  passwordRecoveryForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!supabaseClient) return;
+    const submit = passwordRecoveryForm.querySelector('[type="submit"]');
+    submit.disabled = true;
+    try {
+      const { error } = await supabaseClient.auth.updateUser({
+        password: passwordRecoveryForm.elements['new-password'].value
+      });
+      if (error) throw error;
+      passwordRecovery = false;
+      passwordRecoveryForm.reset();
+      updateAccountUi();
+      showAccountMessage('Senha atualizada. Você já pode continuar usando sua conta.');
+    } catch (error) {
+      showAccountMessage(authErrorText(error));
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
   document.querySelector('#sign-out').addEventListener('click', async () => {
     if (!supabaseClient) return;
     const { error } = await supabaseClient.auth.signOut();
@@ -336,9 +360,19 @@ function initAccount() {
   }
 
   let activeUserId = null;
-  const setSession = session => {
+  const setSession = (session, authEvent) => {
+    if (authEvent === 'PASSWORD_RECOVERY') {
+      passwordRecovery = true;
+      currentUser = session?.user || null;
+      updateAccountUi();
+      return;
+    }
+    if (authEvent === 'USER_UPDATED') passwordRecovery = false;
     const user = session?.user || null;
-    if (user?.id === activeUserId) return;
+    if (user?.id === activeUserId) {
+      updateAccountUi();
+      return;
+    }
     activeUserId = user?.id || null;
     currentUser = user;
     cloudProposals = [];
@@ -346,15 +380,15 @@ function initAccount() {
     if (user) window.setTimeout(() => loadCloudProposals(), 0);
     else renderHistory();
   };
-  supabaseClient.auth.onAuthStateChange((_event, session) => {
-    window.setTimeout(() => setSession(session), 0);
+  supabaseClient.auth.onAuthStateChange((authEvent, session) => {
+    window.setTimeout(() => setSession(session, authEvent), 0);
   });
   supabaseClient.auth.getSession().then(({ data, error }) => {
     if (error) {
       showAccountMessage('Não foi possível verificar a sessão. O modo local continua disponível.');
       return;
     }
-    setSession(data.session);
+    setSession(data.session, 'INITIAL_SESSION');
   });
 }
 
