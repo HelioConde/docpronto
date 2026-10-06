@@ -11,7 +11,7 @@ Revisão de código e da captura enviada em 6 de outubro de 2026. Os pontos abai
 - Histórico, edição e uso como modelo cobrem os casos mais repetidos.
 - A conta é opcional. A sincronização separa propostas por usuário no banco.
 - A imagem anexada mostrava a página sem CSS. Foi criado um caminho de stylesheet novo para contornar o cache do Pages.
-- O histórico apresenta as cinco propostas mais recentes; o banco mantém até vinte por conta. Busca, filtro por cliente e estados vazios mais orientados podem vir depois.
+- O histórico mostra cinco propostas e carrega até vinte mais recentes da nuvem; registros antigos continuam preservados no banco. Busca, filtros por cliente e paginação ainda podem ser adicionados.
 - A sincronização exige redirect URL e entrega de e-mail válidos no Supabase; a interface informa erros de configuração.
 
 ## QA e segurança
