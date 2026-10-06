@@ -18,6 +18,7 @@ const localImportBanner = document.querySelector('#local-import-banner');
 const localImportButton = document.querySelector('#local-import');
 const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const proposalSearch = document.querySelector('#proposal-search');
+const historySummary = document.querySelector('#history-summary');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
 const pageParams = new URLSearchParams(location.search);
@@ -590,6 +591,40 @@ function proposalStatusLabel(status) {
   })[status] || 'Rascunho';
 }
 
+function proposalValidityInfo(proposal) {
+  if (!proposal?.validUntil) return { label: '', tone: '' };
+  const end = new Date(proposal.validUntil + 'T23:59:59');
+  if (Number.isNaN(end.getTime())) return { label: '', tone: '' };
+  const today = new Date();
+  const diffDays = Math.ceil((end.getTime() - today.getTime()) / 86400000);
+  const status = proposal.status || 'draft';
+  if (status === 'approved' || status === 'rejected') return { label: '', tone: '' };
+  if (diffDays < 0) return { label: 'Expirada', tone: 'expired' };
+  if (diffDays === 0) return { label: 'Expira hoje', tone: 'warning' };
+  if (diffDays <= 3) return { label: 'Expira em ' + diffDays + ' dia' + (diffDays === 1 ? '' : 's'), tone: 'warning' };
+  return { label: '', tone: '' };
+}
+
+function renderHistorySummary(source) {
+  if (!historySummary) return;
+  const total = source.length;
+  const sent = source.filter(item => (item.status || 'draft') === 'sent').length;
+  const approvedTotal = source
+    .filter(item => (item.status || 'draft') === 'approved')
+    .reduce((sum, item) => sum + (Number(item.total) || Number(item.amount) || 0), 0);
+
+  historySummary.innerHTML =
+    '<button class="summary-card" type="button" data-summary-status="all" aria-label="Mostrar todas as propostas">' +
+      '<span>Todas</span><strong>' + total + '</strong>' +
+    '</button>' +
+    '<button class="summary-card" type="button" data-summary-status="sent" aria-label="Mostrar propostas enviadas">' +
+      '<span>Enviadas</span><strong>' + sent + '</strong>' +
+    '</button>' +
+    '<button class="summary-card summary-approved" type="button" data-summary-status="approved" aria-label="Mostrar propostas aprovadas">' +
+      '<span>Aprovadas</span><strong>' + formatCurrency(approvedTotal) + '</strong>' +
+    '</button>';
+}
+
 function normalizeWhatsAppPhone(value) {
   const digits = String(value || '').replace(/\D/g, '');
   if (digits.length < 10 || digits.length > 15) return '';
@@ -692,6 +727,7 @@ function renderHistory() {
   const selectedStatus = proposalStatusFilter?.value || 'all';
   const searchTerm = String(proposalSearch?.value || '').trim().toLocaleLowerCase('pt-BR');
   const source = currentUser ? cloudProposals : readProposals().slice().reverse();
+  renderHistorySummary(source);
   const proposals = source
     .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
     .filter(proposal => {
@@ -700,9 +736,12 @@ function renderHistory() {
         .some(value => String(value || '').toLocaleLowerCase('pt-BR').includes(searchTerm));
     })
     .slice(0, 10);
-  const emptyTitle = source.length ? 'Nenhuma proposta neste status' : 'Sua primeira proposta começa aqui';
+  const hasFilters = selectedStatus !== 'all' || Boolean(searchTerm);
+  const emptyTitle = source.length
+    ? (hasFilters ? 'Nenhuma proposta encontrada' : 'Nenhuma proposta disponível')
+    : 'Sua primeira proposta começa aqui';
   const emptyText = source.length
-    ? 'Altere o filtro para ver as outras propostas.'
+    ? 'Tente outro termo de busca ou ajuste o filtro de status.'
     : currentUser
       ? 'Crie um orçamento ao lado. Ele será salvo na sua conta e aparecerá aqui.'
       : 'Preencha o orçamento ao lado. Depois de gerar, ele fica salvo neste navegador e aparece aqui.';
@@ -710,8 +749,12 @@ function renderHistory() {
     ? proposals.map(proposal => {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
       const status = proposal.status || 'draft';
+      const validity = proposalValidityInfo(proposal);
+      const validityBadge = validity.label
+        ? '<span class="validity-badge validity-' + validity.tone + '">' + escapeHtml(validity.label) + '</span>'
+        : '';
       return '<div class="item"><div class="item-summary"><div class="item-title-line"><strong>' + escapeHtml(proposal.client) + '</strong><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
-        '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small></div>' +
+        '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small>' + validityBadge + '</div>' +
         '<div class="item-actions">' +
           '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta">' +
             '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>Rascunho</option>' +
@@ -813,6 +856,12 @@ itemFields.addEventListener('click', event => {
 addItemButton.addEventListener('click', () => addItem());
 proposalStatusFilter?.addEventListener('change', renderHistory);
 proposalSearch?.addEventListener('input', renderHistory);
+historySummary?.addEventListener('click', event => {
+  const button = event.target.closest('[data-summary-status]');
+  if (!button || !proposalStatusFilter) return;
+  proposalStatusFilter.value = button.dataset.summaryStatus || 'all';
+  renderHistory();
+});
 
 list.addEventListener('change', async event => {
   const select = event.target.closest('[data-status-id]');
@@ -856,10 +905,20 @@ list.addEventListener('click', async event => {
         return;
       }
       cloudProposals = cloudProposals.filter(item => item.id !== id);
+      if (openedProposalId === id) {
+        openedProposalId = null;
+        result.classList.remove('show');
+        result.innerHTML = '';
+      }
       renderHistory();
       showToast('Proposta removida da nuvem.');
     } else {
       localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item => item.id !== id)));
+      if (openedProposalId === id) {
+        openedProposalId = null;
+        result.classList.remove('show');
+        result.innerHTML = '';
+      }
       renderHistory();
       showToast('Proposta removida deste navegador.');
     }
