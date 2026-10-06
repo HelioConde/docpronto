@@ -212,3 +212,23 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 @media(max-width:500px){.account-section-heading{align-items:flex-start}.profile-sync-badge{display:none}}
 
 .public-proposal-card{--proposal-accent:var(--accent);border-top:3px solid var(--proposal-accent)}
+
+.discount-controls{display:grid;grid-template-columns:1.15fr .85fr;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.discount-controls label{display:grid;gap:5px}
+.discount-controls label>span{color:#27333d;font-size:10px;font-weight:700}
+.discount-controls select,.discount-controls input{width:100%;min-height:38px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:12px;outline:none}
+.discount-controls select:focus,.discount-controls input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #245d6c1a}
+.discount-controls input:disabled{background:#f3f5f6;color:#9aa4aa;cursor:not-allowed}
+.pricing-summary{display:grid;gap:0;margin-top:10px;border:1px solid #d5e3e6;border-radius:12px;background:var(--soft);overflow:hidden}
+.pricing-summary>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 13px;color:var(--muted);font-size:11px}
+.pricing-summary>div+div{border-top:1px solid #d8e6e9}
+.pricing-summary>div strong{color:var(--ink);font:700 12px Manrope}
+.pricing-summary .total-line{margin:0;border:0;border-radius:0;background:transparent;padding:12px 13px;color:var(--ink);font-size:13px}
+.pricing-summary .total-line strong{font:800 18px Manrope;color:var(--accent)}
+.document-totals{display:grid;margin:10px 0 8px;border-top:1px solid var(--line)}
+.document-totals>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;color:var(--muted);font-size:12px}
+.document-totals>div strong{color:var(--ink);font:700 12px Manrope}
+.document-totals .document-discount strong{color:var(--success)}
+.document-totals .amount-line{margin:0;padding-top:12px;border-top:1px solid var(--line);color:var(--ink)}
+@media(max-width:500px){.discount-controls{grid-template-columns:1fr}.pricing-summary>div{padding:9px 11px}}
+@media print{.document-totals{break-inside:avoid}.document-totals>div{padding:7px 0}}
