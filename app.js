@@ -30,6 +30,8 @@ const exportCsvButton = document.querySelector('#export-csv');
 const clearComposerButton = document.querySelector('#clear-composer');
 const businessProfileForm = document.querySelector('#business-profile-form');
 const brandColorValue = document.querySelector('#brand-color-value');
+const savedClientsList = document.querySelector('#saved-clients-list');
+const savedClientsCount = document.querySelector('#saved-clients-count');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
 const pageParams = new URLSearchParams(location.search);
@@ -352,6 +354,48 @@ function renderClientSuggestions() {
     .join('');
 }
 
+function renderSavedClients() {
+  if (!savedClientsList || !savedClientsCount) return;
+  savedClientsCount.textContent = String(cloudClients.length);
+  if (!currentUser) {
+    savedClientsList.innerHTML = '';
+    return;
+  }
+  if (!cloudClients.length) {
+    savedClientsList.innerHTML = '<div class="saved-client-empty">Os clientes aparecem aqui conforme você salva propostas.</div>';
+    return;
+  }
+
+  savedClientsList.innerHTML = cloudClients
+    .slice()
+    .sort((a, b) => Date.parse(b.updated_at || 0) - Date.parse(a.updated_at || 0))
+    .slice(0, 12)
+    .map(client => {
+      const detail = [client.phone, client.email].filter(Boolean).map(escapeHtml).join(' · ');
+      return '<article class="saved-client-item">' +
+        '<div class="saved-client-copy"><strong>' + escapeHtml(client.name) + '</strong>' +
+          (detail ? '<span>' + detail + '</span>' : '<span>Sem contato adicional</span>') +
+        '</div>' +
+        '<div class="saved-client-actions">' +
+          '<button class="secondary" type="button" data-client-use="' + escapeHtml(client.id) + '">Usar</button>' +
+          '<button class="secondary" type="button" data-client-delete="' + escapeHtml(client.id) + '">Excluir</button>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+}
+
+function fillClientFromRecord(client) {
+  if (!client) return;
+  form.querySelector('[name="client"]').value = client.name || '';
+  form.querySelector('[name="clientPhone"]').value = client.phone || '';
+  form.querySelector('[name="clientEmail"]').value = client.email || '';
+  form.querySelector('[name="clientDocument"]').value = client.document || '';
+  form.querySelector('[name="clientAddress"]').value = client.address || '';
+  if (client.email || client.document || client.address) document.querySelector('.client-extra')?.setAttribute('open', '');
+  scheduleComposerDraftSave();
+}
+
+
 async function loadCloudClients() {
   if (!supabaseClient || !currentUser) return;
   const ownerId = currentUser.id;
@@ -367,6 +411,7 @@ async function loadCloudClients() {
   }
   cloudClients = data || [];
   renderClientSuggestions();
+  renderSavedClients();
 }
 
 async function syncClientRecord(proposal) {
@@ -399,6 +444,7 @@ async function syncClientRecord(proposal) {
     cloudClients = [data, ...cloudClients];
   }
   renderClientSuggestions();
+  renderSavedClients();
 }
 
 function applySavedClient() {
@@ -407,11 +453,7 @@ function applySavedClient() {
   const key = String(input.value || '').trim().toLocaleLowerCase('pt-BR');
   const client = cloudClients.find(item => item.name_key === key);
   if (!client) return;
-  form.querySelector('[name="clientPhone"]').value = client.phone || '';
-  form.querySelector('[name="clientEmail"]').value = client.email || '';
-  form.querySelector('[name="clientDocument"]').value = client.document || '';
-  form.querySelector('[name="clientAddress"]').value = client.address || '';
-  if (client.email || client.document || client.address) document.querySelector('.client-extra')?.setAttribute('open', '');
+  fillClientFromRecord(client);
   showToast('Dados do cliente preenchidos.');
 }
 
@@ -564,7 +606,10 @@ async function importLocalProposals() {
 }
 
 function initAccount() {
-  accountOpenButton.addEventListener('click', () => accountDialog.showModal());
+  accountOpenButton.addEventListener('click', () => {
+    renderSavedClients();
+    accountDialog.showModal();
+  });
   accountCloseButton.addEventListener('click', () => accountDialog.close());
   accountDialog.addEventListener('click', event => {
     if (event.target === accountDialog) accountDialog.close();
@@ -731,6 +776,7 @@ function initAccount() {
     cloudProposals = [];
     cloudClients = [];
     renderClientSuggestions();
+    renderSavedClients();
     updateAccountUi();
     if (user) {
       window.setTimeout(() => {
