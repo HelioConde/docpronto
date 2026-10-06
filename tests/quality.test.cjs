@@ -43,6 +43,8 @@ test('marca a aplicação como acessível, sincronizável e com fallback local',
   assert.match(app, /\.upsert\(/);
   assert.match(app, /\.delete\(\)/);
   assert.match(app, /localStorage/);
+  assert.match(app, /data-status-id/);
+  assert.match(app, /share-whatsapp/);
   assert.match(config, /sb_publishable_/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /@media\(max-width:680px\)/);
@@ -64,4 +66,13 @@ test('a migração restringe os dados a usuários autenticados e ao proprietári
   assert.match(sql, /to authenticated/i);
   assert.match(sql, /auth\.uid\(\).*owner_id/s);
   assert.equal((sql.match(/create policy/gi) || []).length, 4);
+});
+
+
+test('status comercial é persistido com valores restritos no banco', () => {
+  const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006052000_proposal_status.sql');
+  const sql = fs.readFileSync(migrationPath, 'utf8');
+  assert.match(sql, /add column if not exists status text not null default 'draft'/i);
+  assert.match(sql, /status in \('draft', 'sent', 'approved', 'rejected'\)/i);
+  assert.match(sql, /docpronto_proposals_owner_status_updated_idx/i);
 });
