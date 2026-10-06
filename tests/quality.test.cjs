@@ -48,6 +48,14 @@ test('marca a aplicação como acessível, sincronizável e com fallback local',
   assert.match(css, /@media\(max-width:680px\)/);
 });
 
+test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
+  const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
+  const sql = fs.readFileSync(grantsPath, 'utf8');
+  assert.match(sql, /revoke all privileges on table public\.docpronto_proposals from public, anon, authenticated/i);
+  assert.match(sql, /grant select, insert, update, delete on table public\.docpronto_proposals to authenticated/i);
+  assert.doesNotMatch(sql, /grant[^;]*\btruncate\b/i);
+});
+
 test('a migração restringe os dados a usuários autenticados e ao proprietário', () => {
   const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006021632_docpronto_proposals.sql');
   const sql = fs.readFileSync(migrationPath, 'utf8');
