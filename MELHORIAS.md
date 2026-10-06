@@ -20,7 +20,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 
 ## P1 — produto
 
-- [ ] Logo do prestador no documento.
+- [x] Logo do prestador no documento/PDF com processamento local e snapshot por proposta; retorno no link público preparado no código, aguardando deploy da Edge Function quando o Supabase voltar.
 - [x] Modelos rápidos de proposta por categoria (elétrica, hidráulica, pintura e serviço digital), sem preços pré-definidos.
 - [x] Criar novo orçamento para cliente salvo em um clique, sempre saindo de eventual modo de edição.
 - [ ] Campo opcional de assinatura/aceite textual do cliente.
