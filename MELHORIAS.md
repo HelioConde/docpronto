@@ -13,9 +13,11 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 - [x] Clientes reutilizáveis e identidade do negócio.
 - [x] Browser E2E em Chromium para o fluxo local e proposta pública.
 - [x] Smoke responsivo automatizado em 360 px, 768 px e 1440 px.
-- [ ] Homologar cadastro, login, recuperação de senha e sessão expirada com conta real.
-- [ ] Homologar isolamento entre duas contas reais.
-- [ ] Testar envio real de link público em navegador separado contra o backend de produção.
+- [ ] Homologar cadastro, confirmação de e-mail, login, recuperação de senha e sessão expirada com conta humana real.
+- [x] Validar isolamento RLS entre duas identidades autenticadas: cada identidade viu e alterou apenas seus próprios clientes/propostas; teste transacional concluído com rollback.
+- [ ] Repetir o isolamento ponta a ponta com duas contas humanas reais no navegador.
+- [x] Validar o fluxo público contra as Edge Functions reais em produção: abrir proposta → aprovar com aceite textual → reabrir proposta aprovada.
+- [ ] Fazer a rodada manual final do link público em navegador separado com usuário real.
 - [x] Revisar PDF A4 automaticamente com 10 itens, desconto, observações e dados completos; geração real via Chromium coberta no E2E.
 
 ## P1 — produto
@@ -28,7 +30,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 - [x] Dashboard simples de conversão: aprovadas ÷ propostas que já entraram no funil de envio.
 - [x] Fila visual de follow-up para propostas enviadas há 3 dias ou mais sem resposta, com ação rápida de WhatsApp/cópia.
 - [x] PWA instalável com manifest, service worker e modo local disponível offline após a primeira abertura.
-- [x] Feedback beta dentro do produto com nota, categoria e comentário; fila offline local e backend preparado sem coleta de dados pessoais.
+- [x] Feedback beta dentro do produto com nota, categoria e comentário; fila offline local, migration aplicada e Edge Function ativa sem coleta de dados pessoais.
 - [x] Backup/restauração local em JSON para reduzir risco de perda de histórico no modo sem conta.
 
 ## P2 — depois da validação
