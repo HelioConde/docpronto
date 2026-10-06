@@ -253,3 +253,8 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .public-client-details{margin-top:-8px;margin-bottom:16px}
 @media(max-width:500px){.client-extra-grid{grid-template-columns:1fr}.client-address-field{grid-column:auto}.proposal-client-details{display:grid;gap:5px}}
 @media print{.proposal-client-details{background:#fff;border:1px solid #e0e0e0;break-inside:avoid}}
+
+.response-time{display:block;margin-top:4px;color:#7b858e!important;font-size:9px!important}
+.proposal-status-select:disabled{opacity:.72;background:#f3f5f6;color:#68747c;cursor:not-allowed}
+.item-actions [data-reopen]{background:#fff8e8;color:#7b5a18;border-color:#ead9ad}
+.item-actions [data-reopen]:hover{background:#fff2d0;color:#654812}
