@@ -120,6 +120,7 @@ Deno.serve(async (request: Request) => {
     items: Array.isArray(p.items) ? p.items : [],
     deadline: typeof p.deadline === "string" ? p.deadline : "",
     terms: typeof p.terms === "string" ? p.terms : "",
+    notes: typeof p.notes === "string" ? p.notes.slice(0, 600) : "",
     businessPhone: typeof p.businessPhone === "string" ? p.businessPhone : "",
     validUntil,
     brandColor,
