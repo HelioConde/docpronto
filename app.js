@@ -782,7 +782,9 @@ function renderProposal(proposal) {
         '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
         '<button class="secondary" id="copy-proposal-summary" type="button">Copiar resumo</button>' +
         '<a class="secondary" id="share-whatsapp" target="_blank" rel="noopener">Enviar no WhatsApp</a>' +
-        (currentUser ? '<button class="secondary" id="create-client-link" type="button">Criar link para cliente</button>' : '') +
+        (currentUser && (status === 'draft' || status === 'sent')
+          ? '<button class="secondary" id="create-client-link" type="button">' + (status === 'sent' ? 'Gerar novo link' : 'Criar link para cliente') + '</button>'
+          : '') +
       '</div>' +
     '</article>';
   result.classList.add('show');
@@ -803,6 +805,7 @@ function renderProposal(proposal) {
   document.querySelector('#share-whatsapp').href = 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(shareText);
   const clientLinkButton = document.querySelector('#create-client-link');
   clientLinkButton?.addEventListener('click', async () => {
+    if (status === 'sent' && !window.confirm('Gerar um novo link invalida o link anterior. Continuar?')) return;
     const token = generateShareToken();
     clientLinkButton.disabled = true;
     try {
