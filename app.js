@@ -786,6 +786,9 @@ function renderProposal(proposal) {
           ? '<button class="secondary" id="create-client-link" type="button">' + (status === 'sent' ? 'Gerar novo link' : 'Criar link para cliente') + '</button>'
           : '') +
       '</div>' +
+      ((status === 'approved' || status === 'rejected')
+        ? '<p class="proposal-closed-note">Esta proposta está encerrada. Para alterar valores ou condições, use-a como modelo e gere uma nova proposta.</p>'
+        : '') +
     '</article>';
   result.classList.add('show');
   document.querySelector('#print').addEventListener('click', () => {
