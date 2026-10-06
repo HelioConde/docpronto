@@ -27,6 +27,7 @@ jobs:
           test -f supabase/functions/proposal-public/index.ts
           test -f supabase/functions/proposal-response/index.ts
           test -f supabase/migrations/20261006054500_public_proposal_response.sql
+          test -f supabase/migrations/20261006063000_reusable_clients.sql
           test -f supabase/migrations/20261006052000_proposal_status.sql
       - name: Check SEO and backend boot
         run: |
@@ -42,3 +43,6 @@ jobs:
           grep -qi 'public-proposal-view' index.html
           grep -qi 'proposal-public' app.js
           grep -qi 'proposal-response' app.js
+          grep -qi 'client-suggestions' index.html
+          grep -qi 'docpronto_clients' app.js
+          grep -qi 'syncClientRecord' app.js
