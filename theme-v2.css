@@ -374,3 +374,13 @@ html[lang="en"] .hero h1{max-width:780px}
 .proposal-acceptance span{color:var(--muted);font-size:9px}
 .proposal-acceptance strong{color:var(--success);font:700 11px Manrope}
 @media(max-width:520px){.proposal-acceptance{align-items:flex-start;flex-direction:column;gap:4px}}
+
+.monetization-note{display:grid;grid-template-columns:minmax(230px,.8fr) minmax(0,1.2fr);gap:20px;align-items:center;margin:34px 0 6px;padding:22px 0;border-top:1px solid var(--line)}
+.monetization-note h2{margin:4px 0 7px;font:800 24px/1.1 Manrope;letter-spacing:-.45px}
+.monetization-note p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.ad-placement{position:relative;min-height:100px;padding:22px 10px 8px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.ad-placement[hidden]{display:none!important}
+.ad-label{position:absolute;top:7px;left:10px;color:#8b949a;font-size:8px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.public-ad-placement{margin:16px 0 0}
+@media(max-width:720px){.monetization-note{grid-template-columns:1fr;gap:12px}.ad-placement{min-height:88px}}
+@media print{.monetization-note,.ad-placement{display:none!important}}
