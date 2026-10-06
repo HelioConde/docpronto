@@ -33,9 +33,9 @@ test('modo local cria, busca, edita, muda status e exporta proposta', async ({ p
   await expect(page.locator('#list .item')).toHaveCount(1);
 
   await page.locator('#list .item').getByRole('button', { name: 'Editar' }).click();
-  await expect(page.getByRole('button', { name: 'Atualizar proposta' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Salvar alterações' })).toBeVisible();
   await page.locator('[name="client"]').fill('Cliente E2E Atualizado');
-  await page.getByRole('button', { name: 'Atualizar proposta' }).click();
+  await page.getByRole('button', { name: 'Salvar alterações' }).click();
 
   await page.locator('#proposal-search').fill('Atualizado');
   const item = page.locator('#list .item').first();
