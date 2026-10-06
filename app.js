@@ -26,6 +26,7 @@ const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const proposalSearch = document.querySelector('#proposal-search');
 const historySummary = document.querySelector('#history-summary');
 const historyMoreButton = document.querySelector('#history-more');
+const exportCsvButton = document.querySelector('#export-csv');
 const clearComposerButton = document.querySelector('#clear-composer');
 const businessProfileForm = document.querySelector('#business-profile-form');
 const brandColorValue = document.querySelector('#brand-color-value');
@@ -785,6 +786,62 @@ function formatCurrency(value) {
   });
 }
 
+function csvCell(value) {
+  const text = String(value ?? '').replace(/"/g, '""');
+  return '"' + text + '"';
+}
+
+function csvDate(value) {
+  const date = new Date(Number(value) || value || '');
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('pt-BR');
+}
+
+function exportProposalsCsv() {
+  const source = currentUser ? cloudProposals : readProposals().slice().reverse();
+  if (!source.length) {
+    showToast('Ainda não há propostas para exportar.');
+    return;
+  }
+
+  const header = [
+    'Número', 'Cliente', 'Empresa', 'Status', 'Subtotal', 'Desconto',
+    'Total', 'Validade', 'Criada em', 'Respondida em'
+  ];
+  const rows = source.map(proposal => {
+    const subtotal = Number.isFinite(Number(proposal.subtotal))
+      ? Number(proposal.subtotal)
+      : Number(proposal.total) || Number(proposal.amount) || 0;
+    const discount = Number.isFinite(Number(proposal.discountAmount)) ? Number(proposal.discountAmount) : 0;
+    const total = Number(proposal.total) || Number(proposal.amount) || 0;
+    return [
+      proposal.number || '',
+      proposal.client || '',
+      proposal.business || '',
+      proposalStatusLabel(proposal.status || 'draft'),
+      subtotal.toFixed(2).replace('.', ','),
+      discount.toFixed(2).replace('.', ','),
+      total.toFixed(2).replace('.', ','),
+      proposal.validUntil || '',
+      csvDate(proposal.createdAt),
+      proposal.respondedAt ? csvDate(proposal.respondedAt) : ''
+    ];
+  });
+
+  const csv = '\uFEFF' + [header, ...rows]
+    .map(row => row.map(csvCell).join(';'))
+    .join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'docpronto-propostas-' + localDate(new Date()) + '.csv';
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado.');
+}
+
 function readFormItems() {
   return Array.from(itemFields.querySelectorAll('.line-item')).map(row => {
     const description = row.querySelector('[data-description]').value.trim();
@@ -1215,6 +1272,7 @@ historyMoreButton?.addEventListener('click', () => {
   historyVisibleLimit += 10;
   renderHistory();
 });
+exportCsvButton?.addEventListener('click', exportProposalsCsv);
 historySummary?.addEventListener('click', event => {
   const button = event.target.closest('[data-summary-status]');
   if (!button || !proposalStatusFilter) return;
