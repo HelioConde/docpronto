@@ -304,6 +304,18 @@ test('histórico permite revelar propostas antigas em blocos de 10', () => {
   assert.match(css, /\.history-more/);
 });
 
+test('usuário pode limpar o rascunho sem deslocar campos dinâmicos', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /id="clear-composer"/);
+  assert.match(html, /class="composer-actions"/);
+  assert.match(app, /composerActions\.before\(validityField\)/);
+  assert.match(app, /composerActions\.before\(cancelEditButton\)/);
+  assert.match(app, /apagar o rascunho salvo neste dispositivo/);
+  assert.match(css, /\.composer-actions/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
