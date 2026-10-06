@@ -183,6 +183,7 @@ function resetComposer() {
   addItem();
   validityInput.min = localDate(new Date());
   validityInput.value = defaultValidityDate();
+  document.querySelector('.client-extra')?.removeAttribute('open');
   if (discountTypeInput) discountTypeInput.value = 'none';
   if (discountValueInput) {
     discountValueInput.value = '0';
@@ -909,6 +910,11 @@ function renderProposal(proposal) {
   openedProposalId = proposal.id;
   const status = proposal.status || 'draft';
   const brandColor = normalizeBrandColor(proposal.brandColor);
+  const clientDetails = [
+    proposal.clientDocument ? '<span><b>Documento:</b> ' + escapeHtml(proposal.clientDocument) + '</span>' : '',
+    proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
+    proposal.clientAddress ? '<span class="client-address"><b>Endereço:</b> ' + escapeHtml(proposal.clientAddress) + '</span>' : ''
+  ].filter(Boolean).join('');
   const shareText = proposalShareText(proposal);
   const whatsappPhone = normalizeWhatsAppPhone(proposal.clientPhone);
   result.innerHTML =
@@ -922,6 +928,7 @@ function renderProposal(proposal) {
         '<div class="proposal-client-block"><span class="proposal-label">CLIENTE</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
       '</div>' +
       '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') + '</div>' +
+      (clientDetails ? '<div class="proposal-client-details">' + clientDetails + '</div>' : '') +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
         '<thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead>' +
         '<tbody>' + itemRows + '</tbody>' +
@@ -1263,6 +1270,11 @@ function publicStatusText(status) {
 function renderPublicProposal(proposal) {
   const container = document.querySelector('#public-proposal-content');
   const brandColor = normalizeBrandColor(proposal.brandColor);
+  const publicClientDetails = [
+    proposal.clientDocument ? '<span><b>Documento:</b> ' + escapeHtml(proposal.clientDocument) + '</span>' : '',
+    proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
+    proposal.clientAddress ? '<span class="client-address"><b>Endereço:</b> ' + escapeHtml(proposal.clientAddress) + '</span>' : ''
+  ].filter(Boolean).join('');
   container.style.setProperty('--proposal-accent', brandColor);
   document.title = 'Proposta ' + proposal.number + ' · ' + proposal.business;
   const items = Array.isArray(proposal.items) ? proposal.items : [];
@@ -1282,6 +1294,7 @@ function renderPublicProposal(proposal) {
     '<div class="public-proposal-head"><div><span class="proposal-document-brand">DocPronto.</span><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div>' +
     '<span class="proposal-status status-' + escapeHtml(proposal.status) + '">' + publicStatusText(proposal.status) + '</span></div>' +
     '<div class="public-client"><span class="proposal-label">PREPARADA PARA</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
+    (publicClientDetails ? '<div class="proposal-client-details public-client-details">' + publicClientDetails + '</div>' : '') +
     '<div class="proposal-table-wrap"><table class="proposal-table"><thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '<div class="document-totals">' +
       '<div><span>Subtotal</span><strong>' + formatCurrency(subtotal) + '</strong></div>' +
