@@ -382,3 +382,62 @@ test('histórico de status registra mudanças locais', async ({ page }) => {
   await expect(timeline).toContainText('Aprovada');
   await expect(timeline.locator('li')).toHaveCount(3);
 });
+
+
+test('aceite textual opcional acompanha aprovação pública', async ({ page }) => {
+  const proposal = {
+    id: '22222222-2222-4222-8222-222222222222',
+    number: 'DP-2026-000002',
+    business: 'Conde Serviços',
+    client: 'Cliente Aceite',
+    total: 300,
+    subtotal: 300,
+    discountAmount: 0,
+    status: 'sent',
+    items: [{ description: 'Serviço', quantity: 1, unitPrice: 300, subtotal: 300 }],
+    deadline: '2 dias',
+    terms: 'À vista',
+    notes: '',
+    validUntil: '2099-12-31',
+    businessPhone: '',
+    brandColor: '#245d6c'
+  };
+
+  await page.addInitScript(value => {
+    window.__DOC_ACCEPTANCE__ = value;
+  }, proposal);
+
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: `
+      window.supabase = {
+        createClient: () => ({
+          auth: {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
+          },
+          functions: {
+            invoke: async (name, options = {}) => {
+              if (name === 'proposal-public') return { data: window.__DOC_ACCEPTANCE__, error: null };
+              if (name === 'proposal-response') {
+                window.__DOC_ACCEPTANCE__.status = options.body.decision;
+                window.__DOC_ACCEPTANCE__.acceptedBy = options.body.acceptedBy || '';
+                window.__DOC_ACCEPTANCE__.respondedAt = Date.now();
+                return { data: { status: options.body.decision, acceptedBy: options.body.acceptedBy || '' }, error: null };
+              }
+              return { data: null, error: null };
+            }
+          }
+        })
+      };
+    `
+  }));
+
+  await page.goto('/#proposta=22222222-2222-4222-8222-222222222222&token=abcdefghijklmnopqrstuvwxyzABCDEF');
+  await page.locator('#public-acceptance-name').fill('Maria Souza');
+  await page.getByRole('button', { name: /Aprovar proposta|Approve proposal/i }).click();
+
+  await expect(page.locator('#public-proposal-content')).toContainText('Maria Souza');
+  await expect(page.locator('#public-proposal-content')).toContainText(/Aceite registrado por|Accepted by/);
+});
