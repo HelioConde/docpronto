@@ -106,7 +106,7 @@ function saveComposerDraft() {
   const draft = serializeComposerDraft();
   const hasContent = [
     draft.business, draft.businessPhone, draft.client, draft.clientPhone,
-    draft.deadline, draft.terms
+    draft.deadline, draft.terms, draft.notes
   ].some(value => String(value).trim()) ||
     draft.items.some(item => String(item.description).trim() || String(item.unitPrice).trim());
   if (!hasContent) {
