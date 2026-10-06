@@ -89,6 +89,8 @@ function serializeComposerDraft() {
     deadline: form.querySelector('[name="deadline"]')?.value || '',
     terms: form.querySelector('[name="terms"]')?.value || '',
     validUntil: validityInput?.value || '',
+    discountType: discountTypeInput?.value || 'none',
+    discountValue: discountValueInput?.value || '0',
     items: Array.from(itemFields.querySelectorAll('.line-item')).map(row => ({
       description: row.querySelector('[data-description]')?.value || '',
       quantity: row.querySelector('[data-quantity]')?.value || '1',
@@ -134,6 +136,11 @@ function restoreComposerDraft() {
   if (deadline) deadline.value = draft.deadline || '';
   if (terms) terms.value = draft.terms || '';
   if (draft.validUntil) validityInput.value = draft.validUntil;
+  if (discountTypeInput) discountTypeInput.value = ['percent', 'fixed'].includes(draft.discountType) ? draft.discountType : 'none';
+  if (discountValueInput) {
+    discountValueInput.value = draft.discountValue || '0';
+    discountValueInput.disabled = discountTypeInput?.value === 'none';
+  }
 
   if (Array.isArray(draft.items) && draft.items.length) {
     itemFields.innerHTML = '';
@@ -162,6 +169,13 @@ function resetComposer() {
   addItem();
   validityInput.min = localDate(new Date());
   validityInput.value = defaultValidityDate();
+  if (discountTypeInput) discountTypeInput.value = 'none';
+  if (discountValueInput) {
+    discountValueInput.value = '0';
+    discountValueInput.disabled = true;
+  }
+  updateTotal();
+  prefillBusinessFields(visibleProposals());
   submitButton.textContent = 'Gerar proposta';
   cancelEditButton.hidden = true;
 }
@@ -175,6 +189,11 @@ function beginEditing(proposal) {
   form.querySelector('[name="clientPhone"]').value = proposal.clientPhone || '';
   form.querySelector('[name="deadline"]').value = proposal.deadline || '';
   form.querySelector('[name="terms"]').value = proposal.terms || '';
+  if (discountTypeInput) discountTypeInput.value = ['percent', 'fixed'].includes(proposal.discountType) ? proposal.discountType : 'none';
+  if (discountValueInput) {
+    discountValueInput.value = Number(proposal.discountValue || 0);
+    discountValueInput.disabled = discountTypeInput?.value === 'none';
+  }
 
   const todayValue = localDate(new Date());
   validityInput.min = todayValue;
@@ -725,9 +744,28 @@ function readFormItems() {
   });
 }
 
-function updateTotal() {
+function currentPricing() {
   const validation = DocProntoCore.validateItems(readFormItems(), maxItems);
-  formTotal.textContent = formatCurrency(validation.total);
+  if (!validation.ok) {
+    return { ok: false, error: validation.error, items: validation.items, subtotal: 0, discount: 0, total: 0 };
+  }
+  const pricing = DocProntoCore.calculateDiscount(
+    validation.total,
+    discountTypeInput?.value || 'none',
+    discountValueInput?.value || 0
+  );
+  return { ...pricing, items: validation.items };
+}
+
+function updateTotal() {
+  const pricing = currentPricing();
+  const subtotal = pricing.ok ? pricing.subtotal : 0;
+  const discount = pricing.ok ? pricing.discount : 0;
+  const total = pricing.ok ? pricing.total : subtotal;
+  if (formSubtotal) formSubtotal.textContent = formatCurrency(subtotal);
+  if (formDiscount) formDiscount.textContent = '− ' + formatCurrency(discount);
+  if (formDiscountRow) formDiscountRow.hidden = discount <= 0;
+  formTotal.textContent = formatCurrency(total);
 }
 
 function updateItemControls() {
@@ -833,6 +871,8 @@ function renderProposal(proposal) {
     ? proposal.items
     : [{ description: proposal.scope || 'Serviço', quantity: 1, unitPrice: proposal.amount || 0, subtotal: proposal.amount || 0 }];
   const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
+  const subtotal = Number.isFinite(Number(proposal.subtotal)) ? Number(proposal.subtotal) : items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
+  const discountAmount = Number.isFinite(Number(proposal.discountAmount)) ? Number(proposal.discountAmount) : Math.max(0, subtotal - total);
   const itemRows = items.map(item =>
     '<tr><td>' + escapeHtml(item.description) + '</td>' +
     '<td class="number">' + Number(item.quantity || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '</td>' +
@@ -860,7 +900,11 @@ function renderProposal(proposal) {
         '<thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead>' +
         '<tbody>' + itemRows + '</tbody>' +
       '</table></div>' +
-      '<div class="amount-line"><span>Total do orçamento</span><strong class="amount">' + formatCurrency(total) + '</strong></div>' +
+      '<div class="document-totals">' +
+        '<div><span>Subtotal</span><strong>' + formatCurrency(subtotal) + '</strong></div>' +
+        (discountAmount > 0 ? '<div class="document-discount"><span>Desconto</span><strong>− ' + formatCurrency(discountAmount) + '</strong></div>' : '') +
+        '<div class="amount-line"><span>Total do orçamento</span><strong class="amount">' + formatCurrency(total) + '</strong></div>' +
+      '</div>' +
       '<p><b>Prazo:</b> ' + escapeHtml(proposal.deadline) + '</p>' +
       '<p><b>Condições de pagamento:</b> ' + escapeHtml(proposal.terms) + '</p>' +
       '<div class="proposal-actions">' +
@@ -981,13 +1025,15 @@ form.addEventListener('submit', async event => {
   if (!form.reportValidity()) return;
 
   const values = Object.fromEntries(new FormData(form));
-  const validation = DocProntoCore.validateItems(readFormItems(), maxItems);
-  if (!validation.ok) {
-    showToast(validation.error);
+  const pricing = currentPricing();
+  if (!pricing.ok) {
+    showToast(pricing.error);
     return;
   }
-  const items = validation.items;
-  const total = validation.total;
+  const items = pricing.items;
+  const subtotal = pricing.subtotal;
+  const discountAmount = pricing.discount;
+  const total = pricing.total;
 
   const now = Date.now();
   const proposals = visibleProposals();
@@ -1003,6 +1049,10 @@ form.addEventListener('submit', async event => {
     client: String(values.client || '').trim(),
     clientPhone: String(values.clientPhone || '').trim(),
     items: items,
+    subtotal: subtotal,
+    discountType: ['percent', 'fixed'].includes(values.discountType) ? values.discountType : 'none',
+    discountValue: Number(values.discountValue || 0),
+    discountAmount: discountAmount,
     total: total,
     amount: total,
     scope: items.map(item => item.description).join(', '),
@@ -1054,6 +1104,14 @@ form.addEventListener('submit', async event => {
 });
 
 itemFields.addEventListener('input', updateTotal);
+discountTypeInput?.addEventListener('change', () => {
+  const enabled = discountTypeInput.value !== 'none';
+  discountValueInput.disabled = !enabled;
+  if (!enabled) discountValueInput.value = '0';
+  if (enabled && Number(discountValueInput.value) === 0) discountValueInput.select?.();
+  updateTotal();
+});
+discountValueInput?.addEventListener('input', updateTotal);
 form.addEventListener('input', scheduleComposerDraftSave);
 form.addEventListener('change', scheduleComposerDraftSave);
 itemFields.addEventListener('click', event => {
@@ -1177,6 +1235,8 @@ function renderPublicProposal(proposal) {
   container.style.setProperty('--proposal-accent', brandColor);
   document.title = 'Proposta ' + proposal.number + ' · ' + proposal.business;
   const items = Array.isArray(proposal.items) ? proposal.items : [];
+  const subtotal = Number.isFinite(Number(proposal.subtotal)) ? Number(proposal.subtotal) : items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
+  const discountAmount = Number.isFinite(Number(proposal.discountAmount)) ? Number(proposal.discountAmount) : Math.max(0, subtotal - Number(proposal.total || 0));
   const rows = items.map(item =>
     '<tr><td>' + escapeHtml(item.description || '') + '</td>' +
     '<td class="number">' + Number(item.quantity || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '</td>' +
@@ -1192,7 +1252,11 @@ function renderPublicProposal(proposal) {
     '<span class="proposal-status status-' + escapeHtml(proposal.status) + '">' + publicStatusText(proposal.status) + '</span></div>' +
     '<div class="public-client"><span class="proposal-label">PREPARADA PARA</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
     '<div class="proposal-table-wrap"><table class="proposal-table"><thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-    '<div class="amount-line"><span>Total da proposta</span><strong class="amount">' + formatCurrency(proposal.total) + '</strong></div>' +
+    '<div class="document-totals">' +
+      '<div><span>Subtotal</span><strong>' + formatCurrency(subtotal) + '</strong></div>' +
+      (discountAmount > 0 ? '<div class="document-discount"><span>Desconto</span><strong>− ' + formatCurrency(discountAmount) + '</strong></div>' : '') +
+      '<div class="amount-line"><span>Total da proposta</span><strong class="amount">' + formatCurrency(proposal.total) + '</strong></div>' +
+    '</div>' +
     '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada') + '</p>' +
     (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
     '<div class="public-document-actions"><button class="secondary" id="public-print" type="button">Imprimir / salvar PDF</button></div>' +
