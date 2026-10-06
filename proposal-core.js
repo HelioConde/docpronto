@@ -1,6 +1,48 @@
 (function (root) {
   'use strict';
 
+  function calculateDiscount(subtotal, type, value) {
+    const subtotalNumber = Number(subtotal);
+    const subtotalCents = Math.round((Number.isFinite(subtotalNumber) ? subtotalNumber : 0) * 100);
+    const discountType = type === 'percent' || type === 'fixed' ? type : 'none';
+    const rawValue = Number(value || 0);
+
+    if (!Number.isSafeInteger(subtotalCents) || subtotalCents < 0) {
+      return { ok: false, error: 'Subtotal inválido.', subtotal: 0, discount: 0, total: 0 };
+    }
+    if (discountType === 'none') {
+      return { ok: true, error: '', subtotal: subtotalCents / 100, discount: 0, total: subtotalCents / 100 };
+    }
+    if (!Number.isFinite(rawValue) || rawValue < 0) {
+      return { ok: false, error: 'Informe um desconto válido.', subtotal: subtotalCents / 100, discount: 0, total: subtotalCents / 100 };
+    }
+
+    let discountCents = 0;
+    if (discountType === 'percent') {
+      if (rawValue > 100) {
+        return { ok: false, error: 'O desconto percentual não pode passar de 100%.', subtotal: subtotalCents / 100, discount: 0, total: subtotalCents / 100 };
+      }
+      discountCents = Math.round(subtotalCents * rawValue / 100);
+    } else {
+      discountCents = Math.round((rawValue + 1e-9) * 100);
+      if (!Number.isSafeInteger(discountCents)) {
+        return { ok: false, error: 'O desconto informado é muito alto.', subtotal: subtotalCents / 100, discount: 0, total: subtotalCents / 100 };
+      }
+    }
+
+    if (discountCents > subtotalCents) {
+      return { ok: false, error: 'O desconto não pode ser maior que o subtotal.', subtotal: subtotalCents / 100, discount: 0, total: subtotalCents / 100 };
+    }
+
+    return {
+      ok: true,
+      error: '',
+      subtotal: subtotalCents / 100,
+      discount: discountCents / 100,
+      total: (subtotalCents - discountCents) / 100
+    };
+  }
+
   function validateItems(items, maxItems) {
     const limit = Number.isInteger(maxItems) && maxItems > 0 ? maxItems : 10;
     if (!Array.isArray(items) || items.length === 0) {
@@ -41,7 +83,7 @@
     return { ok: true, error: '', items: normalized, total: totalCents / 100 };
   }
 
-  const api = Object.freeze({ validateItems });
+  const api = Object.freeze({ validateItems, calculateDiscount });
   root.DocProntoCore = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis === 'object' ? globalThis : this);
