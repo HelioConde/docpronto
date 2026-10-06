@@ -1190,6 +1190,16 @@ function renderProposal(proposal) {
     proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
     proposal.clientAddress ? '<span class="client-address"><b>Endereço:</b> ' + escapeHtml(proposal.clientAddress) + '</span>' : ''
   ].filter(Boolean).join('');
+  const issuedDate = new Date(proposal.createdAt).toLocaleDateString(currentLocale());
+  const validDate = proposal.validUntil
+    ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString(currentLocale())
+    : uiText('não informada');
+  const respondedDate = proposal.respondedAt && (status === 'approved' || status === 'rejected')
+    ? new Date(proposal.respondedAt).toLocaleDateString(currentLocale())
+    : '';
+  const proposalMetaText = currentLocale() === 'en'
+    ? `Issued on ${issuedDate} · valid until ${validDate}${respondedDate ? ' · responded on ' + respondedDate : ''}`
+    : `Emitida em ${issuedDate} · válida até ${validDate}${respondedDate ? ' · respondida em ' + respondedDate : ''}`;
   const shareText = proposalShareText(proposal);
   const whatsappPhone = normalizeWhatsAppPhone(proposal.clientPhone);
   result.innerHTML =
@@ -1202,10 +1212,7 @@ function renderProposal(proposal) {
         '<div><span class="proposal-label">EMPRESA</span><h3>' + escapeHtml(proposal.business) + '</h3>' + (proposal.businessPhone ? '<p>' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
         '<div class="proposal-client-block"><span class="proposal-label">CLIENTE</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
       '</div>' +
-      '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString(currentLocale()) + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString(currentLocale()) : 'não informada') +
-        (proposal.respondedAt && (status === 'approved' || status === 'rejected')
-          ? ' · respondida em ' + new Date(proposal.respondedAt).toLocaleDateString(currentLocale())
-          : '') + '</div>' +
+      '<div class="proposal-meta">' + escapeHtml(proposalMetaText) + '</div>' +
       (clientDetails ? '<div class="proposal-client-details">' + clientDetails + '</div>' : '') +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
         '<thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead>' +
@@ -1235,7 +1242,7 @@ function renderProposal(proposal) {
   result.classList.add('show');
   document.querySelector('#print').addEventListener('click', () => {
     const previousTitle = document.title;
-    document.title = 'Proposta ' + proposal.number + ' - ' + proposal.client;
+    document.title = (currentLocale() === 'en' ? 'Proposal ' : 'Proposta ') + proposal.number + ' - ' + proposal.client;
     window.print();
     window.setTimeout(() => { document.title = previousTitle; }, 500);
   });
@@ -1642,10 +1649,11 @@ list.addEventListener('click', async event => {
 
 
 function publicStatusText(status) {
-  return status === 'approved' ? 'Aprovada'
+  const label = status === 'approved' ? 'Aprovada'
     : status === 'rejected' ? 'Recusada'
     : status === 'sent' ? 'Aguardando resposta'
     : 'Indisponível';
+  return uiText(label);
 }
 
 function renderPublicProposal(proposal) {
@@ -1657,7 +1665,7 @@ function renderPublicProposal(proposal) {
     proposal.clientAddress ? '<span class="client-address"><b>Endereço:</b> ' + escapeHtml(proposal.clientAddress) + '</span>' : ''
   ].filter(Boolean).join('');
   container.style.setProperty('--proposal-accent', brandColor);
-  document.title = 'Proposta ' + proposal.number + ' · ' + proposal.business;
+  document.title = (currentLocale() === 'en' ? 'Proposal ' : 'Proposta ') + proposal.number + ' · ' + proposal.business;
   const items = Array.isArray(proposal.items) ? proposal.items : [];
   const subtotal = Number.isFinite(Number(proposal.subtotal)) ? Number(proposal.subtotal) : items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
   const discountAmount = Number.isFinite(Number(proposal.discountAmount)) ? Number(proposal.discountAmount) : Math.max(0, subtotal - Number(proposal.total || 0));
