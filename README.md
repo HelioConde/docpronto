@@ -17,6 +17,8 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - Supabase Auth;
 - sincronização das propostas em `docpronto_proposals`;
 - importação de histórico local;
+- cadastro reutilizável de clientes na nuvem;
+- preenchimento automático de nome e WhatsApp de clientes já usados;
 - dados privados por RLS;
 - GitHub Pages + CI;
 - SEO básico.
