@@ -10,6 +10,8 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
 - filtro do histórico por status;
 - compartilhamento de resumo por WhatsApp e cópia rápida;
+- link público seguro para o cliente abrir a proposta;
+- aprovação ou recusa da proposta sem conta, protegida por token;
 - impressão/salvamento em PDF pelo navegador;
 - modo local sem conta;
 - Supabase Auth;
