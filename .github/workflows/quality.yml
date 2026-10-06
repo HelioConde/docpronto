@@ -25,4 +25,4 @@ jobs:
           node --check proposal-core.js
           node --check supabase-config.js
       - name: Run proposal and integration tests
-        run: node --test tests/quality.test.cjs
+        run: npm test
