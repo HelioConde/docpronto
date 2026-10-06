@@ -1095,7 +1095,9 @@ function renderPublicProposal(proposal) {
     '<td class="number">' + formatCurrency(item.unitPrice) + '</td>' +
     '<td class="number">' + formatCurrency(item.subtotal) + '</td></tr>'
   ).join('');
-  const expired = proposal.validUntil && proposal.validUntil < localDate(new Date());
+  const expired = typeof proposal.expired === 'boolean'
+    ? proposal.expired
+    : Boolean(proposal.validUntil && proposal.validUntil < localDate(new Date()));
   const canRespond = proposal.status === 'sent' && !expired;
   container.innerHTML =
     '<div class="public-proposal-head"><div><span class="proposal-document-brand">DocPronto.</span><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div>' +
