@@ -291,6 +291,18 @@ test('reabrir proposta encerrada invalida o link público anterior', () => {
   assert.match(css, /\[data-reopen\]/);
 });
 
+test('histórico permite revelar propostas antigas em blocos de 10', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /id="history-more"/);
+  assert.match(app, /let historyVisibleLimit = 10/);
+  assert.match(app, /filteredProposals\.slice\(0, historyVisibleLimit\)/);
+  assert.match(app, /historyVisibleLimit \+= 10/);
+  assert.match(app, /Mostrar mais \('/);
+  assert.match(css, /\.history-more/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
