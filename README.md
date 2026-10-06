@@ -12,10 +12,12 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
 - filtro do histórico por status e busca por cliente, empresa ou número;
 - resumo comercial com total de propostas, enviadas e valor aprovado;
+- histórico progressivo em blocos de 10 e exportação do histórico em CSV compatível com Excel;
 - aviso visual para propostas vencidas ou próximas da validade;
 - compartilhamento de resumo por WhatsApp e cópia rápida;
 - link público seguro para o cliente abrir a proposta;
 - aprovação ou recusa da proposta sem conta, protegida por token;
+- atualização automática das respostas do cliente ao voltar para a aba, com data/hora da resposta;
 - novos links públicos mantêm o token no fragmento da URL e usam noindex/no-referrer;
 - impressão/salvamento em PDF A4 pelo navegador, inclusive na proposta compartilhada;
 - modo local sem conta;
