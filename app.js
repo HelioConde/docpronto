@@ -25,6 +25,7 @@ const localImportButton = document.querySelector('#local-import');
 const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const proposalSearch = document.querySelector('#proposal-search');
 const historySummary = document.querySelector('#history-summary');
+const historyMoreButton = document.querySelector('#history-more');
 const businessProfileForm = document.querySelector('#business-profile-form');
 const brandColorValue = document.querySelector('#brand-color-value');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
@@ -41,6 +42,7 @@ let cloudLoading = false;
 let passwordRecovery = false;
 let openedProposalId = null;
 let lastCloudRefreshAt = 0;
+let historyVisibleLimit = 10;
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
@@ -1033,14 +1035,19 @@ function renderHistory() {
   const searchTerm = String(proposalSearch?.value || '').trim().toLocaleLowerCase('pt-BR');
   const source = currentUser ? cloudProposals : readProposals().slice().reverse();
   renderHistorySummary(source, selectedStatus);
-  const proposals = source
+  const filteredProposals = source
     .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
     .filter(proposal => {
       if (!searchTerm) return true;
       return [proposal.client, proposal.business, proposal.number]
         .some(value => String(value || '').toLocaleLowerCase('pt-BR').includes(searchTerm));
-    })
-    .slice(0, 10);
+    });
+  const proposals = filteredProposals.slice(0, historyVisibleLimit);
+  if (historyMoreButton) {
+    const remaining = Math.max(0, filteredProposals.length - historyVisibleLimit);
+    historyMoreButton.hidden = remaining === 0;
+    historyMoreButton.textContent = remaining > 0 ? 'Mostrar mais (' + remaining + ')' : 'Mostrar mais';
+  }
   const hasFilters = selectedStatus !== 'all' || Boolean(searchTerm);
   const emptyTitle = source.length
     ? (hasFilters ? 'Nenhuma proposta encontrada' : 'Nenhuma proposta disponível')
@@ -1188,13 +1195,24 @@ itemFields.addEventListener('click', event => {
   updateTotal();
 });
 addItemButton.addEventListener('click', () => addItem());
-proposalStatusFilter?.addEventListener('change', renderHistory);
-proposalSearch?.addEventListener('input', renderHistory);
+proposalStatusFilter?.addEventListener('change', () => {
+  historyVisibleLimit = 10;
+  renderHistory();
+});
+proposalSearch?.addEventListener('input', () => {
+  historyVisibleLimit = 10;
+  renderHistory();
+});
+historyMoreButton?.addEventListener('click', () => {
+  historyVisibleLimit += 10;
+  renderHistory();
+});
 historySummary?.addEventListener('click', event => {
   const button = event.target.closest('[data-summary-status]');
   if (!button || !proposalStatusFilter) return;
   proposalStatusFilter.value = button.dataset.summaryStatus || 'all';
   if (proposalSearch) proposalSearch.value = '';
+  historyVisibleLimit = 10;
   renderHistory();
 });
 
