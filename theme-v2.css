@@ -185,3 +185,6 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 @media(max-width:620px){.public-document-actions .secondary{width:100%}}
 
 .autosave-note{margin:9px 2px 0;color:#87929a;font-size:10px;line-height:1.45;text-align:center}
+
+.proposal-closed-note{margin:14px 0 0;padding:11px 12px;border:1px solid #e3e7e9;border-radius:10px;background:#f7f9fa;color:#69757e;font-size:11px;line-height:1.5}
+@media print{.proposal-closed-note{display:none!important}}
