@@ -2,6 +2,7 @@ const form = document.querySelector('#form');
 const result = document.querySelector('#result');
 const list = document.querySelector('#list');
 const itemFields = document.querySelector('#item-fields');
+const serviceSuggestions = document.querySelector('#service-suggestions');
 const addItemButton = document.querySelector('#add-item');
 const formSubtotal = document.querySelector('#form-subtotal');
 const formDiscount = document.querySelector('#form-discount');
@@ -925,6 +926,48 @@ function exportProposalsCsv() {
   showToast('CSV exportado.');
 }
 
+function recentServiceCatalog() {
+  const source = currentUser ? cloudProposals : readProposals().slice().reverse();
+  const catalog = new Map();
+  source.forEach(proposal => {
+    const items = Array.isArray(proposal.items) ? proposal.items : [];
+    items.forEach(item => {
+      const description = String(item.description || '').trim();
+      const key = description.toLocaleLowerCase('pt-BR');
+      if (!description || catalog.has(key)) return;
+      const unitPrice = Number(item.unitPrice);
+      catalog.set(key, {
+        description,
+        unitPrice: Number.isFinite(unitPrice) && unitPrice >= 0 ? unitPrice : 0
+      });
+    });
+  });
+  return catalog;
+}
+
+function renderServiceSuggestions() {
+  if (!serviceSuggestions) return;
+  serviceSuggestions.innerHTML = Array.from(recentServiceCatalog().values())
+    .slice(0, 60)
+    .map(item => '<option value="' + escapeHtml(item.description) + '" label="' + escapeHtml(formatCurrency(item.unitPrice)) + '"></option>')
+    .join('');
+}
+
+function applySavedService(row) {
+  const descriptionInput = row?.querySelector('[data-description]');
+  const priceInput = row?.querySelector('[data-unit-price]');
+  if (!descriptionInput || !priceInput) return;
+  const key = String(descriptionInput.value || '').trim().toLocaleLowerCase('pt-BR');
+  const saved = recentServiceCatalog().get(key);
+  if (!saved) return;
+  if (!String(priceInput.value || '').trim() || Number(priceInput.value) === 0) {
+    priceInput.value = String(saved.unitPrice);
+    updateTotal();
+    scheduleComposerDraftSave();
+    showToast('Último preço deste item preenchido.');
+  }
+}
+
 function readFormItems() {
   return Array.from(itemFields.querySelectorAll('.line-item')).map(row => {
     const description = row.querySelector('[data-description]').value.trim();
@@ -985,7 +1028,7 @@ function addItem(values = {}) {
   row.className = 'line-item';
   row.innerHTML =
     '<label class="field item-description"><span>Descrição</span>' +
-      '<input data-description type="text" maxlength="160" placeholder="Ex.: Instalação de tomadas" required>' +
+      '<input data-description type="text" maxlength="160" list="service-suggestions" placeholder="Ex.: Instalação de tomadas" required>' +
     '</label>' +
     '<label class="field item-quantity"><span>Qtd.</span>' +
       '<input data-quantity type="number" min="0.01" step="0.01" value="1" inputmode="decimal" required>' +
@@ -1225,6 +1268,7 @@ function renderProposal(proposal) {
 }
 
 function renderHistory() {
+  renderServiceSuggestions();
   const selectedStatus = proposalStatusFilter?.value || 'all';
   const searchTerm = String(proposalSearch?.value || '').trim().toLocaleLowerCase('pt-BR');
   const source = currentUser ? cloudProposals : readProposals().slice().reverse();
@@ -1381,6 +1425,10 @@ discountTypeInput?.addEventListener('change', () => {
 discountValueInput?.addEventListener('input', updateTotal);
 form.addEventListener('input', scheduleComposerDraftSave);
 form.addEventListener('change', scheduleComposerDraftSave);
+itemFields.addEventListener('change', event => {
+  const descriptionInput = event.target.closest('[data-description]');
+  if (descriptionInput) applySavedService(descriptionInput.closest('.line-item'));
+});
 itemFields.addEventListener('click', event => {
   const removeButton = event.target.closest('.remove-item');
   if (!removeButton || itemFields.querySelectorAll('.line-item').length <= 1) return;
