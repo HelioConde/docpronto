@@ -64,3 +64,6 @@ jobs:
           grep -qi 'serviceWorker' pwa.js
           grep -qi 'beforeinstallprompt' pwa.js
           grep -qi 'docpronto-shell-v1' sw.js
+          grep -qi 'proposal-template' index.html
+          grep -qi 'proposalTemplates' app.js
+          grep -qi 'applyProposalTemplate' app.js
