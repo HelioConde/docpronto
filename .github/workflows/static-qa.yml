@@ -24,6 +24,7 @@ jobs:
           test -f theme-v2.css
           test -f README.md
           test -f FULLSTACK.md
+          test -f supabase/migrations/20261006052000_proposal_status.sql
       - name: Check SEO and backend boot
         run: |
           grep -qi '<title' index.html
@@ -31,3 +32,6 @@ jobs:
           grep -qi 'meta name="description"' index.html
           grep -qi 'rel="canonical"' index.html
           grep -qi 'supabase-config.js' index.html
+          grep -qi 'proposal-status-filter' index.html
+          grep -qi 'data-status-id' app.js
+          grep -qi 'share-whatsapp' app.js
