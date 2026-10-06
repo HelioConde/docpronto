@@ -102,9 +102,47 @@ Deno.serve(async (request: Request) => {
     return json(410, { error: "Esta proposta expirou." }, origin);
   }
 
+  const proposalData = current.proposal_data && typeof current.proposal_data === "object"
+    ? current.proposal_data
+    : {};
+  const allowedStatuses = new Set(["draft", "sent", "approved", "rejected"]);
+  const existingHistory = Array.isArray(proposalData.statusHistory)
+    ? proposalData.statusHistory
+      .filter((entry: unknown) => {
+        if (!entry || typeof entry !== "object" || Array.isArray(entry)) return false;
+        const item = entry as Record<string, unknown>;
+        return typeof item.status === "string"
+          && allowedStatuses.has(item.status)
+          && Number.isFinite(Number(item.at));
+      })
+      .map((entry: Record<string, unknown>) => ({
+        status: String(entry.status),
+        at: Number(entry.at),
+        source: entry.source === "client" ? "client" : "owner",
+      }))
+      .slice(-19)
+    : [];
+
+  const respondedAt = new Date();
+  const statusHistory = [
+    ...existingHistory,
+    { status: decision, at: respondedAt.getTime(), source: "client" },
+  ].slice(-20);
+  const updatedProposalData = {
+    ...proposalData,
+    status: decision,
+    respondedAt: respondedAt.getTime(),
+    statusHistory,
+  };
+
   const { data, error } = await client
     .from("docpronto_proposals")
-    .update({ status: decision, responded_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .update({
+      status: decision,
+      responded_at: respondedAt.toISOString(),
+      proposal_data: updatedProposalData,
+      updated_at: respondedAt.toISOString(),
+    })
     .eq("id", proposalId)
     .eq("share_token_hash", tokenHash)
     .eq("status", "sent")
