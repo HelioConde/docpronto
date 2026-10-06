@@ -19,6 +19,10 @@ const localImportButton = document.querySelector('#local-import');
 const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
+const pageParams = new URLSearchParams(location.search);
+const publicProposalId = pageParams.get('proposta')?.trim() || '';
+const publicProposalToken = pageParams.get('token')?.trim() || '';
+const publicProposalMode = Boolean(publicProposalId && publicProposalToken);
 let currentUser = null;
 let cloudProposals = [];
 let cloudLoading = false;
@@ -117,6 +121,16 @@ function readProposals() {
 
 function visibleProposals() {
   return currentUser ? cloudProposals : readProposals();
+}
+
+function generateShareToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(24));
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function sha256Hex(value) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function makeUuid() {
@@ -541,6 +555,7 @@ function renderProposal(proposal) {
         '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
         '<button class="secondary" id="copy-proposal-summary" type="button">Copiar resumo</button>' +
         '<a class="secondary" id="share-whatsapp" target="_blank" rel="noopener">Enviar no WhatsApp</a>' +
+        (currentUser ? '<button class="secondary" id="create-client-link" type="button">Criar link para cliente</button>' : '') +
       '</div>' +
     '</article>';
   result.classList.add('show');
@@ -554,6 +569,40 @@ function renderProposal(proposal) {
     }
   });
   document.querySelector('#share-whatsapp').href = 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(shareText);
+  const clientLinkButton = document.querySelector('#create-client-link');
+  clientLinkButton?.addEventListener('click', async () => {
+    const token = generateShareToken();
+    clientLinkButton.disabled = true;
+    try {
+      const { error } = await supabaseClient
+        .from(proposalTable)
+        .update({
+          share_token_hash: await sha256Hex(token),
+          status: 'sent',
+          responded_at: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', proposal.id);
+      if (error) throw error;
+
+      const url = new URL(location.href);
+      url.search = '';
+      url.hash = '';
+      url.searchParams.set('proposta', proposal.id);
+      url.searchParams.set('token', token);
+      await navigator.clipboard.writeText(url.toString());
+
+      const updated = { ...proposal, status: 'sent', updatedAt: Date.now() };
+      cloudProposals = cloudProposals.map(item => item.id === proposal.id ? updated : item);
+      renderHistory();
+      renderProposal(updated);
+      showToast('Link do cliente copiado. A proposta foi marcada como enviada.');
+    } catch (error) {
+      console.error(error);
+      clientLinkButton.disabled = false;
+      showToast('Não foi possível criar o link do cliente.');
+    }
+  });
 }
 
 function renderHistory() {
@@ -748,6 +797,101 @@ list.addEventListener('click', async event => {
   if (proposal) renderProposal(proposal);
 });
 
-addItem();
-renderHistory();
-initAccount();
+
+function publicStatusText(status) {
+  return status === 'approved' ? 'Aprovada'
+    : status === 'rejected' ? 'Recusada'
+    : status === 'sent' ? 'Aguardando resposta'
+    : 'Indisponível';
+}
+
+function renderPublicProposal(proposal) {
+  const container = document.querySelector('#public-proposal-content');
+  const items = Array.isArray(proposal.items) ? proposal.items : [];
+  const rows = items.map(item =>
+    '<tr><td>' + escapeHtml(item.description || '') + '</td>' +
+    '<td class="number">' + Number(item.quantity || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '</td>' +
+    '<td class="number">' + formatCurrency(item.unitPrice) + '</td>' +
+    '<td class="number">' + formatCurrency(item.subtotal) + '</td></tr>'
+  ).join('');
+  const expired = proposal.validUntil && proposal.validUntil < localDate(new Date());
+  const canRespond = proposal.status === 'sent' && !expired;
+  container.innerHTML =
+    '<div class="public-proposal-head"><div><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div>' +
+    '<span class="proposal-status status-' + escapeHtml(proposal.status) + '">' + publicStatusText(proposal.status) + '</span></div>' +
+    '<p class="public-client">Preparada para <strong>' + escapeHtml(proposal.client) + '</strong></p>' +
+    '<div class="proposal-table-wrap"><table class="proposal-table"><thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<div class="amount-line"><span>Total da proposta</span><strong class="amount">' + formatCurrency(proposal.total) + '</strong></div>' +
+    '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada') + '</p>' +
+    (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
+    (expired ? '<div class="public-response-note">Esta proposta expirou.</div>' :
+      proposal.status === 'approved' ? '<div class="public-response-note success">Você aprovou esta proposta.</div>' :
+      proposal.status === 'rejected' ? '<div class="public-response-note rejected">Você recusou esta proposta.</div>' :
+      canRespond ? '<div class="public-response-actions"><button class="primary" id="public-approve" type="button">Aprovar proposta</button><button class="secondary public-reject" id="public-reject" type="button">Recusar</button></div>' :
+      '<div class="public-response-note">Esta proposta não está disponível para resposta.</div>');
+
+  if (canRespond) {
+    document.querySelector('#public-approve').addEventListener('click', () => submitPublicResponse('approved'));
+    document.querySelector('#public-reject').addEventListener('click', () => submitPublicResponse('rejected'));
+  }
+}
+
+async function loadPublicProposal() {
+  const container = document.querySelector('#public-proposal-content');
+  if (!supabaseClient) {
+    container.innerHTML = '<h2>Proposta indisponível</h2><p>Não foi possível conectar ao serviço.</p>';
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('proposal-public', {
+      body: { proposalId: publicProposalId, token: publicProposalToken }
+    });
+    if (error) throw error;
+    renderPublicProposal(data);
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '<h2>Proposta indisponível</h2><p>O link pode ter expirado ou sido substituído por um novo.</p>';
+  }
+}
+
+async function submitPublicResponse(decision) {
+  const approve = document.querySelector('#public-approve');
+  const reject = document.querySelector('#public-reject');
+  if (approve) approve.disabled = true;
+  if (reject) reject.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('proposal-response', {
+      body: { proposalId: publicProposalId, token: publicProposalToken, decision }
+    });
+    if (error) throw error;
+    const refreshed = await supabaseClient.functions.invoke('proposal-public', {
+      body: { proposalId: publicProposalId, token: publicProposalToken }
+    });
+    if (refreshed.error) throw refreshed.error;
+    renderPublicProposal(refreshed.data);
+  } catch (error) {
+    console.error(error);
+    showToast('Não foi possível registrar a resposta.');
+    if (approve) approve.disabled = false;
+    if (reject) reject.disabled = false;
+  }
+}
+
+function initPublicProposalMode() {
+  document.querySelector('.hero').hidden = true;
+  document.querySelector('#app-grid').hidden = true;
+  document.querySelector('#benefits-section').hidden = true;
+  document.querySelector('#local-import-banner').hidden = true;
+  document.querySelector('.nav-actions').hidden = true;
+  document.querySelector('#public-proposal-view').hidden = false;
+  loadPublicProposal();
+}
+
+
+if (publicProposalMode) {
+  initPublicProposalMode();
+} else {
+  addItem();
+  renderHistory();
+  initAccount();
+}
