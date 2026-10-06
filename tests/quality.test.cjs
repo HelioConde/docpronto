@@ -144,7 +144,7 @@ test('novas propostas reaproveitam dados do negócio sem criar outra tabela', ()
   assert.match(app, /function prefillBusinessFields/);
   assert.match(app, /prefillBusinessFields\(cloudProposals\)/);
   assert.match(app, /prefillBusinessFields\(readProposals\(\)\)/);
-  assert.match(app, /document\.title = 'Proposta ' \+ proposal\.number \+ ' · ' \+ proposal\.business/);
+  assert.match(app, /document\.title = \(currentLocale\(\) === 'en' \? 'Proposal ' : 'Proposta '\) \+ proposal\.number \+ ' · ' \+ proposal\.business/);
 });
 
 test('formulário salva e recupera rascunho local automaticamente', () => {
