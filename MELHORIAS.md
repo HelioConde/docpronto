@@ -16,7 +16,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 - [ ] Homologar cadastro, login, recuperação de senha e sessão expirada com conta real.
 - [ ] Homologar isolamento entre duas contas reais.
 - [ ] Testar envio real de link público em navegador separado contra o backend de produção.
-- [ ] Revisar PDF A4 com proposta longa, desconto, observações e dados completos.
+- [x] Revisar PDF A4 automaticamente com 10 itens, desconto, observações e dados completos; geração real via Chromium coberta no E2E.
 
 ## P1 — produto
 
