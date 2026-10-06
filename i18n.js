@@ -293,6 +293,15 @@
   "respondida em": "responded on",
   "Condições de pagamento:": "Payment terms:"
 });
+  Object.assign(translations, {
+  "Sem resposta": "No response",
+  "enviadas há 3 dias ou mais": "sent 3 or more days ago",
+  "Mostrar propostas sem resposta": "Show proposals awaiting response",
+  "Cobrar retorno": "Follow up",
+  "Copiar lembrete": "Copy follow-up",
+  "Lembrete de follow-up copiado.": "Follow-up message copied.",
+  "Não foi possível copiar o lembrete.": "Could not copy the follow-up message."
+});
   const reverse = Object.fromEntries(Object.entries(translations).map(([pt, en]) => [en, pt]));
   let activeLocale = localStorage.getItem(storageKey) === 'en' ? 'en' : 'pt-BR';
   let applying = false;
@@ -321,6 +330,8 @@
     }
     let match = value.match(/^Expires in (\d+) days?$/);
     if (match) return `Expira em ${match[1]} dia${match[1] === '1' ? '' : 's'}`;
+    match = value.match(/^No response for (\d+) days?$/);
+    if (match) return `Sem resposta há ${match[1]} dia${match[1] === '1' ? '' : 's'}`;
     match = value.match(/^Show more \((\d+)\)$/);
     if (match) return `Mostrar mais (${match[1]})`;
     match = value.match(/^Cloud · (.+)$/);
