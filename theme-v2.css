@@ -191,3 +191,22 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 
 .proposal-heading h3,.proposal-client-block strong,.public-proposal-head h2{overflow-wrap:anywhere;word-break:break-word}
 .proposal p,.public-details p{overflow-wrap:anywhere}
+
+.account-connected{margin:0 0 12px;color:var(--muted);font-size:13px}
+.account-connected strong{color:var(--ink)}
+.business-profile{margin:18px 0 14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#f9fbfb}
+.account-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.account-section-kicker{display:block;margin-bottom:4px;color:var(--warm);font-size:8px;font-weight:800;letter-spacing:1px}
+.account-section-heading h3{margin:0;font:800 15px Manrope;letter-spacing:-.35px}
+.profile-sync-badge{padding:4px 7px;border-radius:999px;background:#e8f3ec;color:var(--success);font-size:8px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+.business-profile>p{margin:8px 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.business-profile form{display:grid;gap:10px}
+.business-profile .field{margin:0}
+.brand-color-field{display:grid;gap:6px}
+.brand-color-field>span:first-child{font-size:11px;font-weight:700;color:#27333d}
+.brand-color-control{display:flex;align-items:center;gap:10px}
+.brand-color-control input[type="color"]{width:44px;height:38px;padding:3px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+.brand-color-control output{font:700 11px Manrope;color:var(--muted);letter-spacing:.3px}
+.business-profile .primary{margin-top:2px}
+.account-sign-out{width:100%;margin-top:4px}
+@media(max-width:500px){.account-section-heading{align-items:flex-start}.profile-sync-badge{display:none}}
