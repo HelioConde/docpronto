@@ -4,6 +4,14 @@ Atualizado em 2026-10-06.
 
 Este é o backlog oficial do produto. A prioridade é homologar o que já existe antes de ampliar o escopo.
 
+## Encerramento da etapa atual
+
+**Status: MVP técnico concluído / publicado / pronto para beta controlado.**
+
+O desenvolvimento principal fica encerrado nesta etapa. Cadastro/login com pessoas reais, duas contas reais, dispositivos diferentes e ativação de anúncios estão centralizados na [issue #1](https://github.com/HelioConde/docpronto/issues/1).
+
+**Regra de retomada:** só puxar P2 se a validação real indicar necessidade, aparecer bug crítico ou houver decisão explícita de reabrir o escopo.
+
 ## P0 — homologação
 
 - [x] Criar propostas no modo local sem cadastro.
