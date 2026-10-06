@@ -95,3 +95,8 @@ A migration e a Edge Function `beta-feedback` já estão versionadas; a publica�
 ## Calendário
 
 Propostas enviadas podem gerar um arquivo `.ics` de follow-up para três dias após o envio. O arquivo funciona com calendários compatíveis sem exigir integração externa.
+
+
+## Backup local
+
+Quem usa o DocPronto sem conta pode exportar e restaurar um backup JSON das propostas do navegador. A restauração valida o formato, limita a 100 propostas e 10 itens por proposta e substitui apenas os dados locais após confirmação. O arquivo de backup pode conter dados de clientes presentes nas propostas e deve ser armazenado com cuidado.
