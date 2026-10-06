@@ -658,11 +658,15 @@ function renderProposal(proposal) {
   const whatsappPhone = normalizeWhatsAppPhone(proposal.clientPhone);
   result.innerHTML =
     '<article class="proposal" id="proposal">' +
-      '<div class="proposal-topline"><small>PROPOSTA ' + escapeHtml(proposal.number) + '</small><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
-      '<h3>' + escapeHtml(proposal.business) + '</h3>' +
-      '<div class="proposal-meta">Preparada em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') + '</div>' +
-      (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') +
-      '<p><b>Para:</b> ' + escapeHtml(proposal.client) + '</p>' +
+      '<header class="proposal-document-head">' +
+        '<div><span class="proposal-document-brand">DocPronto.</span><small>PROPOSTA ' + escapeHtml(proposal.number) + '</small></div>' +
+        '<span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span>' +
+      '</header>' +
+      '<div class="proposal-heading">' +
+        '<div><span class="proposal-label">EMPRESA</span><h3>' + escapeHtml(proposal.business) + '</h3>' + (proposal.businessPhone ? '<p>' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
+        '<div class="proposal-client-block"><span class="proposal-label">CLIENTE</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
+      '</div>' +
+      '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') + '</div>' +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
         '<thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead>' +
         '<tbody>' + itemRows + '</tbody>' +
@@ -678,7 +682,12 @@ function renderProposal(proposal) {
       '</div>' +
     '</article>';
   result.classList.add('show');
-  document.querySelector('#print').addEventListener('click', () => window.print());
+  document.querySelector('#print').addEventListener('click', () => {
+    const previousTitle = document.title;
+    document.title = 'Proposta ' + proposal.number + ' - ' + proposal.client;
+    window.print();
+    window.setTimeout(() => { document.title = previousTitle; }, 500);
+  });
   document.querySelector('#copy-proposal-summary').addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(shareText);
@@ -974,9 +983,9 @@ function renderPublicProposal(proposal) {
   const expired = proposal.validUntil && proposal.validUntil < localDate(new Date());
   const canRespond = proposal.status === 'sent' && !expired;
   container.innerHTML =
-    '<div class="public-proposal-head"><div><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div>' +
+    '<div class="public-proposal-head"><div><span class="proposal-document-brand">DocPronto.</span><p class="eyebrow">PROPOSTA ' + escapeHtml(proposal.number) + '</p><h2>' + escapeHtml(proposal.business) + '</h2></div>' +
     '<span class="proposal-status status-' + escapeHtml(proposal.status) + '">' + publicStatusText(proposal.status) + '</span></div>' +
-    '<p class="public-client">Preparada para <strong>' + escapeHtml(proposal.client) + '</strong></p>' +
+    '<div class="public-client"><span class="proposal-label">PREPARADA PARA</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
     '<div class="proposal-table-wrap"><table class="proposal-table"><thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '<div class="amount-line"><span>Total da proposta</span><strong class="amount">' + formatCurrency(proposal.total) + '</strong></div>' +
     '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada') + '</p>' +
