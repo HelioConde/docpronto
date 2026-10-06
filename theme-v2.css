@@ -261,3 +261,8 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 
 .history-more{width:100%;margin-top:10px;padding:10px 12px;background:#f7fafb;color:var(--accent);border:1px solid var(--line)}
 .history-more:hover{background:#edf5f6}
+
+.composer-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:6px}
+.composer-actions .primary{margin:0}
+.composer-actions .secondary{white-space:nowrap}
+@media(max-width:500px){.composer-actions{grid-template-columns:1fr}.composer-actions .secondary{width:100%}}
