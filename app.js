@@ -474,7 +474,7 @@ function renderProposal(proposal) {
 }
 
 function renderHistory() {
-  const proposals = visibleProposals().slice(-5).reverse();
+  const proposals = currentUser ? cloudProposals.slice(0, 5) : readProposals().slice(-5).reverse();
   list.innerHTML = proposals.length
     ? proposals.map(proposal => {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
@@ -512,7 +512,7 @@ form.addEventListener('submit', async event => {
   }
 
   const now = Date.now();
-  const proposals = readProposals();
+  const proposals = visibleProposals();
   const existing = editingId ? proposals.find(item => item.id === editingId) : null;
   if (editingId && !existing) {
     resetComposer();
