@@ -139,6 +139,15 @@ test('formulário salva e recupera rascunho local automaticamente', () => {
   assert.match(app, /clearComposerDraft\(\)/);
 });
 
+test('propostas encerradas não podem ser reabertas silenciosamente por novo link', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(app, /status === 'draft' \|\| status === 'sent'/);
+  assert.match(app, /Gerar um novo link invalida o link anterior/);
+  assert.match(app, /proposal-closed-note/);
+  assert.match(css, /\.proposal-closed-note/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
