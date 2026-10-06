@@ -237,3 +237,19 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .proposal-notes p{margin:5px 0 0;color:#53616b;font-size:12px;line-height:1.55;white-space:pre-wrap}
 .public-notes{margin-top:16px}
 @media print{.proposal-notes{background:#fff;border-color:#ddd;break-inside:avoid}}
+
+.client-extra{margin:4px 0 14px;border:1px solid var(--line);border-radius:12px;background:#fafcfc;overflow:hidden}
+.client-extra summary{padding:10px 12px;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;list-style:none}
+.client-extra summary::-webkit-details-marker{display:none}
+.client-extra summary::before{content:'＋';display:inline-block;width:18px;color:var(--accent);font-weight:800}
+.client-extra[open] summary{border-bottom:1px solid var(--line)}
+.client-extra[open] summary::before{content:'−'}
+.client-extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;padding:10px 12px 12px}
+.client-extra-grid .field{margin:5px 0}
+.client-address-field{grid-column:1/-1}
+.client-address-field textarea{min-height:68px}
+.proposal-client-details{display:flex;flex-wrap:wrap;gap:5px 16px;margin:10px 0 2px;padding:9px 10px;border-radius:9px;background:#f7f9fa;color:#63707a;font-size:10px;line-height:1.45}
+.proposal-client-details .client-address{flex-basis:100%}
+.public-client-details{margin-top:-8px;margin-bottom:16px}
+@media(max-width:500px){.client-extra-grid{grid-template-columns:1fr}.client-address-field{grid-column:auto}.proposal-client-details{display:grid;gap:5px}}
+@media print{.proposal-client-details{background:#fff;border:1px solid #e0e0e0;break-inside:avoid}}
