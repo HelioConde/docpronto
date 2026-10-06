@@ -20,7 +20,7 @@ O DocPronto já possui um MVP fullstack funcional:
 - link público protegido por token para o cliente;
 - aprovação/recusa sem conta através das Edge Functions `proposal-public` e `proposal-response`;
 - impressão/salvamento em PDF A4 pelo navegador, tanto pelo prestador quanto pelo cliente;
-- CI com Static QA e testes Node.
+- CI com Static QA, testes Node e Browser E2E em Chromium.
 
 O backend compartilhado é o projeto Supabase `pizzaria-db`. O DocPronto usa apenas tabelas e funções com prefixo/escopo próprio.
 
@@ -55,14 +55,14 @@ Automatizado:
 - arquivos e metadados essenciais;
 - GitHub Actions em push e pull request.
 
-Ainda exige homologação manual:
+O Browser E2E agora cobre o fluxo local completo e a página pública com backend controlado. Ainda exige homologação manual:
 
 - cadastro, confirmação de e-mail, login e recuperação de senha;
 - sincronização em duas contas diferentes para confirmar isolamento real;
 - expiração de sessão e falha de rede;
 - impressão/PDF com conteúdo longo;
 - revisão visual em 360 px, 768 px e 1440 px;
-- fluxo completo do link público em um navegador separado.
+- fluxo completo do link público contra o backend real em um navegador separado.
 
 ## UX/UI
 
