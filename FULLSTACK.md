@@ -61,7 +61,7 @@ O Browser E2E agora cobre o fluxo local completo e a página pública com backen
 - sincronização em duas contas diferentes para confirmar isolamento real;
 - expiração de sessão e falha de rede;
 - impressão/PDF com conteúdo longo;
-- revisão visual em 360 px, 768 px e 1440 px;
+- revisão visual manual fina em 360 px, 768 px e 1440 px; o smoke automatizado nessas larguras já passa sem overflow;
 - fluxo completo do link público contra o backend real em um navegador separado.
 
 ## UX/UI
