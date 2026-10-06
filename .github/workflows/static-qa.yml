@@ -95,6 +95,10 @@ jobs:
           grep -qi 'docpronto_beta_feedback' supabase/functions/beta-feedback/index.ts
           grep -qi 'downloadFollowUpCalendar' app.js
           grep -qi 'data-followup-calendar' app.js
+          grep -qi 'local-backup-controls' index.html
+          grep -qi 'exportLocalBackup' app.js
+          grep -qi 'restoreLocalBackup' app.js
+          grep -qi 'docpronto-backup' app.js
           grep -qi 'proposal-template' index.html
           grep -qi 'proposalTemplates' app.js
           grep -qi 'applyProposalTemplate' app.js
