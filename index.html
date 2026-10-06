@@ -57,9 +57,37 @@
         <button class="primary" type="submit">Atualizar senha</button>
       </form>
       <div id="account-profile" hidden>
-        <p>Conectado como <strong id="account-email"></strong></p>
+        <p class="account-connected">Conectado como <strong id="account-email"></strong></p>
         <p class="account-private-note">Suas propostas ficam privadas na sua conta.</p>
-        <button id="sign-out" class="secondary" type="button">Sair da conta</button>
+        <section class="business-profile" aria-labelledby="business-profile-title">
+          <div class="account-section-heading">
+            <div>
+              <span class="account-section-kicker">IDENTIDADE</span>
+              <h3 id="business-profile-title">Dados do seu negócio</h3>
+            </div>
+            <span class="profile-sync-badge">Sincronizado</span>
+          </div>
+          <p>Esses dados preenchem novas propostas e a cor aparece como detalhe no documento.</p>
+          <form id="business-profile-form">
+            <label class="field">
+              <span>Nome do negócio</span>
+              <input name="businessName" type="text" maxlength="80" autocomplete="organization" placeholder="Ex.: Conde Elétrica">
+            </label>
+            <label class="field">
+              <span>Telefone ou WhatsApp</span>
+              <input name="businessPhone" type="tel" maxlength="30" inputmode="tel" placeholder="(11) 99999-9999">
+            </label>
+            <label class="brand-color-field">
+              <span>Cor da proposta</span>
+              <span class="brand-color-control">
+                <input name="brandColor" type="color" value="#245d6c" aria-label="Cor da proposta">
+                <output id="brand-color-value">#245D6C</output>
+              </span>
+            </label>
+            <button class="primary" type="submit">Salvar identidade</button>
+          </form>
+        </section>
+        <button id="sign-out" class="secondary account-sign-out" type="button">Sair da conta</button>
       </div>
       <p id="account-message" class="account-message" role="status" aria-live="polite"></p>
     </dialog>
