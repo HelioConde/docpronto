@@ -25,6 +25,7 @@ const publicProposalToken = pageParams.get('token')?.trim() || '';
 const publicProposalMode = Boolean(publicProposalId && publicProposalToken);
 let currentUser = null;
 let cloudProposals = [];
+let cloudClients = [];
 let cloudLoading = false;
 let passwordRecovery = false;
 let openedProposalId = null;
@@ -142,6 +143,74 @@ function makeUuid() {
     .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5');
 }
 
+function renderClientSuggestions() {
+  const dataList = document.querySelector('#client-suggestions');
+  if (!dataList) return;
+  dataList.innerHTML = cloudClients
+    .slice()
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'))
+    .map(client => '<option value="' + escapeHtml(client.name) + '"></option>')
+    .join('');
+}
+
+async function loadCloudClients() {
+  if (!supabaseClient || !currentUser) return;
+  const ownerId = currentUser.id;
+  const { data, error } = await supabaseClient
+    .from('docpronto_clients')
+    .select('id,name,name_key,phone,email,updated_at')
+    .order('updated_at', { ascending: false })
+    .limit(100);
+  if (currentUser?.id !== ownerId) return;
+  if (error) {
+    console.warn('DocPronto clientes não puderam ser carregados:', error.message);
+    return;
+  }
+  cloudClients = data || [];
+  renderClientSuggestions();
+}
+
+async function syncClientRecord(proposal) {
+  if (!supabaseClient || !currentUser) return;
+  const name = String(proposal.client || '').trim();
+  if (!name) return;
+  const nameKey = name.toLocaleLowerCase('pt-BR');
+  const phone = String(proposal.clientPhone || '').trim() || null;
+  const existing = cloudClients.find(client => client.name_key === nameKey);
+
+  if (existing) {
+    const { data, error } = await supabaseClient
+      .from('docpronto_clients')
+      .update({ name, phone, updated_at: new Date().toISOString() })
+      .eq('id', existing.id)
+      .select('id,name,name_key,phone,email,updated_at')
+      .single();
+    if (error) throw error;
+    cloudClients = [data, ...cloudClients.filter(client => client.id !== data.id)];
+  } else {
+    const { data, error } = await supabaseClient
+      .from('docpronto_clients')
+      .insert({ user_id: currentUser.id, name, phone })
+      .select('id,name,name_key,phone,email,updated_at')
+      .single();
+    if (error) throw error;
+    cloudClients = [data, ...cloudClients];
+  }
+  renderClientSuggestions();
+}
+
+function applySavedClient() {
+  if (!currentUser) return;
+  const input = form.querySelector('[name="client"]');
+  const key = String(input.value || '').trim().toLocaleLowerCase('pt-BR');
+  const client = cloudClients.find(item => item.name_key === key);
+  if (!client) return;
+  form.querySelector('[name="clientPhone"]').value = client.phone || '';
+  showToast('Dados do cliente preenchidos.');
+}
+
+form.querySelector('[name="client"]').addEventListener('change', applySavedClient);
+
 function mapCloudProposal(row) {
   return {
     ...row.proposal_data,
@@ -178,6 +247,11 @@ async function saveCloudProposal(proposal) {
     .select('*')
     .single();
   if (error) throw error;
+  try {
+    await syncClientRecord(proposal);
+  } catch (clientError) {
+    console.warn('Proposta salva, mas o cliente não pôde ser atualizado:', clientError?.message || clientError);
+  }
   return mapCloudProposal(data);
 }
 
@@ -399,9 +473,17 @@ function initAccount() {
     activeUserId = user?.id || null;
     currentUser = user;
     cloudProposals = [];
+    cloudClients = [];
+    renderClientSuggestions();
     updateAccountUi();
-    if (user) window.setTimeout(() => loadCloudProposals(), 0);
-    else renderHistory();
+    if (user) {
+      window.setTimeout(() => {
+        loadCloudProposals();
+        loadCloudClients();
+      }, 0);
+    } else {
+      renderHistory();
+    }
   };
   supabaseClient.auth.onAuthStateChange((authEvent, session) => {
     window.setTimeout(() => setSession(session, authEvent), 0);
