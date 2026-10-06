@@ -13,6 +13,49 @@ const discountValueInput = document.querySelector('#discount-value');
 const storageKey = 'docpronto-proposals';
 const composerDraftKey = 'docpronto-composer-draft-v1';
 const maxItems = 10;
+const proposalTemplates = Object.freeze({
+  electrical: {
+    items: [
+      'Visita técnica e diagnóstico',
+      'Instalação ou manutenção elétrica',
+      'Materiais elétricos complementares'
+    ],
+    deadline: 'Até 3 dias úteis após aprovação',
+    terms: '50% no início e 50% na conclusão',
+    notes: 'Serviços ou materiais não descritos nesta proposta serão orçados separadamente.'
+  },
+  plumbing: {
+    items: [
+      'Visita técnica e identificação do problema',
+      'Reparo ou instalação hidráulica',
+      'Materiais hidráulicos complementares'
+    ],
+    deadline: 'Até 3 dias úteis após aprovação',
+    terms: '50% no início e 50% na conclusão',
+    notes: 'Intervenções civis ou materiais não descritos serão orçados separadamente.'
+  },
+  painting: {
+    items: [
+      'Preparação e proteção do ambiente',
+      'Preparação das superfícies',
+      'Aplicação de pintura e acabamento',
+      'Limpeza final do local'
+    ],
+    deadline: 'Prazo conforme área e condições do local',
+    terms: '40% no início e 60% na conclusão',
+    notes: 'Correções estruturais, infiltrações e materiais não descritos não estão incluídos.'
+  },
+  digital: {
+    items: [
+      'Planejamento e definição do escopo',
+      'Execução do serviço',
+      'Revisão e entrega final'
+    ],
+    deadline: 'Prazo definido após aprovação do escopo',
+    terms: '50% na aprovação e 50% na entrega',
+    notes: 'Alterações fora do escopo aprovado poderão exigir novo orçamento e prazo.'
+  }
+});
 const accountDialog = document.querySelector('#account-dialog');
 const accountOpenButton = document.querySelector('#account-open');
 const accountCloseButton = document.querySelector('#account-close');
@@ -30,6 +73,8 @@ const historySummary = document.querySelector('#history-summary');
 const historyMoreButton = document.querySelector('#history-more');
 const exportCsvButton = document.querySelector('#export-csv');
 const clearComposerButton = document.querySelector('#clear-composer');
+const proposalTemplateSelect = document.querySelector('#proposal-template');
+const applyTemplateButton = document.querySelector('#apply-template');
 const businessProfileForm = document.querySelector('#business-profile-form');
 const brandColorValue = document.querySelector('#brand-color-value');
 const savedClientsList = document.querySelector('#saved-clients-list');
@@ -1004,6 +1049,49 @@ function currentPricing() {
   );
   return { ...pricing, items: validation.items };
 }
+
+function composerHasTemplateContent() {
+  const itemDescriptions = Array.from(itemFields.querySelectorAll('[data-description]'))
+    .some(input => String(input.value || '').trim());
+  return itemDescriptions
+    || Boolean(String(form.querySelector('[name="deadline"]')?.value || '').trim())
+    || Boolean(String(form.querySelector('[name="terms"]')?.value || '').trim())
+    || Boolean(String(form.querySelector('[name="notes"]')?.value || '').trim());
+}
+
+function applyProposalTemplate(templateKey) {
+  const template = proposalTemplates[templateKey];
+  if (!template) return;
+
+  if (composerHasTemplateContent() &&
+      !window.confirm(uiText('Aplicar este modelo substituirá serviços, prazo, pagamento e observações atuais. Continuar?'))) {
+    return;
+  }
+
+  itemFields.innerHTML = '';
+  template.items.slice(0, maxItems).forEach(description => {
+    addItem({ description, quantity: 1, unitPrice: '' });
+  });
+
+  form.querySelector('[name="deadline"]').value = template.deadline;
+  form.querySelector('[name="terms"]').value = template.terms;
+  form.querySelector('[name="notes"]').value = template.notes;
+  updateTotal();
+  scheduleComposerDraftSave();
+
+  const firstPrice = itemFields.querySelector('[data-unit-price]');
+  firstPrice?.focus();
+  showToast('Modelo aplicado. Preencha os valores e revise antes de gerar.');
+}
+
+proposalTemplateSelect?.addEventListener('change', () => {
+  if (applyTemplateButton) applyTemplateButton.disabled = !proposalTemplateSelect.value;
+});
+
+applyTemplateButton?.addEventListener('click', () => {
+  if (!proposalTemplateSelect?.value) return;
+  applyProposalTemplate(proposalTemplateSelect.value);
+});
 
 function updateTotal() {
   const pricing = currentPricing();
