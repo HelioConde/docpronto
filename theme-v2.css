@@ -311,3 +311,6 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .language-switcher button:focus-visible{outline:3px solid #245d6c55;outline-offset:2px}
 html[lang="en"] .hero h1{max-width:780px}
 @media(max-width:680px){.nav-actions{gap:7px}.language-switcher button{min-width:31px;padding:0 6px}}
+
+.install-app{padding:8px 11px;font-size:11px;white-space:nowrap}
+@media(max-width:760px){.install-app{display:none!important}}
