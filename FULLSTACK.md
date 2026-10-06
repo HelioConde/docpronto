@@ -24,6 +24,19 @@ O DocPronto já possui um MVP fullstack funcional:
 
 O backend compartilhado é o projeto Supabase `pizzaria-db`. O DocPronto usa apenas tabelas e funções com prefixo/escopo próprio.
 
+## Internacionalização
+
+O produto usa uma camada de i18n no frontend com:
+
+- PT-BR como locale padrão e fallback;
+- inglês como segundo idioma obrigatório;
+- seletor PT/EN acessível;
+- preferência persistida em `localStorage`;
+- tradução também de conteúdo dinâmico gerado pelo JavaScript;
+- formatação localizada de datas, números e moeda;
+- atualização de `lang`, title, description e Open Graph conforme o idioma ativo;
+- preservação do texto original em PT-BR ao alternar entre os idiomas.
+
 ## Segurança
 
 `docpronto_proposals` e `docpronto_clients` possuem RLS por proprietário.
