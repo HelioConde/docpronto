@@ -1341,6 +1341,79 @@ function proposalFollowUpInfo(proposal) {
   };
 }
 
+function proposalSentAt(proposal) {
+  const sentEvents = normalizeStatusHistory(proposal).filter(entry => entry.status === 'sent');
+  if (sentEvents.length) return Number(sentEvents[sentEvents.length - 1].at);
+  return Number(proposal.updatedAt || proposal.createdAt || Date.now());
+}
+
+function followUpCalendarDate(proposal) {
+  const date = new Date(proposalSentAt(proposal));
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + followUpThresholdDays);
+  return date;
+}
+
+function icsDate(date) {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return year + month + day;
+}
+
+function icsUtcStamp(date = new Date()) {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function escapeIcsText(value) {
+  return String(value || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
+}
+
+function downloadFollowUpCalendar(proposal) {
+  if ((proposal?.status || 'draft') !== 'sent') return;
+  const start = followUpCalendarDate(proposal);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  const title = currentLocale() === 'en'
+    ? 'DocPronto follow-up · ' + proposal.client
+    : 'Follow-up DocPronto · ' + proposal.client;
+  const description = currentLocale() === 'en'
+    ? 'Follow up on proposal ' + proposal.number + ' from ' + proposal.business + '.'
+    : 'Acompanhar a proposta ' + proposal.number + ' da ' + proposal.business + '.';
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//DocPronto//Follow-up//PT-BR',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    'UID:' + escapeIcsText('docpronto-' + proposal.id + '@helioconde.github.io'),
+    'DTSTAMP:' + icsUtcStamp(),
+    'DTSTART;VALUE=DATE:' + icsDate(start),
+    'DTEND;VALUE=DATE:' + icsDate(end),
+    'SUMMARY:' + escapeIcsText(title),
+    'DESCRIPTION:' + escapeIcsText(description),
+    'END:VEVENT',
+    'END:VCALENDAR',
+    ''
+  ].join('\r\n');
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'docpronto-followup-' + String(proposal.number || 'proposta').replace(/[^a-z0-9-]+/gi, '-') + '.ics';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Lembrete adicionado ao calendário.');
+}
+
 function proposalFollowUpMessage(proposal) {
   if (currentLocale() === 'en') {
     return `Hi, ${proposal.client}! I'm following up on proposal ${proposal.number} from ${proposal.business}. If you have any questions or would like to move forward, I'm available to help.`;
@@ -1669,6 +1742,9 @@ function renderHistory() {
             ? '<a class="secondary followup-action" target="_blank" rel="noopener" href="https://wa.me/' + followUpPhone + '?text=' + encodeURIComponent(followUpMessage) + '">' + uiText('Cobrar retorno') + '</a>'
             : '<button class="secondary followup-action" type="button" data-copy-followup="' + escapeHtml(proposal.id) + '">' + uiText('Copiar lembrete') + '</button>')
         : '';
+      const calendarAction = status === 'sent'
+        ? '<button class="secondary calendar-action" type="button" data-followup-calendar="' + escapeHtml(proposal.id) + '">' + uiText('Adicionar ao calendário') + '</button>'
+        : '';
       return '<div class="item"><div class="item-summary"><div class="item-title-line"><strong>' + escapeHtml(proposal.client) + '</strong><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
         '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small>' +
         (proposal.respondedAt && (status === 'approved' || status === 'rejected')
@@ -1677,6 +1753,7 @@ function renderHistory() {
         validityBadge + followUpBadge + '</div>' +
         '<div class="item-actions">' +
           followUpAction +
+          calendarAction +
           '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta"' + ((status === 'approved' || status === 'rejected') ? ' disabled' : '') + '>' +
             '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>Rascunho</option>' +
             '<option value="sent"' + (status === 'sent' ? ' selected' : '') + '>Enviada</option>' +
@@ -1873,6 +1950,13 @@ list.addEventListener('change', async event => {
 });
 
 list.addEventListener('click', async event => {
+  const calendarButton = event.target.closest('[data-followup-calendar]');
+  if (calendarButton) {
+    const proposal = visibleProposals().find(item => item.id === calendarButton.dataset.followupCalendar);
+    if (proposal) downloadFollowUpCalendar(proposal);
+    return;
+  }
+
   const followUpButton = event.target.closest('[data-copy-followup]');
   if (followUpButton) {
     const proposal = visibleProposals().find(item => item.id === followUpButton.dataset.copyFollowup);
