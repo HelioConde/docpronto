@@ -605,7 +605,7 @@ function proposalValidityInfo(proposal) {
   return { label: '', tone: '' };
 }
 
-function renderHistorySummary(source) {
+function renderHistorySummary(source, selectedStatus = 'all') {
   if (!historySummary) return;
   const total = source.length;
   const sent = source.filter(item => (item.status || 'draft') === 'sent').length;
@@ -613,14 +613,15 @@ function renderHistorySummary(source) {
     .filter(item => (item.status || 'draft') === 'approved')
     .reduce((sum, item) => sum + (Number(item.total) || Number(item.amount) || 0), 0);
 
+  const activeClass = status => selectedStatus === status ? ' is-active' : '';
   historySummary.innerHTML =
-    '<button class="summary-card" type="button" data-summary-status="all" aria-label="Mostrar todas as propostas">' +
+    '<button class="summary-card' + activeClass('all') + '" type="button" data-summary-status="all" aria-pressed="' + (selectedStatus === 'all') + '" aria-label="Mostrar todas as propostas">' +
       '<span>Todas</span><strong>' + total + '</strong>' +
     '</button>' +
-    '<button class="summary-card" type="button" data-summary-status="sent" aria-label="Mostrar propostas enviadas">' +
+    '<button class="summary-card' + activeClass('sent') + '" type="button" data-summary-status="sent" aria-pressed="' + (selectedStatus === 'sent') + '" aria-label="Mostrar propostas enviadas">' +
       '<span>Enviadas</span><strong>' + sent + '</strong>' +
     '</button>' +
-    '<button class="summary-card summary-approved" type="button" data-summary-status="approved" aria-label="Mostrar propostas aprovadas">' +
+    '<button class="summary-card summary-approved' + activeClass('approved') + '" type="button" data-summary-status="approved" aria-pressed="' + (selectedStatus === 'approved') + '" aria-label="Mostrar propostas aprovadas">' +
       '<span>Aprovadas</span><strong>' + formatCurrency(approvedTotal) + '</strong>' +
     '</button>';
 }
@@ -727,7 +728,7 @@ function renderHistory() {
   const selectedStatus = proposalStatusFilter?.value || 'all';
   const searchTerm = String(proposalSearch?.value || '').trim().toLocaleLowerCase('pt-BR');
   const source = currentUser ? cloudProposals : readProposals().slice().reverse();
-  renderHistorySummary(source);
+  renderHistorySummary(source, selectedStatus);
   const proposals = source
     .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
     .filter(proposal => {
@@ -860,6 +861,7 @@ historySummary?.addEventListener('click', event => {
   const button = event.target.closest('[data-summary-status]');
   if (!button || !proposalStatusFilter) return;
   proposalStatusFilter.value = button.dataset.summaryStatus || 'all';
+  if (proposalSearch) proposalSearch.value = '';
   renderHistory();
 });
 
