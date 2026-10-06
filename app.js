@@ -88,6 +88,7 @@ function serializeComposerDraft() {
     clientPhone: form.querySelector('[name="clientPhone"]')?.value || '',
     deadline: form.querySelector('[name="deadline"]')?.value || '',
     terms: form.querySelector('[name="terms"]')?.value || '',
+    notes: form.querySelector('[name="notes"]')?.value || '',
     validUntil: validityInput?.value || '',
     discountType: discountTypeInput?.value || 'none',
     discountValue: discountValueInput?.value || '0',
@@ -128,6 +129,7 @@ function restoreComposerDraft() {
   const clientPhone = form.querySelector('[name="clientPhone"]');
   const deadline = form.querySelector('[name="deadline"]');
   const terms = form.querySelector('[name="terms"]');
+  const notes = form.querySelector('[name="notes"]');
 
   if (business) business.value = draft.business || business.value;
   if (businessPhone) businessPhone.value = draft.businessPhone || '';
@@ -135,6 +137,7 @@ function restoreComposerDraft() {
   if (clientPhone) clientPhone.value = draft.clientPhone || '';
   if (deadline) deadline.value = draft.deadline || '';
   if (terms) terms.value = draft.terms || '';
+  if (notes) notes.value = draft.notes || '';
   if (draft.validUntil) validityInput.value = draft.validUntil;
   if (discountTypeInput) discountTypeInput.value = ['percent', 'fixed'].includes(draft.discountType) ? draft.discountType : 'none';
   if (discountValueInput) {
@@ -189,6 +192,7 @@ function beginEditing(proposal) {
   form.querySelector('[name="clientPhone"]').value = proposal.clientPhone || '';
   form.querySelector('[name="deadline"]').value = proposal.deadline || '';
   form.querySelector('[name="terms"]').value = proposal.terms || '';
+  form.querySelector('[name="notes"]').value = proposal.notes || '';
   if (discountTypeInput) discountTypeInput.value = ['percent', 'fixed'].includes(proposal.discountType) ? proposal.discountType : 'none';
   if (discountValueInput) {
     discountValueInput.value = Number(proposal.discountValue || 0);
@@ -907,6 +911,7 @@ function renderProposal(proposal) {
       '</div>' +
       '<p><b>Prazo:</b> ' + escapeHtml(proposal.deadline) + '</p>' +
       '<p><b>Condições de pagamento:</b> ' + escapeHtml(proposal.terms) + '</p>' +
+      (proposal.notes ? '<section class="proposal-notes"><span class="proposal-label">OBSERVAÇÕES</span><p>' + escapeHtml(proposal.notes) + '</p></section>' : '') +
       '<div class="proposal-actions">' +
         '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
         '<button class="secondary" id="copy-proposal-summary" type="button">Copiar resumo</button>' +
@@ -1058,6 +1063,7 @@ form.addEventListener('submit', async event => {
     scope: items.map(item => item.description).join(', '),
     deadline: String(values.deadline || '').trim(),
     terms: String(values.terms || '').trim(),
+    notes: String(values.notes || '').trim(),
     businessPhone: String(values.businessPhone || '').trim(),
     validUntil: values.validUntil,
     brandColor: existing?.brandColor || accountBusinessProfile().brandColor,
@@ -1259,6 +1265,7 @@ function renderPublicProposal(proposal) {
     '</div>' +
     '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada') + '</p>' +
     (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
+    (proposal.notes ? '<section class="proposal-notes public-notes"><span class="proposal-label">OBSERVAÇÕES</span><p>' + escapeHtml(proposal.notes) + '</p></section>' : '') +
     '<div class="public-document-actions"><button class="secondary" id="public-print" type="button">Imprimir / salvar PDF</button></div>' +
         (expired ? '<div class="public-response-note">Esta proposta expirou.</div>' :
       proposal.status === 'approved' ? '<div class="public-response-note success">Você aprovou esta proposta.</div>' :
