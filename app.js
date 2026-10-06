@@ -990,11 +990,19 @@ function renderPublicProposal(proposal) {
     '<div class="amount-line"><span>Total da proposta</span><strong class="amount">' + formatCurrency(proposal.total) + '</strong></div>' +
     '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada') + '</p>' +
     (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
-    (expired ? '<div class="public-response-note">Esta proposta expirou.</div>' :
+    '<div class="public-document-actions"><button class="secondary" id="public-print" type="button">Imprimir / salvar PDF</button></div>' +
+        (expired ? '<div class="public-response-note">Esta proposta expirou.</div>' :
       proposal.status === 'approved' ? '<div class="public-response-note success">Você aprovou esta proposta.</div>' :
       proposal.status === 'rejected' ? '<div class="public-response-note rejected">Você recusou esta proposta.</div>' :
       canRespond ? '<div class="public-response-actions"><button class="primary" id="public-approve" type="button">Aprovar proposta</button><button class="secondary public-reject" id="public-reject" type="button">Recusar</button></div>' :
       '<div class="public-response-note">Esta proposta não está disponível para resposta.</div>');
+
+  document.querySelector('#public-print')?.addEventListener('click', () => {
+    const previousTitle = document.title;
+    document.title = 'Proposta ' + proposal.number + ' - ' + proposal.client;
+    window.print();
+    window.setTimeout(() => { document.title = previousTitle; }, 500);
+  });
 
   if (canRespond) {
     document.querySelector('#public-approve').addEventListener('click', () => submitPublicResponse('approved'));
