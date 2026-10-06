@@ -70,6 +70,15 @@ test('design v3 mantém fluxo visual, histórico fixo no desktop e itens móveis
   assert.match(css, /\.hero-points/);
 });
 
+test('histórico permite buscar propostas sem consultar o banco a cada tecla', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(html, /id="proposal-search"/);
+  assert.match(app, /const proposalSearch/);
+  assert.match(app, /proposalSearch\?\.addEventListener\('input', renderHistory\)/);
+  assert.match(app, /proposal\.client, proposal\.business, proposal\.number/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
