@@ -226,3 +226,33 @@ test('modo local continua utilizável offline após primeira abertura', async ({
 
   await context.setOffline(false);
 });
+
+
+test('dashboard calcula conversão comercial sem contar rascunhos', async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const base = {
+      business: 'Negócio QA',
+      client: 'Cliente',
+      total: 100,
+      amount: 100,
+      createdAt: now,
+      items: [{ description: 'Serviço', quantity: 1, unitPrice: 100, subtotal: 100 }],
+      deadline: '1 dia',
+      terms: 'À vista'
+    };
+    localStorage.setItem('docpronto-proposals', JSON.stringify([
+      { ...base, id: '00000000-0000-4000-8000-000000000001', number: 'DP-1', status: 'draft' },
+      { ...base, id: '00000000-0000-4000-8000-000000000002', number: 'DP-2', status: 'sent' },
+      { ...base, id: '00000000-0000-4000-8000-000000000003', number: 'DP-3', status: 'approved' },
+      { ...base, id: '00000000-0000-4000-8000-000000000004', number: 'DP-4', status: 'approved' },
+      { ...base, id: '00000000-0000-4000-8000-000000000005', number: 'DP-5', status: 'rejected' }
+    ]));
+  });
+
+  await localMode(page);
+  const card = page.locator('.summary-conversion');
+  await expect(card).toContainText('Conversão');
+  await expect(card).toContainText('50%');
+  await expect(card).toContainText('2 / 4');
+});
