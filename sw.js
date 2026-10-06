@@ -6,6 +6,8 @@ const APP_SHELL = [
   './app.js',
   './proposal-core.js',
   './supabase-config.js',
+  './ads-config.js',
+  './ads.js',
   './i18n.js',
   './pwa.js',
   './manifest.webmanifest',
