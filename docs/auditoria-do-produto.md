@@ -10,9 +10,10 @@ Revisão de código e da captura enviada em 6 de outubro de 2026. Os pontos abai
 - O formulário aceita itens, calcula totais, gera prévia e imprime/salva PDF.
 - Histórico, edição e uso como modelo cobrem os casos mais repetidos.
 - Desconto percentual/fixo, observações, identidade do negócio e dados reutilizáveis de clientes aproximam o produto de uso comercial real.
+- As respostas do cliente são atualizadas ao voltar para a aba e propostas encerradas só podem ser reabertas com invalidação explícita do link anterior.
 - A conta é opcional. A sincronização separa propostas por usuário no banco.
 - A imagem anexada mostrava a página sem CSS. Foi criado um caminho de stylesheet novo para contornar o cache do Pages.
-- O histórico carrega até 100 propostas, exibe até 10 por vez, possui busca por cliente/empresa/número, filtros de status e resumo comercial. Paginação completa continua opcional para uma etapa futura.
+- O histórico carrega até 100 propostas, exibe 10 inicialmente e permite revelar as demais em blocos de 10. Possui busca por cliente/empresa/número, filtros de status, resumo comercial e exportação CSV.
 - A sincronização exige redirect URL e entrega de e-mail válidos no Supabase; a interface informa erros de configuração.
 
 ## QA e segurança
