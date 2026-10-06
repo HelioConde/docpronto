@@ -325,6 +325,8 @@
   "Mostrar propostas sem resposta": "Show proposals awaiting response",
   "Cobrar retorno": "Follow up",
   "Copiar lembrete": "Copy follow-up",
+  "Adicionar ao calendário": "Add to calendar",
+  "Lembrete adicionado ao calendário.": "Reminder added to calendar.",
   "Lembrete de follow-up copiado.": "Follow-up message copied.",
   "Não foi possível copiar o lembrete.": "Could not copy the follow-up message."
 });
