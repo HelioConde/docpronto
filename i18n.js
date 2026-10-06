@@ -2,6 +2,9 @@
   const storageKey = 'docpronto-language';
   const translations = {
   "Salvo neste dispositivo": "Saved on this device",
+  "Instalar app": "Install app",
+  "DocPronto instalado.": "DocPronto installed.",
+  "Instalação disponível no menu do navegador.": "Installation is available from your browser menu.",
   "Entrar / sincronizar": "Sign in / sync",
   "SUA CONTA DOC PRONTO": "YOUR DOC PRONTO ACCOUNT",
   "Acesse de qualquer dispositivo": "Access from any device",
