@@ -78,3 +78,8 @@ O backlog priorizado de homologação e evolução fica em [MELHORIAS.md](./MELH
 ## PWA / modo offline
 
 O DocPronto pode ser instalado como aplicativo em navegadores compatíveis. Depois da primeira abertura, o shell principal fica em cache e o modo local continua disponível sem conexão. Recursos de nuvem, login e sincronização continuam exigindo internet.
+
+
+## Monetização por anúncios
+
+O DocPronto está preparado para permanecer gratuito e monetizar com anúncios responsivos em áreas não críticas. A integração fica desligada até existirem Publisher ID e slots reais. Consulte [ADS_SETUP.md](./ADS_SETUP.md).
