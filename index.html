@@ -144,7 +144,25 @@
             <p class="field-help">Adicione até 10 itens. O total é atualizado automaticamente.</p>
             <div id="item-fields" class="item-fields"></div>
             <button id="add-item" class="add-item" type="button">+ Adicionar serviço ou material</button>
-            <div class="total-line"><span>Total do orçamento</span><strong id="form-total">R$ 0,00</strong></div>
+            <div class="discount-controls">
+              <label>
+                <span>Desconto</span>
+                <select id="discount-type" name="discountType">
+                  <option value="none">Sem desconto</option>
+                  <option value="percent">Percentual (%)</option>
+                  <option value="fixed">Valor fixo (R$)</option>
+                </select>
+              </label>
+              <label>
+                <span>Valor</span>
+                <input id="discount-value" name="discountValue" type="number" min="0" step="0.01" inputmode="decimal" value="0" disabled>
+              </label>
+            </div>
+            <div class="pricing-summary">
+              <div><span>Subtotal</span><strong id="form-subtotal">R$ 0,00</strong></div>
+              <div id="form-discount-row" hidden><span>Desconto</span><strong id="form-discount">− R$ 0,00</strong></div>
+              <div class="total-line"><span>Total do orçamento</span><strong id="form-total">R$ 0,00</strong></div>
+            </div>
           </fieldset>
 
           <label class="field">
