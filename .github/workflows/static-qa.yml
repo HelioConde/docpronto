@@ -67,3 +67,6 @@ jobs:
           grep -qi 'proposal-template' index.html
           grep -qi 'proposalTemplates' app.js
           grep -qi 'applyProposalTemplate' app.js
+          grep -qi 'business-logo-input' index.html
+          grep -qi 'compressBusinessLogo' app.js
+          grep -qi 'businessLogo' supabase/functions/proposal-public/index.ts
