@@ -85,7 +85,14 @@ Sem perder a tarde.</h1>
       </aside>
     </section>
 
-    <main class="grid">
+    <section id="public-proposal-view" class="public-proposal-view" hidden>
+      <div class="public-proposal-card" id="public-proposal-content">
+        <p class="eyebrow">PROPOSTA COMPARTILHADA</p>
+        <h2>Carregando proposta…</h2>
+      </div>
+    </section>
+
+    <main class="grid" id="app-grid">
       <section class="panel">
         <h2>Dados do orçamento</h2>
         <p class="sub">Descreva o trabalho e separe cada serviço ou material para deixar o valor transparente.</p>
@@ -130,7 +137,7 @@ Sem perder a tarde.</h1>
       </section>
     </main>
 
-    <section class="benefits" aria-labelledby="benefits-title">
+    <section class="benefits" id="benefits-section" aria-labelledby="benefits-title">
       <h2 id="benefits-title">Da proposta ao PDF, sem complicação</h2>
       <div class="benefit-grid">
         <article><strong>Valores transparentes</strong><span>Detalhe até 10 serviços ou materiais por proposta.</span></article>
