@@ -90,3 +90,8 @@ O DocPronto está preparado para permanecer gratuito e monetizar com anúncios r
 O produto inclui feedback interno com nota de 1–5, categoria e comentário. O frontend não envia nome, telefone, e-mail, cliente nem conteúdo de proposta. Quando o backend estiver indisponível, os envios ficam em uma fila local de até 20 itens e são reenviados automaticamente quando o endpoint estiver disponível.
 
 A migration e a Edge Function `beta-feedback` já estão versionadas; a publicação no Supabase real depende da restauração do acesso administrativo.
+
+
+## Calendário
+
+Propostas enviadas podem gerar um arquivo `.ics` de follow-up para três dias após o envio. O arquivo funciona com calendários compatíveis sem exigir integração externa.
