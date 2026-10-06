@@ -30,8 +30,9 @@ const brandColorValue = document.querySelector('#brand-color-value');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
 const pageParams = new URLSearchParams(location.search);
-const publicProposalId = pageParams.get('proposta')?.trim() || '';
-const publicProposalToken = pageParams.get('token')?.trim() || '';
+const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''));
+const publicProposalId = (hashParams.get('proposta') || pageParams.get('proposta') || '').trim();
+const publicProposalToken = (hashParams.get('token') || pageParams.get('token') || '').trim();
 const publicProposalMode = Boolean(publicProposalId && publicProposalToken);
 let currentUser = null;
 let cloudProposals = [];
@@ -988,9 +989,10 @@ function renderProposal(proposal) {
 
       const url = new URL(location.href);
       url.search = '';
-      url.hash = '';
-      url.searchParams.set('proposta', proposal.id);
-      url.searchParams.set('token', token);
+      const shareParams = new URLSearchParams();
+      shareParams.set('proposta', proposal.id);
+      shareParams.set('token', token);
+      url.hash = shareParams.toString();
       await navigator.clipboard.writeText(url.toString());
 
       const updated = { ...proposal, status: 'sent', updatedAt: Date.now() };
@@ -1366,6 +1368,8 @@ async function submitPublicResponse(decision) {
 }
 
 function initPublicProposalMode() {
+  document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,nofollow,noarchive');
+  document.querySelector('meta[name="referrer"]')?.setAttribute('content', 'no-referrer');
   document.querySelector('.hero').hidden = true;
   document.querySelector('#app-grid').hidden = true;
   document.querySelector('#benefits-section').hidden = true;
