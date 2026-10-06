@@ -138,3 +138,71 @@ for (const width of [360, 768, 1440]) {
     await expect(page.locator('#list')).toBeVisible();
   });
 }
+
+
+test('proposta longa gera PDF A4 sem estourar o documento', async ({ page }) => {
+  await localMode(page);
+  await page.setViewportSize({ width: 794, height: 1123 });
+
+  await page.locator('[name="business"]').fill('Conde Manutenção e Instalações');
+  await page.locator('[name="businessPhone"]').fill('(11) 99999-0000');
+  await page.locator('[name="client"]').fill('Empresa Cliente de Homologação');
+  await page.locator('[name="clientPhone"]').fill('(11) 98888-0000');
+  await page.locator('details.client-extra').evaluate(el => { el.open = true; });
+  await page.locator('[name="clientEmail"]').fill('cliente@example.com');
+  await page.locator('[name="clientDocument"]').fill('12.345.678/0001-90');
+  await page.locator('[name="clientAddress"]').fill('Rua de Homologação, 123 - Centro - São Paulo/SP');
+
+  const descriptions = [
+    'Visita técnica e diagnóstico completo',
+    'Instalação de quadro elétrico',
+    'Passagem e organização de cabeamento',
+    'Instalação de tomadas e interruptores',
+    'Troca de luminárias e suportes',
+    'Teste de carga e segurança',
+    'Material elétrico complementar',
+    'Acabamento e identificação dos circuitos',
+    'Limpeza técnica após execução',
+    'Relatório final do serviço'
+  ];
+
+  for (let i = 0; i < descriptions.length; i += 1) {
+    if (i > 0) await page.getByRole('button', { name: /Adicionar serviço ou material/i }).click();
+    const row = page.locator('.line-item').nth(i);
+    await row.locator('[data-description]').fill(descriptions[i]);
+    await row.locator('[data-quantity]').fill(i % 3 === 0 ? '2' : '1');
+    await row.locator('[data-unit-price]').fill(String(85 + i * 37));
+  }
+
+  await page.locator('#discount-type').selectOption('percent');
+  await page.locator('#discount-value').fill('7.5');
+  await page.locator('[name="deadline"]').fill('Execução em até 7 dias úteis após aprovação e liberação do local');
+  await page.locator('[name="terms"]').fill('40% na aprovação, 30% no início e 30% após a conclusão');
+  await page.locator('[name="notes"]').fill(
+    'Proposta de homologação com conteúdo longo. Inclui garantia de 90 dias sobre a instalação. ' +
+    'Não inclui reparos civis, pintura, adequações estruturais ou serviços não descritos nos itens. ' +
+    'Alterações solicitadas após aprovação poderão gerar revisão de prazo e valor. '.repeat(3)
+  );
+
+  await page.getByRole('button', { name: 'Gerar proposta' }).click();
+  await expect(page.locator('#proposal')).toBeVisible();
+  await expect(page.locator('#proposal .proposal-table tbody tr')).toHaveCount(10);
+
+  await page.emulateMedia({ media: 'print' });
+  const layout = await page.locator('#proposal').evaluate(el => ({
+    scrollWidth: el.scrollWidth,
+    clientWidth: el.clientWidth,
+    tableScrollWidth: el.querySelector('.proposal-table-wrap')?.scrollWidth || 0,
+    tableClientWidth: el.querySelector('.proposal-table-wrap')?.clientWidth || 0
+  }));
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth + 2);
+  expect(layout.tableScrollWidth).toBeLessThanOrEqual(layout.tableClientWidth + 2);
+
+  const pdf = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '14mm', right: '14mm', bottom: '14mm', left: '14mm' }
+  });
+  expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  expect(pdf.length).toBeGreaterThan(15000);
+});
