@@ -29,6 +29,10 @@ jobs:
           test -f supabase/migrations/20261006054500_public_proposal_response.sql
           test -f supabase/migrations/20261006063000_reusable_clients.sql
           test -f supabase/migrations/20261006052000_proposal_status.sql
+          test -f package.json
+          test -f playwright.config.js
+          test -f tests/e2e/critical-flow.spec.js
+          test -f .github/workflows/e2e.yml
       - name: Check SEO and backend boot
         run: |
           grep -qi '<title' index.html
