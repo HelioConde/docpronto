@@ -26,3 +26,11 @@
 .amount-line .amount{font:800 23px Manrope;color:var(--accent);white-space:nowrap}
 @media(max-width:500px){.line-item{grid-template-columns:minmax(0,1fr) 70px 105px 30px;gap:6px;padding:8px}.line-item .field input{padding:9px 6px;font-size:12px}.remove-item{width:29px}.proposal-table{min-width:490px}}
 @media print{.proposal{max-width:800px;margin:auto}.proposal-table th,.proposal-table td{border-color:#bbb}.amount-line{border-color:#888}}
+
+
+.item{align-items:center}
+.item-summary{min-width:0;flex:1}
+.item-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.item-actions .secondary{padding:9px 10px;font-size:12px}
+.cancel-edit{width:100%;margin-top:8px}
+@media(max-width:560px){.item{align-items:flex-start;flex-direction:column;gap:9px}.item-actions{width:100%;justify-content:flex-start}.item-actions .secondary{flex:1}}

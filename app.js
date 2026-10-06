@@ -21,6 +21,61 @@ const today = new Date();
 validityInput.min = localDate(today);
 validityInput.value = localDate(new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000));
 
+const submitButton = form.querySelector('button[type="submit"]');
+const cancelEditButton = document.createElement('button');
+cancelEditButton.className = 'secondary cancel-edit';
+cancelEditButton.type = 'button';
+cancelEditButton.textContent = 'Cancelar edição';
+cancelEditButton.hidden = true;
+submitButton.before(cancelEditButton);
+let editingId = null;
+
+function defaultValidityDate() {
+  return localDate(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
+}
+
+function resetComposer() {
+  editingId = null;
+  form.reset();
+  itemFields.innerHTML = '';
+  addItem();
+  validityInput.min = localDate(new Date());
+  validityInput.value = defaultValidityDate();
+  submitButton.textContent = 'Gerar proposta';
+  cancelEditButton.hidden = true;
+}
+
+function beginEditing(proposal) {
+  editingId = proposal.id;
+  form.querySelector('[name="business"]').value = proposal.business || '';
+  form.querySelector('[name="businessPhone"]').value = proposal.businessPhone || '';
+  form.querySelector('[name="client"]').value = proposal.client || '';
+  form.querySelector('[name="deadline"]').value = proposal.deadline || '';
+  form.querySelector('[name="terms"]').value = proposal.terms || '';
+
+  const todayValue = localDate(new Date());
+  validityInput.min = todayValue;
+  validityInput.value = proposal.validUntil && proposal.validUntil >= todayValue
+    ? proposal.validUntil
+    : defaultValidityDate();
+
+  const items = Array.isArray(proposal.items) && proposal.items.length
+    ? proposal.items
+    : [{ description: proposal.scope || 'Serviço', quantity: 1, unitPrice: proposal.amount || 0 }];
+  itemFields.innerHTML = '';
+  items.slice(0, maxItems).forEach(addItem);
+
+  submitButton.textContent = 'Salvar alterações';
+  cancelEditButton.hidden = false;
+  form.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  form.querySelector('[name="business"]').focus();
+  showToast('Editando a proposta ' + proposal.number + '.');
+}
+
+cancelEditButton.addEventListener('click', () => {
+  resetComposer();
+  showToast('Edição cancelada.');
+});
 
 function escapeHtml(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
@@ -148,10 +203,13 @@ function renderHistory() {
   list.innerHTML = proposals.length
     ? proposals.map(proposal => {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
-      return '<div class="item"><div><strong>' + escapeHtml(proposal.client) + '</strong>' +
+      return '<div class="item"><div class="item-summary"><strong>' + escapeHtml(proposal.client) + '</strong>' +
         '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small></div>' +
-        '<button class="secondary" type="button" data-proposal="' + escapeHtml(proposal.id) + '">Abrir</button>' +
-        '<button class="secondary" type="button" data-delete="' + escapeHtml(proposal.id) + '" aria-label="Excluir proposta">Excluir</button></div>';
+        '<div class="item-actions">' +
+          '<button class="secondary" type="button" data-proposal="' + escapeHtml(proposal.id) + '">Abrir</button>' +
+          '<button class="secondary" type="button" data-edit="' + escapeHtml(proposal.id) + '">Editar</button>' +
+          '<button class="secondary" type="button" data-delete="' + escapeHtml(proposal.id) + '" aria-label="Excluir proposta">Excluir</button>' +
+        '</div></div>';
     }).join('')
     : '<div class="empty">As propostas salvas neste navegador aparecem aqui.</div>';
 }
@@ -177,10 +235,16 @@ form.addEventListener('submit', event => {
     return;
   }
 
-  const createdAt = Date.now();
-  const proposal = {
-    id: crypto.randomUUID?.() || String(createdAt),
-    number: 'DP-' + new Date(createdAt).getFullYear() + '-' + String(createdAt).slice(-6),
+  const now = Date.now();
+  const proposals = readProposals();
+  const existing = editingId ? proposals.find(item => item.id === editingId) : null;
+  if (editingId && !existing) {
+    resetComposer();
+    showToast('Essa proposta não está mais no histórico. Crie uma nova proposta.');
+    return;
+  }
+
+  const fields = {
     business: String(values.business || '').trim(),
     client: String(values.client || '').trim(),
     items: items,
@@ -190,16 +254,25 @@ form.addEventListener('submit', event => {
     deadline: String(values.deadline || '').trim(),
     terms: String(values.terms || '').trim(),
     businessPhone: String(values.businessPhone || '').trim(),
-    validUntil: values.validUntil,
-    createdAt: createdAt
+    validUntil: values.validUntil
   };
+  const proposal = existing
+    ? { ...existing, ...fields, updatedAt: now }
+    : {
+        ...fields,
+        id: crypto.randomUUID?.() || String(now),
+        number: 'DP-' + new Date(now).getFullYear() + '-' + String(now).slice(-6),
+        createdAt: now
+      };
+  const nextProposals = existing
+    ? proposals.map(item => item.id === existing.id ? proposal : item)
+    : proposals.concat(proposal).slice(-20);
 
-  const proposals = readProposals();
-  proposals.push(proposal);
-  localStorage.setItem(storageKey, JSON.stringify(proposals.slice(-20)));
+  localStorage.setItem(storageKey, JSON.stringify(nextProposals));
   renderProposal(proposal);
   renderHistory();
-  showToast('Proposta salva neste navegador.');
+  if (existing) resetComposer();
+  showToast(existing ? 'Proposta atualizada no histórico.' : 'Proposta salva neste navegador.');
 });
 
 itemFields.addEventListener('input', updateTotal);
@@ -219,6 +292,13 @@ list.addEventListener('click', event => {
     localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item => item.id !== id)));
     renderHistory();
     showToast('Proposta removida do histórico.');
+    return;
+  }
+
+  const editButton = event.target.closest('[data-edit]');
+  if (editButton) {
+    const proposal = readProposals().find(item => item.id === editButton.dataset.edit);
+    if (proposal) beginEditing(proposal);
     return;
   }
 
