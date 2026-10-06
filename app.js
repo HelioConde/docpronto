@@ -1161,6 +1161,30 @@ function proposalIsExpired(proposal) {
   return /^\d{4}-\d{2}-\d{2}$/.test(validUntil) && validUntil < localDate(new Date());
 }
 
+const followUpThresholdDays = 3;
+
+function proposalFollowUpInfo(proposal) {
+  const status = proposal?.status || 'draft';
+  if (status !== 'sent') return { due: false, days: 0, label: '' };
+  const reference = Number(proposal.updatedAt || proposal.createdAt || 0);
+  if (!Number.isFinite(reference) || reference <= 0) return { due: false, days: 0, label: '' };
+  const days = Math.max(0, Math.floor((Date.now() - reference) / 86400000));
+  return {
+    due: days >= followUpThresholdDays,
+    days,
+    label: days >= followUpThresholdDays
+      ? 'Sem resposta há ' + days + ' dia' + (days === 1 ? '' : 's')
+      : ''
+  };
+}
+
+function proposalFollowUpMessage(proposal) {
+  if (currentLocale() === 'en') {
+    return `Hi, ${proposal.client}! I'm following up on proposal ${proposal.number} from ${proposal.business}. If you have any questions or would like to move forward, I'm available to help.`;
+  }
+  return `Olá, ${proposal.client}! Estou passando para acompanhar a proposta ${proposal.number} da ${proposal.business}. Se tiver alguma dúvida ou quiser avançar, fico à disposição.`;
+}
+
 function proposalValidityInfo(proposal) {
   if (!proposal?.validUntil) return { label: '', tone: '' };
   const end = new Date(proposal.validUntil + 'T23:59:59');
@@ -1181,6 +1205,7 @@ function renderHistorySummary(source, selectedStatus = 'all') {
   const sent = source.filter(item => (item.status || 'draft') === 'sent').length;
   const approved = source.filter(item => (item.status || 'draft') === 'approved').length;
   const rejected = source.filter(item => (item.status || 'draft') === 'rejected').length;
+  const followUp = source.filter(item => proposalFollowUpInfo(item).due).length;
   const sentPipeline = sent + approved + rejected;
   const conversion = sentPipeline ? Math.round((approved / sentPipeline) * 100) : 0;
   const approvedTotal = source
@@ -1197,6 +1222,10 @@ function renderHistorySummary(source, selectedStatus = 'all') {
     '</button>' +
     '<button class="summary-card summary-approved' + activeClass('approved') + '" type="button" data-summary-status="approved" aria-pressed="' + (selectedStatus === 'approved') + '" aria-label="Mostrar propostas aprovadas">' +
       '<span>Aprovadas</span><strong>' + formatCurrency(approvedTotal) + '</strong>' +
+    '</button>' +
+    '<button class="summary-card summary-followup' + activeClass('followup') + '" type="button" data-summary-status="followup" aria-pressed="' + (selectedStatus === 'followup') + '" aria-label="' + escapeHtml(uiText('Mostrar propostas sem resposta')) + '">' +
+      '<span>' + uiText('Sem resposta') + '</span><strong>' + followUp + '</strong>' +
+      '<small>' + uiText('enviadas há 3 dias ou mais') + '</small>' +
     '</button>' +
     '<button class="summary-card summary-conversion' + activeClass('approved') + '" type="button" data-summary-status="approved" aria-pressed="' + (selectedStatus === 'approved') + '" aria-label="Mostrar propostas aprovadas">' +
       '<span>' + uiText('Conversão') + '</span><strong>' + conversion + '%</strong>' +
@@ -1402,6 +1431,7 @@ function renderHistory() {
     .filter(proposal => {
       if (selectedStatus === 'all') return true;
       if (selectedStatus === 'expired') return proposalIsExpired(proposal);
+      if (selectedStatus === 'followup') return proposalFollowUpInfo(proposal).due;
       return (proposal.status || 'draft') === selectedStatus;
     })
     .filter(proposal => {
@@ -1441,16 +1471,28 @@ function renderHistory() {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
       const status = proposal.status || 'draft';
       const validity = proposalValidityInfo(proposal);
+      const followUp = proposalFollowUpInfo(proposal);
       const validityBadge = validity.label
         ? '<span class="validity-badge validity-' + validity.tone + '">' + escapeHtml(validity.label) + '</span>'
+        : '';
+      const followUpBadge = followUp.due
+        ? '<span class="followup-badge">' + escapeHtml(uiText(followUp.label)) + '</span>'
+        : '';
+      const followUpPhone = normalizeWhatsAppPhone(proposal.clientPhone);
+      const followUpMessage = proposalFollowUpMessage(proposal);
+      const followUpAction = followUp.due
+        ? (followUpPhone
+            ? '<a class="secondary followup-action" target="_blank" rel="noopener" href="https://wa.me/' + followUpPhone + '?text=' + encodeURIComponent(followUpMessage) + '">' + uiText('Cobrar retorno') + '</a>'
+            : '<button class="secondary followup-action" type="button" data-copy-followup="' + escapeHtml(proposal.id) + '">' + uiText('Copiar lembrete') + '</button>')
         : '';
       return '<div class="item"><div class="item-summary"><div class="item-title-line"><strong>' + escapeHtml(proposal.client) + '</strong><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
         '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small>' +
         (proposal.respondedAt && (status === 'approved' || status === 'rejected')
           ? '<small class="response-time">Respondida em ' + new Date(proposal.respondedAt).toLocaleDateString(currentLocale()) + ' às ' + new Date(proposal.respondedAt).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' }) + '</small>'
           : '') +
-        validityBadge + '</div>' +
+        validityBadge + followUpBadge + '</div>' +
         '<div class="item-actions">' +
+          followUpAction +
           '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta"' + ((status === 'approved' || status === 'rejected') ? ' disabled' : '') + '>' +
             '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>Rascunho</option>' +
             '<option value="sent"' + (status === 'sent' ? ' selected' : '') + '>Enviada</option>' +
@@ -1641,6 +1683,19 @@ list.addEventListener('change', async event => {
 });
 
 list.addEventListener('click', async event => {
+  const followUpButton = event.target.closest('[data-copy-followup]');
+  if (followUpButton) {
+    const proposal = visibleProposals().find(item => item.id === followUpButton.dataset.copyFollowup);
+    if (!proposal) return;
+    try {
+      await navigator.clipboard.writeText(proposalFollowUpMessage(proposal));
+      showToast('Lembrete de follow-up copiado.');
+    } catch {
+      showToast('Não foi possível copiar o lembrete.');
+    }
+    return;
+  }
+
   const reopenButton = event.target.closest('[data-reopen]');
   if (reopenButton) {
     if (!window.confirm(uiText('Reabrir esta proposta como rascunho? O link público anterior será invalidado.'))) return;
