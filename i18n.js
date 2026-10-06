@@ -98,6 +98,8 @@
   "Abra uma proposta, acompanhe o andamento comercial e compartilhe com o cliente.": "Open a proposal, track its commercial status, and share it with the client.",
   "Buscar": "Search",
   "Status": "Status",
+  "Histórico de status": "Status history",
+  "Você": "You",
   "Todas": "All",
   "Rascunho": "Draft",
   "Enviadas": "Sent",
