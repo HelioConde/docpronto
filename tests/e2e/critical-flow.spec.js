@@ -145,13 +145,14 @@ test('proposta longa gera PDF A4 sem estourar o documento', async ({ page }) => 
   await page.setViewportSize({ width: 794, height: 1123 });
 
   await page.locator('[name="business"]').fill('Conde Manutenção e Instalações');
-  await page.locator('[name="businessPhone"]').fill('(11) 99999-0000');
-  await page.locator('[name="client"]').fill('Empresa Cliente de Homologação');
-  await page.locator('[name="clientPhone"]').fill('(11) 98888-0000');
+  const form = page.locator('#form');
+  await form.locator('[name="businessPhone"]').fill('(11) 99999-0000');
+  await form.locator('[name="client"]').fill('Empresa Cliente de Homologação');
+  await form.locator('[name="clientPhone"]').fill('(11) 98888-0000');
   await page.locator('details.client-extra').evaluate(el => { el.open = true; });
-  await page.locator('[name="clientEmail"]').fill('cliente@example.com');
-  await page.locator('[name="clientDocument"]').fill('12.345.678/0001-90');
-  await page.locator('[name="clientAddress"]').fill('Rua de Homologação, 123 - Centro - São Paulo/SP');
+  await form.locator('[name="clientEmail"]').fill('cliente@example.com');
+  await form.locator('[name="clientDocument"]').fill('12.345.678/0001-90');
+  await form.locator('[name="clientAddress"]').fill('Rua de Homologação, 123 - Centro - São Paulo/SP');
 
   const descriptions = [
     'Visita técnica e diagnóstico completo',
@@ -176,9 +177,9 @@ test('proposta longa gera PDF A4 sem estourar o documento', async ({ page }) => 
 
   await page.locator('#discount-type').selectOption('percent');
   await page.locator('#discount-value').fill('7.5');
-  await page.locator('[name="deadline"]').fill('Execução em até 7 dias úteis após aprovação e liberação do local');
-  await page.locator('[name="terms"]').fill('40% na aprovação, 30% no início e 30% após a conclusão');
-  await page.locator('[name="notes"]').fill(
+  await form.locator('[name="deadline"]').fill('Execução em até 7 dias úteis após aprovação e liberação do local');
+  await form.locator('[name="terms"]').fill('40% na aprovação, 30% no início e 30% após a conclusão');
+  await form.locator('[name="notes"]').fill(
     'Proposta de homologação com conteúdo longo. Inclui garantia de 90 dias sobre a instalação. ' +
     'Não inclui reparos civis, pintura, adequações estruturais ou serviços não descritos nos itens. ' +
     'Alterações solicitadas após aprovação poderão gerar revisão de prazo e valor. '.repeat(3)
