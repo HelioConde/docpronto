@@ -207,6 +207,7 @@ function renderHistory() {
         '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small></div>' +
         '<div class="item-actions">' +
           '<button class="secondary" type="button" data-proposal="' + escapeHtml(proposal.id) + '">Abrir</button>' +
+          '<button class="secondary" type="button" data-template="' + escapeHtml(proposal.id) + '">Usar como modelo</button>' +
           '<button class="secondary" type="button" data-edit="' + escapeHtml(proposal.id) + '">Editar</button>' +
           '<button class="secondary" type="button" data-delete="' + escapeHtml(proposal.id) + '" aria-label="Excluir proposta">Excluir</button>' +
         '</div></div>';
@@ -292,6 +293,20 @@ list.addEventListener('click', event => {
     localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item => item.id !== id)));
     renderHistory();
     showToast('Proposta removida do histórico.');
+    return;
+  }
+
+  const templateButton = event.target.closest('[data-template]');
+  if (templateButton) {
+    const proposal = readProposals().find(item => item.id === templateButton.dataset.template);
+    if (proposal) {
+      beginEditing(proposal);
+      editingId = null;
+      submitButton.textContent = 'Gerar nova proposta';
+      cancelEditButton.hidden = true;
+      validityInput.value = defaultValidityDate();
+      showToast('Modelo carregado. Revise os dados e gere uma nova proposta.');
+    }
     return;
   }
 
