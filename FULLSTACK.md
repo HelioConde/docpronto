@@ -15,7 +15,7 @@ O DocPronto já possui um MVP fullstack funcional:
 - status comercial: rascunho, enviada, aprovada e recusada;
 - desconto percentual ou fixo, observações e dados opcionais do cliente;
 - catálogo leve derivado do histórico para sugerir serviços/materiais e último preço sem nova tabela;
-- busca no histórico, resumo comercial com filtros rápidos, carregamento progressivo e exportação CSV;
+- busca no histórico, filtro de vencidas, ordenação por data/valor/vencimento, resumo comercial, carregamento progressivo e exportação CSV;
 - sinalização de propostas expiradas ou próximas do vencimento;
 - link público protegido por token para o cliente;
 - aprovação/recusa sem conta através das Edge Functions `proposal-public` e `proposal-response`;
