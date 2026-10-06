@@ -404,6 +404,20 @@ test('DocPronto oferece PT-BR principal e inglês persistido', () => {
   assert.match(css, /\.language-switcher/);
 });
 
+test('fila comercial identifica propostas enviadas sem resposta sem criar novo status persistido', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /option value="followup">Sem resposta/);
+  assert.match(app, /const followUpThresholdDays = 3/);
+  assert.match(app, /function proposalFollowUpInfo/);
+  assert.match(app, /selectedStatus === 'followup'/);
+  assert.match(app, /data-copy-followup/);
+  assert.match(app, /wa\.me\//);
+  assert.match(css, /\.summary-followup/);
+  assert.match(css, /\.followup-badge/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
