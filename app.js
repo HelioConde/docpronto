@@ -1255,6 +1255,54 @@ function addItem(values = {}) {
   updateTotal();
 }
 
+function normalizeStatusHistory(proposal) {
+  const allowed = new Set(['draft', 'sent', 'approved', 'rejected']);
+  const normalized = Array.isArray(proposal?.statusHistory)
+    ? proposal.statusHistory
+      .filter(entry => entry && allowed.has(entry.status) && Number.isFinite(Number(entry.at)))
+      .map(entry => ({
+        status: entry.status,
+        at: Number(entry.at),
+        source: entry.source === 'client' ? 'client' : 'owner'
+      }))
+      .sort((a, b) => a.at - b.at)
+      .slice(-20)
+    : [];
+
+  if (!normalized.length && Number.isFinite(Number(proposal?.createdAt))) {
+    normalized.push({
+      status: proposal?.status || 'draft',
+      at: Number(proposal.createdAt),
+      source: 'owner'
+    });
+  }
+  return normalized;
+}
+
+function appendStatusHistory(proposal, status, source = 'owner', at = Date.now()) {
+  const history = normalizeStatusHistory(proposal);
+  const last = history[history.length - 1];
+  if (last?.status === status && last?.source === source) return history;
+  return [...history, { status, at: Number(at), source: source === 'client' ? 'client' : 'owner' }].slice(-20);
+}
+
+function statusHistoryMarkup(proposal) {
+  const history = normalizeStatusHistory(proposal);
+  if (!history.length) return '';
+  const entries = history.slice().reverse().map(entry => {
+    const when = new Date(entry.at).toLocaleString(currentLocale(), {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    });
+    const source = entry.source === 'client' ? uiText('Cliente') : uiText('Você');
+    return '<li><span class="status-history-dot status-' + escapeHtml(entry.status) + '"></span>' +
+      '<div><strong>' + proposalStatusLabel(entry.status) + '</strong><small>' +
+      escapeHtml(when) + ' · ' + escapeHtml(source) + '</small></div></li>';
+  }).join('');
+  return '<details class="status-history"><summary>' + uiText('Histórico de status') +
+    '<span>' + history.length + '</span></summary><ol>' + entries + '</ol></details>';
+}
+
 function proposalStatusLabel(status) {
   const label = ({
     draft: 'Rascunho',
@@ -1390,7 +1438,19 @@ async function publishClientProposal(proposal, { confirmReplacement = true } = {
     .eq('id', proposal.id);
   if (error) throw error;
 
-  const updated = { ...proposal, status: 'sent', respondedAt: null, updatedAt: Date.now() };
+  const sentAt = Date.now();
+  const updated = {
+    ...proposal,
+    status: 'sent',
+    respondedAt: null,
+    updatedAt: sentAt,
+    statusHistory: appendStatusHistory(proposal, 'sent', 'owner', sentAt)
+  };
+  const { error: dataError } = await supabaseClient
+    .from(proposalTable)
+    .update({ proposal_data: updated })
+    .eq('id', proposal.id);
+  if (dataError) throw dataError;
   cloudProposals = cloudProposals.map(item => item.id === proposal.id ? updated : item);
   return { url: buildClientShareUrl(proposal.id, token), updated };
 }
@@ -1458,6 +1518,7 @@ function renderProposal(proposal) {
       '<p><b>Prazo:</b> ' + escapeHtml(proposal.deadline) + '</p>' +
       '<p><b>Condições de pagamento:</b> ' + escapeHtml(proposal.terms) + '</p>' +
       (proposal.notes ? '<section class="proposal-notes"><span class="proposal-label">OBSERVAÇÕES</span><p>' + escapeHtml(proposal.notes) + '</p></section>' : '') +
+      statusHistoryMarkup(proposal) +
       '<div class="proposal-actions">' +
         '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
         '<button class="secondary" id="copy-proposal-summary" type="button">Copiar resumo</button>' +
@@ -1679,7 +1740,8 @@ form.addEventListener('submit', async event => {
         ...fields,
         id: makeUuid(),
         number: 'DP-' + new Date(now).getFullYear() + '-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0'),
-        createdAt: now
+        createdAt: now,
+        statusHistory: [{ status: 'draft', at: now, source: 'owner' }]
       };
   if (currentUser) {
     submitButton.disabled = true;
@@ -1771,11 +1833,15 @@ list.addEventListener('change', async event => {
   if (!['draft', 'sent', 'approved', 'rejected'].includes(status)) return;
 
   const terminalStatus = status === 'approved' || status === 'rejected';
+  const statusChangedAt = Date.now();
   const updated = {
     ...proposal,
     status,
-    respondedAt: terminalStatus ? (proposal.respondedAt || Date.now()) : null,
-    updatedAt: Date.now()
+    respondedAt: terminalStatus ? (proposal.respondedAt || statusChangedAt) : null,
+    updatedAt: statusChangedAt,
+    statusHistory: status === proposal.status
+      ? normalizeStatusHistory(proposal)
+      : appendStatusHistory(proposal, status, 'owner', statusChangedAt)
   };
   select.disabled = true;
   try {
@@ -1818,7 +1884,14 @@ list.addEventListener('click', async event => {
     const id = reopenButton.dataset.reopen;
     const proposal = visibleProposals().find(item => item.id === id);
     if (!proposal) return;
-    const updated = { ...proposal, status: 'draft', respondedAt: null, updatedAt: Date.now() };
+    const reopenedAt = Date.now();
+    const updated = {
+      ...proposal,
+      status: 'draft',
+      respondedAt: null,
+      updatedAt: reopenedAt,
+      statusHistory: appendStatusHistory(proposal, 'draft', 'owner', reopenedAt)
+    };
     reopenButton.disabled = true;
     try {
       if (currentUser) {
