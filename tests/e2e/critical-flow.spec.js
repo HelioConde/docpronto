@@ -295,3 +295,27 @@ test('modelo rápido preenche estrutura sem alterar cliente ou negócio', async 
   await expect(page.locator('[name="terms"]')).toHaveValue('50% no início e 50% na conclusão');
   await expect(page.locator('.line-item').first().locator('[data-unit-price]')).toBeFocused();
 });
+
+
+test('logo local aparece no documento gerado', async ({ page }) => {
+  await localMode(page);
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    'base64'
+  );
+
+  await page.locator('#business-logo-input').setInputFiles({
+    name: 'logo.png',
+    mimeType: 'image/png',
+    buffer: png
+  });
+  await expect(page.locator('#business-logo-preview')).toBeVisible();
+  await expect(page.locator('#business-logo-preview img')).toHaveAttribute('src', /^data:image\/(webp|png|jpeg);base64,/);
+
+  await fillBaseProposal(page, ' Logo');
+  await page.getByRole('button', { name: /Gerar proposta|Generate proposal/i }).click();
+
+  const documentLogo = page.locator('#proposal .proposal-business-logo');
+  await expect(documentLogo).toBeVisible();
+  await expect(documentLogo).toHaveAttribute('src', /^data:image\/(webp|png|jpeg);base64,/);
+});
