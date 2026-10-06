@@ -25,6 +25,7 @@ const localImportBanner = document.querySelector('#local-import-banner');
 const localImportButton = document.querySelector('#local-import');
 const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const proposalSearch = document.querySelector('#proposal-search');
+const proposalSort = document.querySelector('#proposal-sort');
 const historySummary = document.querySelector('#history-summary');
 const historyMoreButton = document.querySelector('#history-more');
 const exportCsvButton = document.querySelector('#export-csv');
@@ -1055,6 +1056,13 @@ function proposalStatusLabel(status) {
   })[status] || 'Rascunho';
 }
 
+function proposalIsExpired(proposal) {
+  const status = proposal?.status || 'draft';
+  if (status === 'approved' || status === 'rejected' || !proposal?.validUntil) return false;
+  const validUntil = String(proposal.validUntil);
+  return /^\d{4}-\d{2}-\d{2}$/.test(validUntil) && validUntil < localDate(new Date());
+}
+
 function proposalValidityInfo(proposal) {
   if (!proposal?.validUntil) return { label: '', tone: '' };
   const end = new Date(proposal.validUntil + 'T23:59:59');
@@ -1063,7 +1071,7 @@ function proposalValidityInfo(proposal) {
   const diffDays = Math.ceil((end.getTime() - today.getTime()) / 86400000);
   const status = proposal.status || 'draft';
   if (status === 'approved' || status === 'rejected') return { label: '', tone: '' };
-  if (diffDays < 0) return { label: 'Expirada', tone: 'expired' };
+  if (proposalIsExpired(proposal)) return { label: 'Expirada', tone: 'expired' };
   if (diffDays === 0) return { label: 'Expira hoje', tone: 'warning' };
   if (diffDays <= 3) return { label: 'Expira em ' + diffDays + ' dia' + (diffDays === 1 ? '' : 's'), tone: 'warning' };
   return { label: '', tone: '' };
@@ -1270,15 +1278,32 @@ function renderProposal(proposal) {
 function renderHistory() {
   renderServiceSuggestions();
   const selectedStatus = proposalStatusFilter?.value || 'all';
+  const selectedSort = proposalSort?.value || 'recent';
   const searchTerm = String(proposalSearch?.value || '').trim().toLocaleLowerCase('pt-BR');
   const source = currentUser ? cloudProposals : readProposals().slice().reverse();
   renderHistorySummary(source, selectedStatus);
   const filteredProposals = source
-    .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
+    .filter(proposal => {
+      if (selectedStatus === 'all') return true;
+      if (selectedStatus === 'expired') return proposalIsExpired(proposal);
+      return (proposal.status || 'draft') === selectedStatus;
+    })
     .filter(proposal => {
       if (!searchTerm) return true;
       return [proposal.client, proposal.business, proposal.number]
         .some(value => String(value || '').toLocaleLowerCase('pt-BR').includes(searchTerm));
+    })
+    .sort((a, b) => {
+      if (selectedSort === 'oldest') return Number(a.createdAt || 0) - Number(b.createdAt || 0);
+      if (selectedSort === 'value-desc') {
+        return (Number(b.total) || Number(b.amount) || 0) - (Number(a.total) || Number(a.amount) || 0);
+      }
+      if (selectedSort === 'expiry') {
+        const aExpiry = a.validUntil || '9999-12-31';
+        const bExpiry = b.validUntil || '9999-12-31';
+        return aExpiry.localeCompare(bExpiry) || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+      }
+      return Number(b.createdAt || 0) - Number(a.createdAt || 0);
     });
   const proposals = filteredProposals.slice(0, historyVisibleLimit);
   if (historyMoreButton) {
@@ -1442,6 +1467,10 @@ proposalStatusFilter?.addEventListener('change', () => {
   renderHistory();
 });
 proposalSearch?.addEventListener('input', () => {
+  historyVisibleLimit = 10;
+  renderHistory();
+});
+proposalSort?.addEventListener('change', () => {
   historyVisibleLimit = 10;
   renderHistory();
 });
