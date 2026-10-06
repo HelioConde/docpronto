@@ -74,3 +74,6 @@ jobs:
           grep -qi 'business-logo-input' index.html
           grep -qi 'compressBusinessLogo' app.js
           grep -qi 'businessLogo' supabase/functions/proposal-public/index.ts
+          grep -qi 'statusHistory' app.js
+          grep -qi 'status-history' theme-v2.css
+          grep -qi 'statusHistory' supabase/functions/proposal-response/index.ts
