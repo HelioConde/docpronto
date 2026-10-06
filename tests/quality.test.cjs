@@ -148,6 +148,18 @@ test('propostas encerradas não podem ser reabertas silenciosamente por novo lin
   assert.match(css, /\.proposal-closed-note/);
 });
 
+test('proposta pública usa expiração do servidor e respostas sem cache', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const publicFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-public', 'index.ts'), 'utf8');
+  const responseFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-response', 'index.ts'), 'utf8');
+  assert.match(publicFn, /Cache-Control": "no-store, max-age=0/);
+  assert.match(responseFn, /Cache-Control": "no-store, max-age=0/);
+  assert.match(publicFn, /timeZone: "America\/Sao_Paulo"/);
+  assert.match(responseFn, /timeZone: "America\/Sao_Paulo"/);
+  assert.match(publicFn, /expired: Boolean/);
+  assert.match(app, /typeof proposal\.expired === 'boolean'/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
