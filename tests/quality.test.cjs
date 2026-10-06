@@ -316,6 +316,20 @@ test('usuário pode limpar o rascunho sem deslocar campos dinâmicos', () => {
   assert.match(css, /\.composer-actions/);
 });
 
+test('histórico exporta CSV compatível com Excel e mantém todos os registros carregados', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /id="export-csv"/);
+  assert.match(app, /function exportProposalsCsv/);
+  assert.match(app, /\\uFEFF/);
+  assert.match(app, /join\(';\'\)/);
+  assert.match(app, /new Blob\(\[csv\]/);
+  assert.match(app, /docpronto-propostas-/);
+  assert.match(app, /exportCsvButton\?\.addEventListener\('click', exportProposalsCsv\)/);
+  assert.match(css, /\.history-export/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
