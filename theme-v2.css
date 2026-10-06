@@ -303,3 +303,11 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
   .document-totals,.proposal-details,.proposal-client-details,.proposal-notes{break-inside:avoid;page-break-inside:avoid}
   .proposal-notes p{overflow-wrap:anywhere}
 }
+
+.language-switcher{display:inline-flex;align-items:center;padding:3px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.language-switcher button{min-width:34px;height:28px;padding:0 8px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:800 10px Manrope;letter-spacing:.35px;cursor:pointer}
+.language-switcher button:hover{color:var(--ink)}
+.language-switcher button.active{background:var(--accent);color:#fff;box-shadow:0 4px 12px #245d6c24}
+.language-switcher button:focus-visible{outline:3px solid #245d6c55;outline-offset:2px}
+html[lang="en"] .hero h1{max-width:780px}
+@media(max-width:680px){.nav-actions{gap:7px}.language-switcher button{min-width:31px;padding:0 6px}}
