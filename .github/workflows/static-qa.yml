@@ -50,6 +50,10 @@ jobs:
           grep -qi 'rel="canonical"' index.html
           grep -qi 'supabase-config.js' index.html
           grep -qi 'proposal-status-filter' index.html
+          grep -qi 'value="followup"' index.html
+          grep -qi 'proposalFollowUpInfo' app.js
+          grep -qi 'summary-followup' app.js
+          grep -qi 'followup-badge' theme-v2.css
           grep -qi 'data-status-id' app.js
           grep -qi 'share-whatsapp' app.js
           grep -qi 'create-client-link' app.js
