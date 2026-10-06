@@ -100,6 +100,25 @@ test('excluir uma proposta aberta também fecha a prévia', () => {
   assert.match(app, /result\.classList\.remove\('show'\)/);
 });
 
+test('resumo comercial atua como filtro ativo e limpa a busca', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(app, /aria-pressed/);
+  assert.match(app, /proposalSearch\.value = ''/);
+  assert.match(css, /\.summary-card\.is-active/);
+});
+
+test('proposta compartilhada e impressão usam layout de documento A4', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(app, /proposal-document-brand/);
+  assert.match(app, /id="public-print"/);
+  assert.match(app, /Proposta ' \+ proposal\.number \+ ' - ' \+ proposal\.client/);
+  assert.match(css, /@page\{size:A4;margin:14mm\}/);
+  assert.match(css, /\.proposal-document-head/);
+  assert.match(css, /\.public-document-actions/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
