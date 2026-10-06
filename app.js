@@ -379,7 +379,7 @@ function renderSavedClients() {
           (detail ? '<span>' + detail + '</span>' : '<span>Sem contato adicional</span>') +
         '</div>' +
         '<div class="saved-client-actions">' +
-          '<button class="secondary" type="button" data-client-use="' + escapeHtml(client.id) + '">Usar</button>' +
+          '<button class="secondary" type="button" data-client-use="' + escapeHtml(client.id) + '" aria-label="' + escapeHtml(uiText('Novo orçamento para') + ' ' + client.name) + '">' + uiText('Novo orçamento') + '</button>' +
           '<button class="secondary" type="button" data-client-delete="' + escapeHtml(client.id) + '">Excluir</button>' +
         '</div>' +
       '</article>';
@@ -748,11 +748,12 @@ function initAccount() {
     if (useButton) {
       const client = cloudClients.find(item => item.id === useButton.dataset.clientUse);
       if (!client) return;
+      resetComposer();
       fillClientFromRecord(client);
       accountDialog.close();
       form.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
       form.querySelector('[name="client"]').focus();
-      showToast('Cliente selecionado.');
+      showToast('Novo orçamento iniciado para o cliente.');
       return;
     }
 
