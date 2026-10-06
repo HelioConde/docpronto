@@ -1090,6 +1090,10 @@ function renderHistorySummary(source, selectedStatus = 'all') {
   if (!historySummary) return;
   const total = source.length;
   const sent = source.filter(item => (item.status || 'draft') === 'sent').length;
+  const approved = source.filter(item => (item.status || 'draft') === 'approved').length;
+  const rejected = source.filter(item => (item.status || 'draft') === 'rejected').length;
+  const sentPipeline = sent + approved + rejected;
+  const conversion = sentPipeline ? Math.round((approved / sentPipeline) * 100) : 0;
   const approvedTotal = source
     .filter(item => (item.status || 'draft') === 'approved')
     .reduce((sum, item) => sum + (Number(item.total) || Number(item.amount) || 0), 0);
@@ -1104,6 +1108,10 @@ function renderHistorySummary(source, selectedStatus = 'all') {
     '</button>' +
     '<button class="summary-card summary-approved' + activeClass('approved') + '" type="button" data-summary-status="approved" aria-pressed="' + (selectedStatus === 'approved') + '" aria-label="Mostrar propostas aprovadas">' +
       '<span>Aprovadas</span><strong>' + formatCurrency(approvedTotal) + '</strong>' +
+    '</button>' +
+    '<button class="summary-card summary-conversion' + activeClass('approved') + '" type="button" data-summary-status="approved" aria-pressed="' + (selectedStatus === 'approved') + '" aria-label="Mostrar propostas aprovadas">' +
+      '<span>' + uiText('Conversão') + '</span><strong>' + conversion + '%</strong>' +
+      '<small>' + approved + ' / ' + sentPipeline + ' ' + uiText('aprovadas / enviadas') + '</small>' +
     '</button>';
 }
 
