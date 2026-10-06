@@ -76,3 +76,17 @@ test('status comercial é persistido com valores restritos no banco', () => {
   assert.match(sql, /status in \('draft', 'sent', 'approved', 'rejected'\)/i);
   assert.match(sql, /docpronto_proposals_owner_status_updated_idx/i);
 });
+
+
+test('aceite público usa token hash e Edge Functions sem expor a tabela diretamente', () => {
+  const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006054500_public_proposal_response.sql');
+  const migration = fs.readFileSync(migrationPath, 'utf8');
+  const publicFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-public', 'index.ts'), 'utf8');
+  const responseFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-response', 'index.ts'), 'utf8');
+  assert.match(migration, /share_token_hash text/i);
+  assert.match(migration, /responded_at timestamptz/i);
+  assert.match(publicFn, /share_token_hash/);
+  assert.doesNotMatch(publicFn, /clientPhone/);
+  assert.match(responseFn, /status: decision/);
+  assert.match(responseFn, /\.eq\("status", "sent"\)/);
+});
