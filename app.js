@@ -172,8 +172,8 @@ async function loadCloudProposals() {
   if (currentUser?.id !== ownerId) return;
   if (error) {
     showAccountMessage('Não foi possível carregar suas propostas. Tente novamente.');
-    syncStatus.textContent = 'Falha ao carregar a nuvem';
     updateAccountUi();
+    syncStatus.textContent = 'Falha ao carregar a nuvem';
     return;
   }
   cloudProposals = (data || []).map(mapCloudProposal);
@@ -188,7 +188,7 @@ function showAccountMessage(message) {
 function updateAccountUi() {
   const localCount = readProposals().length;
   accountOpenButton.textContent = currentUser ? 'Minha conta' : 'Entrar / sincronizar';
-  accountOpenButton.disabled = !supabaseClient;
+  accountOpenButton.disabled = false;
   syncStatus.textContent = currentUser
     ? (cloudLoading ? 'Carregando propostas…' : 'Nuvem · ' + currentUser.email)
     : (supabaseClient ? 'Salvo neste dispositivo' : 'Modo local');
