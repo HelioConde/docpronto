@@ -26,8 +26,10 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - sincronização das propostas em `docpronto_proposals`;
 - importação de histórico local;
 - cadastro reutilizável de clientes na nuvem, incluindo telefone, e-mail, documento e endereço;
+- gerenciamento de clientes salvos pela conta, com ações de usar e excluir;
 - identidade do negócio sincronizada na conta, com nome, telefone e cor da proposta;
-- preenchimento automático de nome e WhatsApp de clientes já usados;
+- preenchimento automático de dados de clientes já usados;
+- sugestões de serviços e materiais já utilizados, com reaproveitamento do último preço unitário;
 - dados privados por RLS;
 - GitHub Pages + CI;
 - SEO básico.
