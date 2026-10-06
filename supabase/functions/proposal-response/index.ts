@@ -15,8 +15,31 @@ function corsHeaders(origin: string | null) {
   if (origin && allowedOrigins.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
   return headers;
 }
+function responseHeaders(origin: string | null) {
+  return {
+    ...corsHeaders(origin),
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store, max-age=0",
+    "Pragma": "no-cache",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+  };
+}
 function json(status: number, body: Record<string, unknown>, origin: string | null) {
-  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders(origin), "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(body), { status, headers: responseHeaders(origin) });
+}
+function todayInSaoPaulo() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find(part => part.type === type)?.value || "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+function isExpired(validUntil: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(validUntil) && validUntil < todayInSaoPaulo();
 }
 async function hashText(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
@@ -75,7 +98,7 @@ Deno.serve(async (request: Request) => {
   if (current.status !== "sent") return json(409, { error: "Esta proposta já recebeu uma resposta ou foi alterada." }, origin);
 
   const validUntil = typeof current.proposal_data?.validUntil === "string" ? current.proposal_data.validUntil : "";
-  if (validUntil && Date.parse(validUntil + "T23:59:59Z") < Date.now()) {
+  if (validUntil && isExpired(validUntil)) {
     return json(410, { error: "Esta proposta expirou." }, origin);
   }
 
