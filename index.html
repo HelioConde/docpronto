@@ -15,6 +15,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <title>DocPronto — Propostas profissionais sem complicação</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="theme-v2.css">
 </head>
 <body>
@@ -26,6 +28,7 @@
           <button type="button" data-language="pt-BR" class="active" aria-pressed="true">PT</button>
           <button type="button" data-language="en" aria-pressed="false">EN</button>
         </div>
+        <button id="install-app" class="secondary install-app" type="button" hidden>Instalar app</button>
         <span id="sync-status" class="sync-status" role="status">Salvo neste dispositivo</span>
         <button id="account-open" class="secondary" type="button">Entrar / sincronizar</button>
       </div>
@@ -253,6 +256,7 @@
   <script src="supabase-config.js"></script>
   <script src="proposal-core.js"></script>
   <script src="i18n.js"></script>
+  <script src="pwa.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
