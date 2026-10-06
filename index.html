@@ -22,6 +22,10 @@
     <header class="nav">
       <a class="brand" href="./" aria-label="DocPronto, página inicial">DocPronto<i>.</i></a>
       <div class="nav-actions">
+        <div class="language-switcher" role="group" aria-label="Idioma / Language">
+          <button type="button" data-language="pt-BR" class="active" aria-pressed="true">PT</button>
+          <button type="button" data-language="en" aria-pressed="false">EN</button>
+        </div>
         <span id="sync-status" class="sync-status" role="status">Salvo neste dispositivo</span>
         <button id="account-open" class="secondary" type="button">Entrar / sincronizar</button>
       </div>
@@ -248,6 +252,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
   <script src="proposal-core.js"></script>
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
