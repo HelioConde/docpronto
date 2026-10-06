@@ -524,3 +524,37 @@ test('smoke de acessibilidade básico', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.locator('#beta-feedback-dialog')).not.toBeVisible();
 });
+
+
+test('backup local exporta e restaura propostas', async ({ page }) => {
+  await localMode(page);
+  await fillBaseProposal(page, ' Backup');
+  await page.getByRole('button', { name: /Gerar proposta|Generate proposal/i }).click();
+  await expect(page.locator('#list')).toContainText('Cliente E2E Backup');
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.locator('#export-backup').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^docpronto-backup-\d{4}-\d{2}-\d{2}\.json$/);
+
+  const stream = await download.createReadStream();
+  let content = '';
+  for await (const chunk of stream) content += chunk.toString();
+  const backup = JSON.parse(content);
+  expect(backup.format).toBe('docpronto-backup');
+  expect(backup.version).toBe(1);
+  expect(backup.proposals.some(item => item.client === 'Cliente E2E Backup')).toBe(true);
+
+  await page.evaluate(() => localStorage.removeItem('docpronto-proposals'));
+  await page.reload();
+  await expect(page.locator('#list')).not.toContainText('Cliente E2E Backup');
+
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('#import-backup-file').setInputFiles({
+    name: 'docpronto-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(content)
+  });
+
+  await expect(page.locator('#list')).toContainText('Cliente E2E Backup');
+});
