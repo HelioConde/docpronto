@@ -272,3 +272,18 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 
 .proposal-actions #send-client-link-whatsapp{background:#edf7f0;color:var(--success);border-color:#d5e9dc}
 .proposal-actions #send-client-link-whatsapp:hover{background:#e2f2e7;color:#285c44}
+
+.saved-clients{margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.saved-clients>p{margin:8px 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.client-count-badge{min-width:26px;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--accent);font:800 10px Manrope;text-align:center}
+.saved-clients-list{display:grid;gap:7px}
+.saved-client-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border:1px solid var(--line);border-radius:11px;background:#fafcfc}
+.saved-client-copy{min-width:0;display:grid;gap:3px}
+.saved-client-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px Manrope}
+.saved-client-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:10px}
+.saved-client-actions{display:flex;gap:5px;flex:none}
+.saved-client-actions .secondary{padding:7px 8px;font-size:10px}
+.saved-client-actions [data-client-delete]{background:#fff;color:var(--danger);border-color:#ead8d6}
+.saved-client-actions [data-client-delete]:hover{background:#fff4f3}
+.saved-client-empty{padding:14px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:500px){.saved-client-item{align-items:flex-start;flex-direction:column}.saved-client-actions{width:100%}.saved-client-actions .secondary{flex:1}}
