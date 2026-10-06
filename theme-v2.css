@@ -127,7 +127,7 @@ button:focus-visible,input:focus-visible,dialog:focus-visible{outline:3px solid 
 .primary:disabled,.secondary:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important}
 .field input::placeholder,.field textarea::placeholder{color:#9aa5ad}
 .proposal{position:relative;overflow:hidden}
-.proposal::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--accent),#5b8996)}
+.proposal::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--proposal-accent,var(--accent)),#5b8996)}
 @media(max-width:760px){.history-panel{position:static}.hero-points{margin-top:13px}}
 
 select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-offset:2px}
@@ -210,3 +210,5 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .business-profile .primary{margin-top:2px}
 .account-sign-out{width:100%;margin-top:4px}
 @media(max-width:500px){.account-section-heading{align-items:flex-start}.profile-sync-badge{display:none}}
+
+.public-proposal-card{--proposal-accent:var(--accent);border-top:3px solid var(--proposal-accent)}
