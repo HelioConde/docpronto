@@ -76,8 +76,9 @@ A revisão visual de 2026-10-06 corrigiu:
 
 ## Próximas prioridades
 
-1. Homologar autenticação e isolamento entre duas contas.
-2. Validar o fluxo público completo de envio → abertura → aprovação/recusa.
-3. Revisar mobile e impressão com propostas reais.
-4. Avaliar logo do prestador apenas depois da homologação visual e do fluxo autenticado; cor personalizada já está disponível.
-5. Só então testar limites de plano, cobrança, lembretes e notificações.
+O backlog oficial está em `MELHORIAS.md`. A ordem imediata é:
+
+1. homologar autenticação e isolamento entre duas contas reais;
+2. validar o link público contra o backend real em navegador separado;
+3. revisar impressão/PDF com conteúdo longo;
+4. somente depois avançar para branding, PWA, feedback e automações comerciais.
