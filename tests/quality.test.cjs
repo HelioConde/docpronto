@@ -59,6 +59,17 @@ test('layout principal evita painel de histórico esticado e mantém o card do h
   assert.match(app, /Sua primeira proposta começa aqui/);
 });
 
+test('design v3 mantém fluxo visual, histórico fixo no desktop e itens móveis legíveis', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /panel-kicker">1 · CRIAR/);
+  assert.match(html, /panel-kicker">2 · ACOMPANHAR/);
+  assert.match(html, /Aprovação online/);
+  assert.match(css, /\.history-panel\{position:sticky;top:18px/);
+  assert.match(css, /\.line-item \.field:first-child\{grid-column:1\/-1/);
+  assert.match(css, /\.hero-points/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
