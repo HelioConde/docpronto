@@ -241,6 +241,24 @@ test('observações opcionais acompanham rascunho, PDF e proposta pública', () 
   assert.match(publicFn, /slice\(0, 600\)/);
 });
 
+test('dados opcionais do cliente são reutilizados e aparecem na proposta', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  const publicFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-public', 'index.ts'), 'utf8');
+  assert.match(html, /name="clientEmail"/);
+  assert.match(html, /name="clientDocument"/);
+  assert.match(html, /name="clientAddress"/);
+  assert.match(app, /client\.document/);
+  assert.match(app, /client\.address/);
+  assert.match(app, /proposal-client-details/);
+  assert.match(css, /\.client-extra/);
+  assert.match(css, /\.proposal-client-details/);
+  assert.match(publicFn, /clientEmail:/);
+  assert.match(publicFn, /clientDocument:/);
+  assert.match(publicFn, /clientAddress:/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
