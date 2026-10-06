@@ -361,3 +361,24 @@ test('logo local aparece no documento gerado', async ({ page }) => {
   await expect(documentLogo).toBeVisible();
   await expect(documentLogo).toHaveAttribute('src', /^data:image\/(webp|png|jpeg);base64,/);
 });
+
+
+test('histórico de status registra mudanças locais', async ({ page }) => {
+  await localMode(page);
+  await fillBaseProposal(page, ' Timeline');
+  await page.getByRole('button', { name: /Gerar proposta|Generate proposal/i }).click();
+
+  let item = page.locator('#list .item').filter({ hasText: 'Cliente E2E Timeline' }).first();
+  await item.locator('[data-status-id]').selectOption('sent');
+  await expect(page.locator('.status-history')).toContainText('Enviada');
+
+  item = page.locator('#list .item').filter({ hasText: 'Cliente E2E Timeline' }).first();
+  await item.locator('[data-status-id]').selectOption('approved');
+
+  const timeline = page.locator('.status-history');
+  await timeline.locator('summary').click();
+  await expect(timeline).toContainText('Rascunho');
+  await expect(timeline).toContainText('Enviada');
+  await expect(timeline).toContainText('Aprovada');
+  await expect(timeline.locator('li')).toHaveCount(3);
+});
