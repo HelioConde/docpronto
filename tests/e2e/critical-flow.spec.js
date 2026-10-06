@@ -37,6 +37,48 @@ test('mantém PT-BR como padrão e permite alternar para inglês com persistênc
   await expect(page.getByRole('heading', { name: /Orçamento profissional/i })).toBeVisible();
 });
 
+test('fila de follow-up mostra somente propostas enviadas sem resposta', async ({ page }) => {
+  await localMode(page);
+  await page.evaluate(() => {
+    const now = Date.now();
+    localStorage.setItem('docpronto-proposals', JSON.stringify([
+      {
+        id: 'followup-due',
+        number: 'DP-2026-100001',
+        business: 'Conde Elétrica',
+        client: 'Cliente Follow-up',
+        clientPhone: '(11) 99999-8888',
+        total: 500,
+        amount: 500,
+        status: 'sent',
+        createdAt: now - 7 * 86400000,
+        updatedAt: now - 4 * 86400000
+      },
+      {
+        id: 'followup-fresh',
+        number: 'DP-2026-100002',
+        business: 'Conde Elétrica',
+        client: 'Cliente Recente',
+        clientPhone: '(11) 98888-7777',
+        total: 250,
+        amount: 250,
+        status: 'sent',
+        createdAt: now - 2 * 86400000,
+        updatedAt: now - 1 * 86400000
+      }
+    ]));
+  });
+  await page.reload();
+
+  await expect(page.locator('.summary-followup')).toContainText('1');
+  await page.locator('.summary-followup').click();
+  await expect(page.locator('#proposal-status-filter')).toHaveValue('followup');
+  await expect(page.locator('#list .item')).toHaveCount(1);
+  await expect(page.locator('#list')).toContainText('Cliente Follow-up');
+  await expect(page.locator('#list')).toContainText(/Sem resposta há 4 dias/);
+  await expect(page.getByRole('link', { name: 'Cobrar retorno' })).toHaveAttribute('href', /wa\.me\/5511999998888/);
+});
+
 test('modo local cria, busca, edita, muda status e exporta proposta', async ({ page }) => {
   await localMode(page);
   await fillBaseProposal(page);
