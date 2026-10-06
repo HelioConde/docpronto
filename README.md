@@ -10,7 +10,7 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - cálculo de total e validade;
 - edição, duplicação como modelo e exclusão;
 - acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
-- filtro do histórico por status e busca por cliente, empresa ou número;
+- filtro do histórico por status (incluindo vencidas), busca por cliente/empresa/número e ordenação por data, valor ou vencimento;
 - resumo comercial com total de propostas, enviadas e valor aprovado;
 - histórico progressivo em blocos de 10 e exportação do histórico em CSV compatível com Excel;
 - aviso visual para propostas vencidas ou próximas da validade;
