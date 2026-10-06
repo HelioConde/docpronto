@@ -741,6 +741,43 @@ function initAccount() {
     }
   });
 
+  savedClientsList?.addEventListener('click', async event => {
+    const useButton = event.target.closest('[data-client-use]');
+    if (useButton) {
+      const client = cloudClients.find(item => item.id === useButton.dataset.clientUse);
+      if (!client) return;
+      fillClientFromRecord(client);
+      accountDialog.close();
+      form.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      form.querySelector('[name="client"]').focus();
+      showToast('Cliente selecionado.');
+      return;
+    }
+
+    const deleteButton = event.target.closest('[data-client-delete]');
+    if (!deleteButton || !currentUser || !supabaseClient) return;
+    const client = cloudClients.find(item => item.id === deleteButton.dataset.clientDelete);
+    if (!client) return;
+    if (!window.confirm('Excluir o cliente ' + client.name + ' da sua lista salva? As propostas existentes não serão alteradas.')) return;
+
+    deleteButton.disabled = true;
+    try {
+      const { error } = await supabaseClient
+        .from('docpronto_clients')
+        .delete()
+        .eq('id', client.id);
+      if (error) throw error;
+      cloudClients = cloudClients.filter(item => item.id !== client.id);
+      renderClientSuggestions();
+      renderSavedClients();
+      showToast('Cliente removido.');
+    } catch (error) {
+      console.error(error);
+      deleteButton.disabled = false;
+      showToast('Não foi possível remover o cliente.');
+    }
+  });
+
   document.querySelector('#sign-out').addEventListener('click', async () => {
     if (!supabaseClient) return;
     const { error } = await supabaseClient.auth.signOut();
