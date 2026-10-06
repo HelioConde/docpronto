@@ -41,3 +41,9 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 ## Regra de priorização
 
 Não adicionar checkout, plano pago ou automações complexas antes de concluir P0 com usuários reais. O valor central do DocPronto continua sendo: criar, enviar e acompanhar uma proposta profissional com pouca fricção.
+
+
+## Monetização
+
+- [x] Estrutura de anúncios responsivos preparada e desativada por padrão.
+- [ ] Ativar Publisher ID, slots e `ads.txt` somente após aprovação da rede de anúncios.
