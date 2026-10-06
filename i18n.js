@@ -75,6 +75,8 @@
   "Todas": "All",
   "Rascunho": "Draft",
   "Enviadas": "Sent",
+  "Conversão": "Conversion",
+  "aprovadas / enviadas": "approved / sent",
   "Aprovadas": "Approved",
   "Recusadas": "Rejected",
   "Vencidas": "Expired",
