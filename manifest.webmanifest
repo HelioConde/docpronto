@@ -1,0 +1,20 @@
+{
+  "name": "DocPronto",
+  "short_name": "DocPronto",
+  "description": "Crie propostas e orçamentos profissionais, salve em PDF e acompanhe aprovações.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f7",
+  "theme_color": "#245d6c",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
