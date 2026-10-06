@@ -123,3 +123,18 @@ test('página pública mostra proposta sanitizada e aceita aprovação', async (
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow,noarchive');
   await expect(page.locator('meta[name="referrer"]')).toHaveAttribute('content', 'no-referrer');
 });
+
+
+for (const width of [360, 768, 1440]) {
+  test(`layout principal não estoura horizontalmente em ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await localMode(page);
+    const dimensions = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 2);
+    await expect(page.locator('#form')).toBeVisible();
+    await expect(page.locator('#list')).toBeVisible();
+  });
+}
