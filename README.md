@@ -57,3 +57,8 @@ Além dos testes unitários/integração Node, o DocPronto agora usa **Playwrigh
 - aprovação de proposta pelo cliente.
 
 Execute com `npm install` e `npm run test:e2e`.
+
+
+## Roadmap
+
+O backlog priorizado de homologação e evolução fica em [MELHORIAS.md](./MELHORIAS.md).
