@@ -16,17 +16,23 @@ const accountMessage = document.querySelector('#account-message');
 const syncStatus = document.querySelector('#sync-status');
 const localImportBanner = document.querySelector('#local-import-banner');
 const localImportButton = document.querySelector('#local-import');
+const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
 const proposalTable = 'docpronto_proposals';
 let currentUser = null;
 let cloudProposals = [];
 let cloudLoading = false;
 let passwordRecovery = false;
+let openedProposalId = null;
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
 contactField.innerHTML = '<span>Telefone ou WhatsApp do negócio (opcional)</span><input name="businessPhone" type="tel" placeholder="(11) 99999-9999">';
 form.querySelector('[name="business"]').closest('label').after(contactField);
+const clientContactField = document.createElement('label');
+clientContactField.className = 'field';
+clientContactField.innerHTML = '<span>WhatsApp do cliente (opcional)</span><input name="clientPhone" type="tel" inputmode="tel" placeholder="(11) 99999-9999"><small class="field-help">Usado apenas para facilitar o compartilhamento da proposta.</small>';
+form.querySelector('[name="client"]').closest('label').after(clientContactField);
 const validityField = document.createElement('label');
 validityField.className = 'field';
 validityField.innerHTML = '<span>Proposta válida até</span><input name="validUntil" type="date" required>';
@@ -66,6 +72,7 @@ function beginEditing(proposal) {
   form.querySelector('[name="business"]').value = proposal.business || '';
   form.querySelector('[name="businessPhone"]').value = proposal.businessPhone || '';
   form.querySelector('[name="client"]').value = proposal.client || '';
+  form.querySelector('[name="clientPhone"]').value = proposal.clientPhone || '';
   form.querySelector('[name="deadline"]').value = proposal.deadline || '';
   form.querySelector('[name="terms"]').value = proposal.terms || '';
 
@@ -130,6 +137,7 @@ function mapCloudProposal(row) {
     client: row.client_name,
     total: Number(row.total),
     amount: Number(row.total),
+    status: row.status || row.proposal_data?.status || 'draft',
     createdAt: Date.parse(row.created_at),
     updatedAt: Date.parse(row.updated_at)
   };
@@ -145,6 +153,7 @@ async function saveCloudProposal(proposal) {
     business_name: proposal.business,
     client_name: proposal.client,
     total: Number(proposal.total) || 0,
+    status: proposal.status || 'draft',
     proposal_data: proposal,
     created_at: new Date(Number(proposal.createdAt) || Date.now()).toISOString(),
     updated_at: now
@@ -475,6 +484,29 @@ function addItem(values = {}) {
   updateTotal();
 }
 
+function proposalStatusLabel(status) {
+  return ({
+    draft: 'Rascunho',
+    sent: 'Enviada',
+    approved: 'Aprovada',
+    rejected: 'Recusada'
+  })[status] || 'Rascunho';
+}
+
+function normalizeWhatsAppPhone(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (digits.length < 10 || digits.length > 15) return '';
+  return digits.startsWith('55') ? digits : '55' + digits;
+}
+
+function proposalShareText(proposal) {
+  const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
+  const validUntil = proposal.validUntil
+    ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR')
+    : 'não informada';
+  return `Olá, ${proposal.client}! Segue a proposta ${proposal.number} da ${proposal.business}, no valor de ${formatCurrency(total)}. Validade: ${validUntil}. Posso te enviar o PDF por aqui.`;
+}
+
 function renderProposal(proposal) {
   const items = Array.isArray(proposal.items) && proposal.items.length
     ? proposal.items
@@ -487,9 +519,13 @@ function renderProposal(proposal) {
     '<td class="number">' + formatCurrency(item.subtotal) + '</td></tr>'
   ).join('');
 
+  openedProposalId = proposal.id;
+  const status = proposal.status || 'draft';
+  const shareText = proposalShareText(proposal);
+  const whatsappPhone = normalizeWhatsAppPhone(proposal.clientPhone);
   result.innerHTML =
     '<article class="proposal" id="proposal">' +
-      '<small>PROPOSTA ' + escapeHtml(proposal.number) + '</small>' +
+      '<div class="proposal-topline"><small>PROPOSTA ' + escapeHtml(proposal.number) + '</small><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
       '<h3>' + escapeHtml(proposal.business) + '</h3>' +
       '<div class="proposal-meta">Preparada em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') + '</div>' +
       (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') +
@@ -501,20 +537,44 @@ function renderProposal(proposal) {
       '<div class="amount-line"><span>Total do orçamento</span><strong class="amount">' + formatCurrency(total) + '</strong></div>' +
       '<p><b>Prazo:</b> ' + escapeHtml(proposal.deadline) + '</p>' +
       '<p><b>Condições de pagamento:</b> ' + escapeHtml(proposal.terms) + '</p>' +
-      '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
+      '<div class="proposal-actions">' +
+        '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
+        '<button class="secondary" id="copy-proposal-summary" type="button">Copiar resumo</button>' +
+        '<a class="secondary" id="share-whatsapp" target="_blank" rel="noopener">Enviar no WhatsApp</a>' +
+      '</div>' +
     '</article>';
   result.classList.add('show');
   document.querySelector('#print').addEventListener('click', () => window.print());
+  document.querySelector('#copy-proposal-summary').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      showToast('Resumo da proposta copiado.');
+    } catch {
+      showToast('Não foi possível copiar o resumo.');
+    }
+  });
+  document.querySelector('#share-whatsapp').href = 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(shareText);
 }
 
 function renderHistory() {
-  const proposals = currentUser ? cloudProposals.slice(0, 5) : readProposals().slice(-5).reverse();
+  const selectedStatus = proposalStatusFilter?.value || 'all';
+  const source = currentUser ? cloudProposals : readProposals().slice().reverse();
+  const proposals = source
+    .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
+    .slice(0, 10);
   list.innerHTML = proposals.length
     ? proposals.map(proposal => {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
-      return '<div class="item"><div class="item-summary"><strong>' + escapeHtml(proposal.client) + '</strong>' +
+      const status = proposal.status || 'draft';
+      return '<div class="item"><div class="item-summary"><div class="item-title-line"><strong>' + escapeHtml(proposal.client) + '</strong><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
         '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small></div>' +
         '<div class="item-actions">' +
+          '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta">' +
+            '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>Rascunho</option>' +
+            '<option value="sent"' + (status === 'sent' ? ' selected' : '') + '>Enviada</option>' +
+            '<option value="approved"' + (status === 'approved' ? ' selected' : '') + '>Aprovada</option>' +
+            '<option value="rejected"' + (status === 'rejected' ? ' selected' : '') + '>Recusada</option>' +
+          '</select>' +
           '<button class="secondary" type="button" data-proposal="' + escapeHtml(proposal.id) + '">Abrir</button>' +
           '<button class="secondary" type="button" data-template="' + escapeHtml(proposal.id) + '">Usar como modelo</button>' +
           '<button class="secondary" type="button" data-edit="' + escapeHtml(proposal.id) + '">Editar</button>' +
@@ -549,6 +609,7 @@ form.addEventListener('submit', async event => {
   const fields = {
     business: String(values.business || '').trim(),
     client: String(values.client || '').trim(),
+    clientPhone: String(values.clientPhone || '').trim(),
     items: items,
     total: total,
     amount: total,
@@ -556,7 +617,8 @@ form.addEventListener('submit', async event => {
     deadline: String(values.deadline || '').trim(),
     terms: String(values.terms || '').trim(),
     businessPhone: String(values.businessPhone || '').trim(),
-    validUntil: values.validUntil
+    validUntil: values.validUntil,
+    status: existing?.status || 'draft'
   };
   const proposal = existing
     ? { ...existing, ...fields, updatedAt: now }
@@ -605,6 +667,38 @@ itemFields.addEventListener('click', event => {
   updateTotal();
 });
 addItemButton.addEventListener('click', () => addItem());
+proposalStatusFilter?.addEventListener('change', renderHistory);
+
+list.addEventListener('change', async event => {
+  const select = event.target.closest('[data-status-id]');
+  if (!select) return;
+  const proposal = visibleProposals().find(item => item.id === select.dataset.statusId);
+  if (!proposal) return;
+  const status = select.value;
+  if (!['draft', 'sent', 'approved', 'rejected'].includes(status)) return;
+
+  const updated = { ...proposal, status, updatedAt: Date.now() };
+  select.disabled = true;
+  try {
+    if (currentUser) {
+      const saved = await saveCloudProposal(updated);
+      cloudProposals = [saved, ...cloudProposals.filter(item => item.id !== saved.id)]
+        .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+        .slice(0, 20);
+      if (openedProposalId === saved.id) renderProposal(saved);
+    } else {
+      const next = readProposals().map(item => item.id === updated.id ? updated : item);
+      localStorage.setItem(storageKey, JSON.stringify(next));
+      if (openedProposalId === updated.id) renderProposal(updated);
+    }
+    renderHistory();
+    showToast('Status atualizado para ' + proposalStatusLabel(status) + '.');
+  } catch {
+    select.disabled = false;
+    showToast('Não foi possível atualizar o status.');
+  }
+});
+
 list.addEventListener('click', async event => {
   const removeButton = event.target.closest('[data-delete]');
   if (removeButton) {
