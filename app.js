@@ -126,6 +126,23 @@ function visibleProposals() {
   return currentUser ? cloudProposals : readProposals();
 }
 
+function prefillBusinessFields(proposals) {
+  if (editingId || !Array.isArray(proposals) || proposals.length === 0) return;
+  const businessInput = form.querySelector('[name="business"]');
+  const phoneInput = form.querySelector('[name="businessPhone"]');
+  if (!businessInput || businessInput.value.trim()) return;
+
+  const recent = proposals
+    .slice()
+    .sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))
+    .find(item => String(item.business || '').trim());
+  if (!recent) return;
+
+  businessInput.value = recent.business || '';
+  if (phoneInput && !phoneInput.value.trim()) phoneInput.value = recent.businessPhone || '';
+}
+
+
 function generateShareToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -276,6 +293,7 @@ async function loadCloudProposals() {
     return;
   }
   cloudProposals = (data || []).map(mapCloudProposal);
+  prefillBusinessFields(cloudProposals);
   renderHistory();
   updateAccountUi();
 }
@@ -973,6 +991,7 @@ function publicStatusText(status) {
 
 function renderPublicProposal(proposal) {
   const container = document.querySelector('#public-proposal-content');
+  document.title = 'Proposta ' + proposal.number + ' · ' + proposal.business;
   const items = Array.isArray(proposal.items) ? proposal.items : [];
   const rows = items.map(item =>
     '<tr><td>' + escapeHtml(item.description || '') + '</td>' +
@@ -1066,6 +1085,7 @@ if (publicProposalMode) {
   initPublicProposalMode();
 } else {
   addItem();
+  prefillBusinessFields(readProposals());
   renderHistory();
   initAccount();
 }
