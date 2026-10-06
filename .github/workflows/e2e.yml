@@ -3,8 +3,46 @@ name: Browser E2E
 on:
   push:
     branches: [main]
+    paths:
+      - 'index.html'
+      - 'app.js'
+      - 'proposal-core.js'
+      - 'i18n.js'
+      - 'pwa.js'
+      - 'sw.js'
+      - 'ads.js'
+      - 'ads-config.js'
+      - 'beta-feedback.js'
+      - 'theme-v2.css'
+      - 'manifest.webmanifest'
+      - 'supabase-config.js'
+      - 'tests/**'
+      - 'playwright.config.js'
+      - 'package.json'
+      - '.github/workflows/e2e.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'index.html'
+      - 'app.js'
+      - 'proposal-core.js'
+      - 'i18n.js'
+      - 'pwa.js'
+      - 'sw.js'
+      - 'ads.js'
+      - 'ads-config.js'
+      - 'beta-feedback.js'
+      - 'theme-v2.css'
+      - 'manifest.webmanifest'
+      - 'supabase-config.js'
+      - 'tests/**'
+      - 'playwright.config.js'
+      - 'package.json'
+      - '.github/workflows/e2e.yml'
+
+concurrency:
+  group: docpronto-e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
