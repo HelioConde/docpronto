@@ -158,6 +158,24 @@
             <small class="field-help client-helper">Ao entrar na conta, clientes usados antes aparecem como sugestão.</small>
           </label>
           <datalist id="client-suggestions"></datalist>
+          <div class="template-picker" aria-labelledby="template-picker-label">
+            <div>
+              <span class="template-kicker">MODELO RÁPIDO</span>
+              <strong id="template-picker-label">Comece com uma estrutura pronta</strong>
+              <small>O modelo preenche serviços, prazo e pagamento. Você define os valores.</small>
+            </div>
+            <div class="template-controls">
+              <select id="proposal-template" aria-label="Modelo de proposta">
+                <option value="">Escolher modelo</option>
+                <option value="electrical">Elétrica</option>
+                <option value="plumbing">Hidráulica</option>
+                <option value="painting">Pintura</option>
+                <option value="digital">Serviço digital</option>
+              </select>
+              <button id="apply-template" class="secondary" type="button" disabled>Aplicar</button>
+            </div>
+          </div>
+
           <details class="client-extra">
             <summary>Adicionar dados do cliente</summary>
             <div class="client-extra-grid">
