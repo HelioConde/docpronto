@@ -266,7 +266,7 @@ async function loadCloudProposals() {
     .from(proposalTable)
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(20);
+    .limit(100);
   cloudLoading = false;
   if (currentUser?.id !== ownerId) return;
   if (error) {
@@ -335,7 +335,7 @@ async function importLocalProposals() {
       const saved = await saveCloudProposal(proposal);
       cloudProposals = [saved, ...cloudProposals.filter(item => item.id !== saved.id)]
         .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
-        .slice(0, 20);
+        .slice(0, 100);
     }
     localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item =>
       !normalized.some(imported => imported.id === item.id)
@@ -821,7 +821,7 @@ form.addEventListener('submit', async event => {
       const saved = await saveCloudProposal(proposal);
       cloudProposals = [saved, ...cloudProposals.filter(item => item.id !== saved.id)]
         .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
-        .slice(0, 20);
+        .slice(0, 100);
       renderProposal(saved);
       renderHistory();
       if (existing) resetComposer();
@@ -837,7 +837,7 @@ form.addEventListener('submit', async event => {
 
   const nextProposals = existing
     ? proposals.map(item => item.id === existing.id ? proposal : item)
-    : proposals.concat(proposal).slice(-20);
+    : proposals.concat(proposal).slice(-100);
   localStorage.setItem(storageKey, JSON.stringify(nextProposals));
   renderProposal(proposal);
   renderHistory();
@@ -878,7 +878,7 @@ list.addEventListener('change', async event => {
       const saved = await saveCloudProposal(updated);
       cloudProposals = [saved, ...cloudProposals.filter(item => item.id !== saved.id)]
         .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
-        .slice(0, 20);
+        .slice(0, 100);
       if (openedProposalId === saved.id) renderProposal(saved);
     } else {
       const next = readProposals().map(item => item.id === updated.id ? updated : item);
