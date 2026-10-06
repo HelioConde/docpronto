@@ -26,6 +26,7 @@ const proposalStatusFilter = document.querySelector('#proposal-status-filter');
 const proposalSearch = document.querySelector('#proposal-search');
 const historySummary = document.querySelector('#history-summary');
 const historyMoreButton = document.querySelector('#history-more');
+const clearComposerButton = document.querySelector('#clear-composer');
 const businessProfileForm = document.querySelector('#business-profile-form');
 const brandColorValue = document.querySelector('#brand-color-value');
 const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
@@ -55,7 +56,8 @@ form.querySelector('[name="client"]').closest('label').after(clientContactField)
 const validityField = document.createElement('label');
 validityField.className = 'field';
 validityField.innerHTML = '<span>Proposta válida até</span><input name="validUntil" type="date" required>';
-form.querySelector('button[type="submit"]').before(validityField);
+const composerActions = form.querySelector('.composer-actions');
+composerActions.before(validityField);
 const validityInput = validityField.querySelector('input');
 const localDate = date => new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 const today = new Date();
@@ -68,7 +70,7 @@ cancelEditButton.className = 'secondary cancel-edit';
 cancelEditButton.type = 'button';
 cancelEditButton.textContent = 'Cancelar edição';
 cancelEditButton.hidden = true;
-submitButton.before(cancelEditButton);
+composerActions.before(cancelEditButton);
 let editingId = null;
 
 function defaultValidityDate() {
@@ -241,6 +243,12 @@ function beginEditing(proposal) {
 cancelEditButton.addEventListener('click', () => {
   resetComposer();
   showToast('Edição cancelada.');
+});
+
+clearComposerButton?.addEventListener('click', () => {
+  if (!window.confirm('Limpar o formulário e apagar o rascunho salvo neste dispositivo?')) return;
+  resetComposer();
+  showToast('Formulário limpo.');
 });
 
 function escapeHtml(value = '') {
