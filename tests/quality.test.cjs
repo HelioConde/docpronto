@@ -173,6 +173,23 @@ test('campos de proposta têm limites para proteger layout e PDF', () => {
   assert.match(css, /overflow-wrap:anywhere/);
 });
 
+test('identidade do negócio sincroniza por user_metadata e acompanha a proposta pública', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  const publicFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-public', 'index.ts'), 'utf8');
+  assert.match(html, /id="business-profile-form"/);
+  assert.match(html, /name="brandColor" type="color"/);
+  assert.match(app, /docpronto_business_name/);
+  assert.match(app, /docpronto_business_phone/);
+  assert.match(app, /docpronto_brand_color/);
+  assert.match(app, /function normalizeBrandColor/);
+  assert.match(app, /brandColor: existing\?\.brandColor \|\| accountBusinessProfile\(\)\.brandColor/);
+  assert.match(css, /--proposal-accent/);
+  assert.match(publicFn, /const brandColor/);
+  assert.match(publicFn, /brandColor,/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
