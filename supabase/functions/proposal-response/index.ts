@@ -77,6 +77,9 @@ Deno.serve(async (request: Request) => {
   const proposalId = typeof input.proposalId === "string" ? input.proposalId.trim() : "";
   const token = typeof input.token === "string" ? input.token.trim() : "";
   const decision = input.decision === "approved" || input.decision === "rejected" ? input.decision : "";
+  const acceptedBy = decision === "approved" && typeof input.acceptedBy === "string"
+    ? input.acceptedBy.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100)
+    : "";
   if (!/^[0-9a-f-]{36}$/i.test(proposalId) || !/^[A-Za-z0-9_-]{32}$/.test(token) || !decision) {
     return json(400, { error: "Resposta inválida." }, origin);
   }
@@ -132,6 +135,7 @@ Deno.serve(async (request: Request) => {
     ...proposalData,
     status: decision,
     respondedAt: respondedAt.getTime(),
+    acceptedBy,
     statusHistory,
   };
 
@@ -151,5 +155,5 @@ Deno.serve(async (request: Request) => {
 
   if (error) return json(503, { error: "Não foi possível salvar a resposta." }, origin);
   if (!data) return json(409, { error: "A proposta foi alterada antes da sua resposta." }, origin);
-  return json(200, { status: data.status, respondedAt: data.responded_at }, origin);
+  return json(200, { status: data.status, respondedAt: data.responded_at, acceptedBy }, origin);
 });
