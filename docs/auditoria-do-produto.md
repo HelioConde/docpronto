@@ -9,9 +9,10 @@ Revisão de código e da captura enviada em 6 de outubro de 2026. Os pontos abai
 - O gerador abre direto, sem forçar cadastro; isso preserva o fluxo rápido para quem só quer montar um orçamento.
 - O formulário aceita itens, calcula totais, gera prévia e imprime/salva PDF.
 - Histórico, edição e uso como modelo cobrem os casos mais repetidos.
+- Desconto percentual/fixo, observações, identidade do negócio e dados reutilizáveis de clientes aproximam o produto de uso comercial real.
 - A conta é opcional. A sincronização separa propostas por usuário no banco.
 - A imagem anexada mostrava a página sem CSS. Foi criado um caminho de stylesheet novo para contornar o cache do Pages.
-- O histórico mostra cinco propostas e carrega até vinte mais recentes da nuvem; registros antigos continuam preservados no banco. Busca, filtros por cliente e paginação ainda podem ser adicionados.
+- O histórico carrega até 100 propostas, exibe até 10 por vez, possui busca por cliente/empresa/número, filtros de status e resumo comercial. Paginação completa continua opcional para uma etapa futura.
 - A sincronização exige redirect URL e entrega de e-mail válidos no Supabase; a interface informa erros de configuração.
 
 ## QA e segurança
@@ -51,7 +52,7 @@ A auditoria automática do Supabase também reportou alertas em objetos preexist
 
 **Avaliação: linguagem visual consistente e adequada ao público.**
 
-- A paleta clara e o destaque terroso passam simplicidade e confiança sem competir com o orçamento.
+- A paleta foi migrada para azul-petróleo com neutros frios e cobre como detalhe, reforçando confiança e hierarquia sem competir com o documento.
 - A hierarquia coloca formulário, total e prévia na frente.
 - O diálogo de conta e a faixa de importação usam os mesmos tokens visuais; foco de teclado e movimento reduzido foram considerados.
 - Próxima checagem visual: larguras de 360 px, 768 px e 1440 px, incluindo formulário de itens, diálogo e tabela de impressão.
