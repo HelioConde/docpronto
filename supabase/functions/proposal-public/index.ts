@@ -100,11 +100,19 @@ Deno.serve(async (request: Request) => {
   const brandColor = typeof p.brandColor === "string" && /^#[0-9a-f]{6}$/i.test(p.brandColor)
     ? p.brandColor.toLowerCase()
     : "#245d6c";
+  const subtotal = Number.isFinite(Number(p.subtotal)) ? Number(p.subtotal) : Number(data.total);
+  const discountAmount = Number.isFinite(Number(p.discountAmount)) ? Math.max(0, Number(p.discountAmount)) : 0;
+  const discountType = p.discountType === "percent" || p.discountType === "fixed" ? p.discountType : "none";
+  const discountValue = Number.isFinite(Number(p.discountValue)) ? Math.max(0, Number(p.discountValue)) : 0;
   return json(200, {
     id: data.id,
     number: data.proposal_number,
     business: data.business_name,
     client: data.client_name,
+    subtotal,
+    discountType,
+    discountValue,
+    discountAmount,
     total: Number(data.total),
     status: data.status,
     createdAt: data.created_at,
