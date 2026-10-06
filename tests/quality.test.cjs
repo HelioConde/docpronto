@@ -79,6 +79,27 @@ test('histórico permite buscar propostas sem consultar o banco a cada tecla', (
   assert.match(app, /proposal\.client, proposal\.business, proposal\.number/);
 });
 
+test('histórico comercial mostra resumo, validade e carrega até 100 propostas', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /id="history-summary"/);
+  assert.match(app, /function renderHistorySummary/);
+  assert.match(app, /function proposalValidityInfo/);
+  assert.match(app, /Expira hoje/);
+  assert.match(app, /\.limit\(100\)/);
+  assert.match(app, /\.slice\(0, 100\)/);
+  assert.match(app, /\.slice\(-100\)/);
+  assert.match(css, /\.history-summary/);
+  assert.match(css, /\.validity-expired/);
+});
+
+test('excluir uma proposta aberta também fecha a prévia', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.ok((app.match(/if \(openedProposalId === id\)/g) || []).length >= 2);
+  assert.match(app, /result\.classList\.remove\('show'\)/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
