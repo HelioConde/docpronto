@@ -40,6 +40,7 @@ let cloudClients = [];
 let cloudLoading = false;
 let passwordRecovery = false;
 let openedProposalId = null;
+let lastCloudRefreshAt = 0;
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
@@ -415,6 +416,7 @@ function mapCloudProposal(row) {
     total: Number(row.total),
     amount: Number(row.total),
     status: row.status || row.proposal_data?.status || 'draft',
+    respondedAt: row.responded_at ? Date.parse(row.responded_at) : null,
     createdAt: Date.parse(row.created_at),
     updatedAt: Date.parse(row.updated_at)
   };
@@ -431,6 +433,7 @@ async function saveCloudProposal(proposal) {
     client_name: proposal.client,
     total: Number(proposal.total) || 0,
     status: proposal.status || 'draft',
+    responded_at: proposal.respondedAt ? new Date(Number(proposal.respondedAt)).toISOString() : null,
     proposal_data: proposal,
     created_at: new Date(Number(proposal.createdAt) || Date.now()).toISOString(),
     updated_at: now
@@ -468,8 +471,13 @@ async function loadCloudProposals() {
     return;
   }
   cloudProposals = (data || []).map(mapCloudProposal);
+  lastCloudRefreshAt = Date.now();
   prefillBusinessFields(cloudProposals);
   renderHistory();
+  if (openedProposalId) {
+    const opened = cloudProposals.find(item => item.id === openedProposalId);
+    if (opened) renderProposal(opened);
+  }
   updateAccountUi();
 }
 
@@ -732,6 +740,15 @@ function initAccount() {
     }
     setSession(data.session, 'INITIAL_SESSION');
   });
+
+  const refreshCloudIfStale = () => {
+    if (!currentUser || cloudLoading || Date.now() - lastCloudRefreshAt < 15000) return;
+    loadCloudProposals();
+  };
+  window.addEventListener('focus', refreshCloudIfStale);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshCloudIfStale();
+  });
 }
 
 function readProposals() {
@@ -928,7 +945,10 @@ function renderProposal(proposal) {
         '<div><span class="proposal-label">EMPRESA</span><h3>' + escapeHtml(proposal.business) + '</h3>' + (proposal.businessPhone ? '<p>' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
         '<div class="proposal-client-block"><span class="proposal-label">CLIENTE</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
       '</div>' +
-      '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') + '</div>' +
+      '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') +
+        (proposal.respondedAt && (status === 'approved' || status === 'rejected')
+          ? ' · respondida em ' + new Date(proposal.respondedAt).toLocaleDateString('pt-BR')
+          : '') + '</div>' +
       (clientDetails ? '<div class="proposal-client-details">' + clientDetails + '</div>' : '') +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
         '<thead><tr><th>Serviço ou material</th><th class="number">Qtd.</th><th class="number">Unitário</th><th class="number">Subtotal</th></tr></thead>' +
@@ -995,7 +1015,7 @@ function renderProposal(proposal) {
       url.hash = shareParams.toString();
       await navigator.clipboard.writeText(url.toString());
 
-      const updated = { ...proposal, status: 'sent', updatedAt: Date.now() };
+      const updated = { ...proposal, status: 'sent', respondedAt: null, updatedAt: Date.now() };
       cloudProposals = cloudProposals.map(item => item.id === proposal.id ? updated : item);
       renderHistory();
       renderProposal(updated);
@@ -1039,7 +1059,11 @@ function renderHistory() {
         ? '<span class="validity-badge validity-' + validity.tone + '">' + escapeHtml(validity.label) + '</span>'
         : '';
       return '<div class="item"><div class="item-summary"><div class="item-title-line"><strong>' + escapeHtml(proposal.client) + '</strong><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
-        '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small>' + validityBadge + '</div>' +
+        '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small>' +
+        (proposal.respondedAt && (status === 'approved' || status === 'rejected')
+          ? '<small class="response-time">Respondida em ' + new Date(proposal.respondedAt).toLocaleDateString('pt-BR') + ' às ' + new Date(proposal.respondedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</small>'
+          : '') +
+        validityBadge + '</div>' +
         '<div class="item-actions">' +
           '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta">' +
             '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>Rascunho</option>' +
@@ -1180,7 +1204,13 @@ list.addEventListener('change', async event => {
   const status = select.value;
   if (!['draft', 'sent', 'approved', 'rejected'].includes(status)) return;
 
-  const updated = { ...proposal, status, updatedAt: Date.now() };
+  const terminalStatus = status === 'approved' || status === 'rejected';
+  const updated = {
+    ...proposal,
+    status,
+    respondedAt: terminalStatus ? (proposal.respondedAt || Date.now()) : null,
+    updatedAt: Date.now()
+  };
   select.disabled = true;
   try {
     if (currentUser) {
