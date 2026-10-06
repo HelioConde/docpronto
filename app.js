@@ -6,6 +6,20 @@ const addItemButton = document.querySelector('#add-item');
 const formTotal = document.querySelector('#form-total');
 const storageKey = 'docpronto-proposals';
 const maxItems = 10;
+const accountDialog = document.querySelector('#account-dialog');
+const accountOpenButton = document.querySelector('#account-open');
+const accountCloseButton = document.querySelector('#account-close');
+const accountForm = document.querySelector('#auth-form');
+const accountProfile = document.querySelector('#account-profile');
+const accountMessage = document.querySelector('#account-message');
+const syncStatus = document.querySelector('#sync-status');
+const localImportBanner = document.querySelector('#local-import-banner');
+const localImportButton = document.querySelector('#local-import');
+const supabaseClient = window.DOC_PRONTO_SUPABASE?.client || null;
+const proposalTable = 'docpronto_proposals';
+let currentUser = null;
+let cloudProposals = [];
+let cloudLoading = false;
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
@@ -81,6 +95,267 @@ function escapeHtml(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   })[char]);
+}
+
+function readProposals() {
+  try {
+    const value = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function visibleProposals() {
+  return currentUser ? cloudProposals : readProposals();
+}
+
+function makeUuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+    .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5');
+}
+
+function mapCloudProposal(row) {
+  return {
+    ...row.proposal_data,
+    id: row.id,
+    number: row.proposal_number,
+    business: row.business_name,
+    client: row.client_name,
+    total: Number(row.total),
+    amount: Number(row.total),
+    createdAt: Date.parse(row.created_at),
+    updatedAt: Date.parse(row.updated_at)
+  };
+}
+
+async function saveCloudProposal(proposal) {
+  if (!supabaseClient || !currentUser) throw new Error('Entre na sua conta para sincronizar.');
+  const now = new Date().toISOString();
+  const row = {
+    id: proposal.id,
+    owner_id: currentUser.id,
+    proposal_number: proposal.number,
+    business_name: proposal.business,
+    client_name: proposal.client,
+    total: Number(proposal.total) || 0,
+    proposal_data: proposal,
+    created_at: new Date(Number(proposal.createdAt) || Date.now()).toISOString(),
+    updated_at: now
+  };
+  const { data, error } = await supabaseClient
+    .from(proposalTable)
+    .upsert(row, { onConflict: 'id' })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return mapCloudProposal(data);
+}
+
+async function loadCloudProposals() {
+  if (!supabaseClient || !currentUser) return;
+  cloudLoading = true;
+  updateAccountUi();
+  const ownerId = currentUser.id;
+  const { data, error } = await supabaseClient
+    .from(proposalTable)
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  cloudLoading = false;
+  if (currentUser?.id !== ownerId) return;
+  if (error) {
+    showAccountMessage('Não foi possível carregar suas propostas. Tente novamente.');
+    syncStatus.textContent = 'Falha ao carregar a nuvem';
+    updateAccountUi();
+    return;
+  }
+  cloudProposals = (data || []).map(mapCloudProposal);
+  renderHistory();
+  updateAccountUi();
+}
+
+function showAccountMessage(message) {
+  if (accountMessage) accountMessage.textContent = message;
+}
+
+function updateAccountUi() {
+  const localCount = readProposals().length;
+  accountOpenButton.textContent = currentUser ? 'Minha conta' : 'Entrar / sincronizar';
+  accountOpenButton.disabled = !supabaseClient;
+  syncStatus.textContent = currentUser
+    ? (cloudLoading ? 'Carregando propostas…' : 'Nuvem · ' + currentUser.email)
+    : (supabaseClient ? 'Salvo neste dispositivo' : 'Modo local');
+  accountForm.hidden = !supabaseClient || Boolean(currentUser);
+  accountProfile.hidden = !currentUser;
+  if (currentUser) {
+    document.querySelector('#account-email').textContent = currentUser.email || 'Conta conectada';
+    localImportBanner.hidden = localCount === 0;
+    document.querySelector('#local-import-count').textContent = String(localCount);
+  } else {
+    localImportBanner.hidden = true;
+  }
+}
+
+function authErrorText(error) {
+  const message = String(error?.message || '').toLowerCase();
+  if (message.includes('invalid login credentials')) return 'E-mail ou senha incorretos.';
+  if (message.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar.';
+  if (message.includes('already registered')) return 'Este e-mail já tem conta. Tente entrar.';
+  if (message.includes('password should be at least')) return 'Use uma senha com pelo menos 8 caracteres.';
+  if (message.includes('redirect') || message.includes('url')) return 'O endereço de retorno do DocPronto precisa ser liberado nas configurações de Auth do Supabase.';
+  return 'Não foi possível concluir. Confira os dados e tente novamente.';
+}
+
+async function importLocalProposals() {
+  if (!currentUser) return;
+  const button = localImportButton;
+  const local = readProposals();
+  if (!local.length) {
+    updateAccountUi();
+    return;
+  }
+  button.disabled = true;
+  showAccountMessage('Importando propostas deste dispositivo…');
+  try {
+    const normalized = local.map(proposal => ({
+      ...proposal,
+      id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(proposal.id)
+        ? proposal.id
+        : makeUuid()
+    }));
+    localStorage.setItem(storageKey, JSON.stringify(normalized));
+    for (const proposal of normalized) {
+      const saved = await saveCloudProposal(proposal);
+      cloudProposals = [saved, ...cloudProposals.filter(item => item.id !== saved.id)]
+        .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+        .slice(0, 20);
+    }
+    localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item =>
+      !normalized.some(imported => imported.id === item.id)
+    )));
+    renderHistory();
+    updateAccountUi();
+    showAccountMessage('Importação concluída. Suas propostas estão na nuvem.');
+  } catch {
+    showAccountMessage('Parte da importação pode ter sido concluída. Tente novamente; os registros não serão duplicados.');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function initAccount() {
+  accountOpenButton.addEventListener('click', () => accountDialog.showModal());
+  accountCloseButton.addEventListener('click', () => accountDialog.close());
+  accountDialog.addEventListener('click', event => {
+    if (event.target === accountDialog) accountDialog.close();
+  });
+
+  accountForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!supabaseClient) return;
+    const submit = accountForm.querySelector('[type="submit"]');
+    submit.disabled = true;
+    showAccountMessage('Entrando…');
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: accountForm.elements.email.value.trim(),
+        password: accountForm.elements.password.value
+      });
+      if (error) throw error;
+      showAccountMessage('Conta conectada.');
+    } catch (error) {
+      showAccountMessage(authErrorText(error));
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  document.querySelector('#sign-up').addEventListener('click', async () => {
+    if (!supabaseClient) return;
+    const email = accountForm.elements.email.value.trim();
+    const password = accountForm.elements.password.value;
+    if (!email || password.length < 8) {
+      showAccountMessage('Informe seu e-mail e uma senha com pelo menos 8 caracteres.');
+      return;
+    }
+    const button = document.querySelector('#sign-up');
+    button.disabled = true;
+    showAccountMessage('Criando conta…');
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: 'https://helioconde.github.io/docpronto/' }
+      });
+      if (error) throw error;
+      showAccountMessage(data.session
+        ? 'Conta criada e conectada.'
+        : 'Conta criada. Confirme o endereço pelo link enviado ao seu e-mail e depois entre.');
+    } catch (error) {
+      showAccountMessage(authErrorText(error));
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.querySelector('#reset-password').addEventListener('click', async () => {
+    if (!supabaseClient) return;
+    const email = accountForm.elements.email.value.trim();
+    if (!email) {
+      showAccountMessage('Informe seu e-mail para receber o link de redefinição.');
+      return;
+    }
+    try {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://helioconde.github.io/docpronto/'
+      });
+      if (error) throw error;
+      showAccountMessage('Se esse e-mail estiver cadastrado, você receberá um link para redefinir a senha.');
+    } catch (error) {
+      showAccountMessage(authErrorText(error));
+    }
+  });
+
+  document.querySelector('#sign-out').addEventListener('click', async () => {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) showAccountMessage('Não foi possível sair da conta.');
+    else showAccountMessage('Você saiu. As propostas locais continuam neste dispositivo.');
+  });
+
+  localImportButton.addEventListener('click', importLocalProposals);
+  if (!supabaseClient) {
+    showAccountMessage('A sincronização está indisponível. Você ainda pode criar propostas salvas neste navegador.');
+    updateAccountUi();
+    return;
+  }
+
+  let activeUserId = null;
+  const setSession = session => {
+    const user = session?.user || null;
+    if (user?.id === activeUserId) return;
+    activeUserId = user?.id || null;
+    currentUser = user;
+    cloudProposals = [];
+    updateAccountUi();
+    if (user) window.setTimeout(() => loadCloudProposals(), 0);
+    else renderHistory();
+  };
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    window.setTimeout(() => setSession(session), 0);
+  });
+  supabaseClient.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      showAccountMessage('Não foi possível verificar a sessão. O modo local continua disponível.');
+      return;
+    }
+    setSession(data.session);
+  });
 }
 
 function readProposals() {
@@ -199,7 +474,7 @@ function renderProposal(proposal) {
 }
 
 function renderHistory() {
-  const proposals = readProposals().slice(-5).reverse();
+  const proposals = visibleProposals().slice(-5).reverse();
   list.innerHTML = proposals.length
     ? proposals.map(proposal => {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
@@ -212,10 +487,10 @@ function renderHistory() {
           '<button class="secondary" type="button" data-delete="' + escapeHtml(proposal.id) + '" aria-label="Excluir proposta">Excluir</button>' +
         '</div></div>';
     }).join('')
-    : '<div class="empty">As propostas salvas neste navegador aparecem aqui.</div>';
+    : '<div class="empty">' + (currentUser ? 'Sua conta ainda não tem propostas.' : 'As propostas salvas neste navegador aparecem aqui.') + '</div>';
 }
 
-form.addEventListener('submit', event => {
+form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!form.reportValidity()) return;
 
@@ -261,19 +536,38 @@ form.addEventListener('submit', event => {
     ? { ...existing, ...fields, updatedAt: now }
     : {
         ...fields,
-        id: crypto.randomUUID?.() || String(now),
-        number: 'DP-' + new Date(now).getFullYear() + '-' + String(now).slice(-6),
+        id: makeUuid(),
+        number: 'DP-' + new Date(now).getFullYear() + '-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0'),
         createdAt: now
       };
+  if (currentUser) {
+    submitButton.disabled = true;
+    try {
+      const saved = await saveCloudProposal(proposal);
+      cloudProposals = [saved, ...cloudProposals.filter(item => item.id !== saved.id)]
+        .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+        .slice(0, 20);
+      renderProposal(saved);
+      renderHistory();
+      if (existing) resetComposer();
+      showToast(existing ? 'Proposta atualizada na nuvem.' : 'Proposta salva na nuvem.');
+    } catch {
+      showAccountMessage('Falha ao salvar na nuvem. Confira a conexão; os dados continuam no formulário.');
+      showToast('Não foi possível sincronizar a proposta.');
+    } finally {
+      submitButton.disabled = false;
+    }
+    return;
+  }
+
   const nextProposals = existing
     ? proposals.map(item => item.id === existing.id ? proposal : item)
     : proposals.concat(proposal).slice(-20);
-
   localStorage.setItem(storageKey, JSON.stringify(nextProposals));
   renderProposal(proposal);
   renderHistory();
   if (existing) resetComposer();
-  showToast(existing ? 'Proposta atualizada no histórico.' : 'Proposta salva neste navegador.');
+  showToast(existing ? 'Proposta atualizada neste navegador.' : 'Proposta salva neste navegador.');
 });
 
 itemFields.addEventListener('input', updateTotal);
@@ -285,14 +579,25 @@ itemFields.addEventListener('click', event => {
   updateTotal();
 });
 addItemButton.addEventListener('click', () => addItem());
-list.addEventListener('click', event => {
+list.addEventListener('click', async event => {
   const removeButton = event.target.closest('[data-delete]');
   if (removeButton) {
     if (!window.confirm('Excluir esta proposta do histórico salvo neste navegador?')) return;
     const id = removeButton.dataset.delete;
-    localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item => item.id !== id)));
-    renderHistory();
-    showToast('Proposta removida do histórico.');
+    if (currentUser) {
+      const { error } = await supabaseClient.from(proposalTable).delete().eq('id', id);
+      if (error) {
+        showToast('Não foi possível excluir a proposta.');
+        return;
+      }
+      cloudProposals = cloudProposals.filter(item => item.id !== id);
+      renderHistory();
+      showToast('Proposta removida da nuvem.');
+    } else {
+      localStorage.setItem(storageKey, JSON.stringify(readProposals().filter(item => item.id !== id)));
+      renderHistory();
+      showToast('Proposta removida deste navegador.');
+    }
     return;
   }
 
@@ -325,3 +630,4 @@ list.addEventListener('click', event => {
 
 addItem();
 renderHistory();
+initAccount();
