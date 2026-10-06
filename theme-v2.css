@@ -363,3 +363,14 @@ html[lang="en"] .hero h1{max-width:780px}
 .status-history-dot.status-approved{background:var(--success)}
 .status-history-dot.status-rejected{background:var(--danger)}
 @media print{.status-history{display:none!important}}
+
+.public-acceptance-input{margin:16px 0 10px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#fafcfc}
+.public-acceptance-input label{display:grid;gap:5px}
+.public-acceptance-input span{font:700 10px Manrope}
+.public-acceptance-input input{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font:inherit}
+.public-acceptance-input small{color:var(--muted);font-size:9px;line-height:1.4}
+.public-response-note small{display:block;margin-top:5px;font-size:9px;font-weight:500}
+.proposal-acceptance{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;padding:10px 12px;border:1px solid #d8e8dc;border-radius:10px;background:#f4faf5}
+.proposal-acceptance span{color:var(--muted);font-size:9px}
+.proposal-acceptance strong{color:var(--success);font:700 11px Manrope}
+@media(max-width:520px){.proposal-acceptance{align-items:flex-start;flex-direction:column;gap:4px}}
