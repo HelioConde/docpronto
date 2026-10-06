@@ -18,13 +18,14 @@ Revisão de código e da captura enviada em 6 de outubro de 2026. Os pontos abai
 
 ## QA e segurança
 
-**Avaliação: validações automatizadas iniciais adicionadas; falta o teste E2E autenticado.**
+**Avaliação: QA automatizado fortalecido com Browser E2E; falta apenas homologação autenticada contra contas reais.**
 
 Implementado:
 
 - Testes Node para quantidades, limites, campos inválidos, arredondamento monetário e valores fora do limite.
 - Verificação de sintaxe JS.
 - Workflow GitHub Actions para executar as verificações em push e pull request.
+- Browser E2E em Chromium cobre criação local, rascunho, edição, status, CSV e proposta pública/aprovação com backend controlado.
 - Nova tabela `docpronto_proposals`, separada das tabelas da pizzaria e do AgendaLeve.
 - RLS habilitado; usuários só acessam linhas com `owner_id = auth.uid()`. `anon` e `PUBLIC` não têm acesso à tabela, e `authenticated` recebeu apenas SELECT, INSERT, UPDATE e DELETE — sem TRUNCATE.
 - A chave do frontend é publishable; nenhuma chave privilegiada é necessária ou incluída.
@@ -33,7 +34,7 @@ Pendente para homologação:
 
 - Criar uma conta de teste, confirmar o e-mail, entrar, importar propostas, editar, excluir e repetir em outra conta.
 - Testar falha de rede, sessão expirada e redirecionamento de redefinição de senha.
-- Rever visualmente desktop e mobile após a publicação do novo fluxo.
+- Rever visualmente desktop e mobile após a publicação do novo fluxo; o E2E reduz regressões funcionais, mas não substitui homologação visual.
 - Confirmar a lista de Redirect URLs e o provedor de e-mail do projeto compartilhado.
 
 A auditoria automática do Supabase também reportou alertas em objetos preexistentes do pizzaria-db ligados ao AgendaLeve e às rotinas da pizzaria. Eles não foram alterados nesta entrega, pois estão fora das tabelas do DocPronto.
