@@ -1,0 +1,43 @@
+name: Live Edge Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/live-edge-smoke.mjs'
+      - '.github/workflows/live-edge-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read public Supabase key
+        id: key
+        shell: bash
+        run: |
+          KEY=$(python3 - <<'PY'
+          import re
+          text=open('supabase-config.js', encoding='utf-8').read()
+          m=re.search(r"anonKey\s*=\s*['\"]([^'\"]+)['\"]", text)
+          if not m:
+              m=re.search(r"SUPABASE_ANON_KEY[^'\"]*['\"]([^'\"]+)['\"]", text)
+          if not m:
+              raise SystemExit('Could not find public anon key')
+          print(m.group(1))
+          PY
+          )
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+      - name: Run live Edge smoke
+        env:
+          SUPABASE_ANON_KEY: ${{ steps.key.outputs.key }}
+          QA_PROPOSAL_ID: 44444444-4444-4444-8444-444444444444
+          QA_PROPOSAL_TOKEN: 0123456789abcdefghijklmnopqrstuv
+        run: node tests/live-edge-smoke.mjs
