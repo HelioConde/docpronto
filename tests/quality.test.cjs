@@ -127,6 +127,18 @@ test('novas propostas reaproveitam dados do negócio sem criar outra tabela', ()
   assert.match(app, /document\.title = 'Proposta ' \+ proposal\.number \+ ' · ' \+ proposal\.business/);
 });
 
+test('formulário salva e recupera rascunho local automaticamente', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(html, /autosave-note/);
+  assert.match(app, /composerDraftKey/);
+  assert.match(app, /function saveComposerDraft/);
+  assert.match(app, /function restoreComposerDraft/);
+  assert.match(app, /Rascunho recuperado/);
+  assert.match(app, /form\.addEventListener\('input', scheduleComposerDraftSave\)/);
+  assert.match(app, /clearComposerDraft\(\)/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
