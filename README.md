@@ -20,6 +20,7 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - envio do link seguro direto pelo WhatsApp em uma única ação para usuários conectados;
 - link público seguro para o cliente abrir a proposta;
 - aprovação ou recusa da proposta sem conta, protegida por token;
+- aceite textual opcional com nome do cliente registrado junto da aprovação;
 - atualização automática das respostas do cliente ao voltar para a aba, com data/hora da resposta;
 - novos links públicos mantêm o token no fragmento da URL e usam noindex/no-referrer;
 - impressão/salvamento em PDF A4 pelo navegador, inclusive na proposta compartilhada;
