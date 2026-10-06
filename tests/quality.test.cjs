@@ -119,6 +119,14 @@ test('proposta compartilhada e impressão usam layout de documento A4', () => {
   assert.match(css, /\.public-document-actions/);
 });
 
+test('novas propostas reaproveitam dados do negócio sem criar outra tabela', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(app, /function prefillBusinessFields/);
+  assert.match(app, /prefillBusinessFields\(cloudProposals\)/);
+  assert.match(app, /prefillBusinessFields\(readProposals\(\)\)/);
+  assert.match(app, /document\.title = 'Proposta ' \+ proposal\.number \+ ' · ' \+ proposal\.business/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
