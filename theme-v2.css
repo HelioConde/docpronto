@@ -100,3 +100,5 @@ button:focus-visible,input:focus-visible,dialog:focus-visible{outline:3px solid 
 .public-response-note.rejected{background:#f7e8e5;color:#8a4338}
 @media(max-width:620px){.public-proposal-view{margin:30px auto 50px}.public-proposal-card{padding:20px}.public-proposal-head{align-items:flex-start;flex-direction:column}.public-details{grid-template-columns:1fr}.public-response-actions{flex-direction:column}.public-response-actions>*{width:100%!important}}
 @media print{.public-response-actions,.public-response-note{display:none!important}.public-proposal-card{box-shadow:none;border:0}}
+
+.client-helper{display:block;margin-top:6px}
