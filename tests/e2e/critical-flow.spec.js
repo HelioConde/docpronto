@@ -18,6 +18,25 @@ async function fillBaseProposal(page, suffix = '') {
   await page.locator('[name="terms"]').fill('50% no início e 50% na entrega');
 }
 
+
+test('mantém PT-BR como padrão e permite alternar para inglês com persistência', async ({ page }) => {
+  await localMode(page);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+
+  await page.locator('[data-language="en"]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.getByRole('heading', { name: /Professional quote/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Generate proposal' })).toBeVisible();
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.getByRole('heading', { name: /Professional quote/i })).toBeVisible();
+
+  await page.locator('[data-language="pt-BR"]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+  await expect(page.getByRole('heading', { name: /Orçamento profissional/i })).toBeVisible();
+});
+
 test('modo local cria, busca, edita, muda status e exporta proposta', async ({ page }) => {
   await localMode(page);
   await fillBaseProposal(page);
