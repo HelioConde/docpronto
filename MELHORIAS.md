@@ -22,7 +22,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 
 - [ ] Logo do prestador no documento.
 - [ ] Modelos de proposta reutilizáveis por categoria.
-- [ ] Duplicar cliente com novo orçamento em um clique.
+- [x] Criar novo orçamento para cliente salvo em um clique, sempre saindo de eventual modo de edição.
 - [ ] Campo opcional de assinatura/aceite textual do cliente.
 - [ ] Histórico de mudanças de status.
 - [x] Dashboard simples de conversão: aprovadas ÷ propostas que já entraram no funil de envio.
