@@ -441,3 +441,26 @@ test('aceite textual opcional acompanha aprovação pública', async ({ page }) 
   await expect(page.locator('#public-proposal-content')).toContainText('Maria Souza');
   await expect(page.locator('#public-proposal-content')).toContainText(/Aceite registrado por|Accepted by/);
 });
+
+
+test('feedback beta entra na fila local sem backend e não pede dados pessoais', async ({ page }) => {
+  await localMode(page);
+  await page.locator('#beta-feedback-open').click();
+  await expect(page.locator('#beta-feedback-dialog')).toBeVisible();
+
+  await page.locator('#beta-feedback-form input[name="rating"][value="5"]').check();
+  await page.locator('#beta-feedback-form select[name="category"]').selectOption('idea');
+  await page.locator('#beta-feedback-form textarea[name="comment"]').fill('Fluxo rápido e fácil de entender.');
+  await expect(page.locator('#beta-feedback-count')).toHaveText('34');
+
+  await page.getByRole('button', { name: /Enviar feedback|Send feedback/i }).click();
+  await expect(page.locator('#beta-feedback-status')).toContainText(/Feedback salvo|Feedback saved/);
+
+  const queue = await page.evaluate(() => JSON.parse(localStorage.getItem('docpronto-beta-feedback-queue-v1') || '[]'));
+  expect(queue).toHaveLength(1);
+  expect(queue[0].rating).toBe(5);
+  expect(queue[0].category).toBe('idea');
+  expect(queue[0].comment).toBe('Fluxo rápido e fácil de entender.');
+  expect(queue[0]).not.toHaveProperty('email');
+  expect(queue[0]).not.toHaveProperty('client');
+});
