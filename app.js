@@ -251,7 +251,7 @@ cancelEditButton.addEventListener('click', () => {
 });
 
 clearComposerButton?.addEventListener('click', () => {
-  if (!window.confirm('Limpar o formulário e apagar o rascunho salvo neste dispositivo?')) return;
+  if (!window.confirm(uiText('Limpar o formulário e apagar o rascunho salvo neste dispositivo?'))) return;
   resetComposer();
   showToast('Formulário limpo.');
 });
@@ -537,7 +537,7 @@ async function loadCloudProposals() {
 }
 
 function showAccountMessage(message) {
-  if (accountMessage) accountMessage.textContent = message;
+  if (accountMessage) accountMessage.textContent = uiText(message);
 }
 
 function updateAccountUi() {
@@ -856,16 +856,24 @@ function readProposals() {
   }
 }
 
+function currentLocale() {
+  return window.AppI18n?.locale?.() || 'pt-BR';
+}
+
+function uiText(value) {
+  return window.AppI18n?.t?.(value) || value;
+}
+
 function showToast(message) {
   const toast = document.querySelector('#toast');
-  toast.textContent = message;
+  toast.textContent = uiText(message);
   toast.classList.add('on');
   window.setTimeout(() => toast.classList.remove('on'), 1800);
 }
 
 function formatCurrency(value) {
   const amount = Number(value);
-  return (Number.isFinite(amount) ? amount : 0).toLocaleString('pt-BR', {
+  return (Number.isFinite(amount) ? amount : 0).toLocaleString(currentLocale(), {
     style: 'currency',
     currency: 'BRL'
   });
@@ -878,7 +886,7 @@ function csvCell(value) {
 
 function csvDate(value) {
   const date = new Date(Number(value) || value || '');
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('pt-BR');
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString(currentLocale());
 }
 
 function exportProposalsCsv() {
@@ -1048,12 +1056,13 @@ function addItem(values = {}) {
 }
 
 function proposalStatusLabel(status) {
-  return ({
+  const label = ({
     draft: 'Rascunho',
     sent: 'Enviada',
     approved: 'Aprovada',
     rejected: 'Recusada'
   })[status] || 'Rascunho';
+  return uiText(label);
 }
 
 function proposalIsExpired(proposal) {
@@ -1107,8 +1116,11 @@ function normalizeWhatsAppPhone(value) {
 function proposalShareText(proposal) {
   const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
   const validUntil = proposal.validUntil
-    ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR')
-    : 'não informada';
+    ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString(currentLocale())
+    : uiText('não informada');
+  if (currentLocale() === 'en') {
+    return `Hi, ${proposal.client}! Here is proposal ${proposal.number} from ${proposal.business}, totaling ${formatCurrency(total)}. Valid until: ${validUntil}. I can send you the PDF here as well.`;
+  }
   return `Olá, ${proposal.client}! Segue a proposta ${proposal.number} da ${proposal.business}, no valor de ${formatCurrency(total)}. Validade: ${validUntil}. Posso te enviar o PDF por aqui.`;
 }
 
@@ -1125,7 +1137,7 @@ function buildClientShareUrl(proposalId, token) {
 async function publishClientProposal(proposal, { confirmReplacement = true } = {}) {
   if (!supabaseClient || !currentUser) throw new Error('Entre na sua conta para criar um link.');
   if (proposal.status === 'sent' && confirmReplacement &&
-      !window.confirm('Gerar um novo link invalida o link anterior. Continuar?')) {
+      !window.confirm(uiText('Gerar um novo link invalida o link anterior. Continuar?'))) {
     return null;
   }
 
@@ -1156,7 +1168,7 @@ function renderProposal(proposal) {
   const discountAmount = Number.isFinite(Number(proposal.discountAmount)) ? Number(proposal.discountAmount) : Math.max(0, subtotal - total);
   const itemRows = items.map(item =>
     '<tr><td>' + escapeHtml(item.description) + '</td>' +
-    '<td class="number">' + Number(item.quantity || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '</td>' +
+    '<td class="number">' + Number(item.quantity || 0).toLocaleString(currentLocale(), { maximumFractionDigits: 2 }) + '</td>' +
     '<td class="number">' + formatCurrency(item.unitPrice) + '</td>' +
     '<td class="number">' + formatCurrency(item.subtotal) + '</td></tr>'
   ).join('');
@@ -1181,9 +1193,9 @@ function renderProposal(proposal) {
         '<div><span class="proposal-label">EMPRESA</span><h3>' + escapeHtml(proposal.business) + '</h3>' + (proposal.businessPhone ? '<p>' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
         '<div class="proposal-client-block"><span class="proposal-label">CLIENTE</span><strong>' + escapeHtml(proposal.client) + '</strong></div>' +
       '</div>' +
-      '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString('pt-BR') + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'não informada') +
+      '<div class="proposal-meta">Emitida em ' + new Date(proposal.createdAt).toLocaleDateString(currentLocale()) + ' · válida até ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString(currentLocale()) : 'não informada') +
         (proposal.respondedAt && (status === 'approved' || status === 'rejected')
-          ? ' · respondida em ' + new Date(proposal.respondedAt).toLocaleDateString('pt-BR')
+          ? ' · respondida em ' + new Date(proposal.respondedAt).toLocaleDateString(currentLocale())
           : '') + '</div>' +
       (clientDetails ? '<div class="proposal-client-details">' + clientDetails + '</div>' : '') +
       '<div class="proposal-table-wrap"><table class="proposal-table">' +
@@ -1331,7 +1343,7 @@ function renderHistory() {
       return '<div class="item"><div class="item-summary"><div class="item-title-line"><strong>' + escapeHtml(proposal.client) + '</strong><span class="proposal-status status-' + escapeHtml(status) + '">' + proposalStatusLabel(status) + '</span></div>' +
         '<small>' + escapeHtml(proposal.number) + ' · ' + formatCurrency(total) + '</small>' +
         (proposal.respondedAt && (status === 'approved' || status === 'rejected')
-          ? '<small class="response-time">Respondida em ' + new Date(proposal.respondedAt).toLocaleDateString('pt-BR') + ' às ' + new Date(proposal.respondedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</small>'
+          ? '<small class="response-time">Respondida em ' + new Date(proposal.respondedAt).toLocaleDateString(currentLocale()) + ' às ' + new Date(proposal.respondedAt).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' }) + '</small>'
           : '') +
         validityBadge + '</div>' +
         '<div class="item-actions">' +
@@ -1527,7 +1539,7 @@ list.addEventListener('change', async event => {
 list.addEventListener('click', async event => {
   const reopenButton = event.target.closest('[data-reopen]');
   if (reopenButton) {
-    if (!window.confirm('Reabrir esta proposta como rascunho? O link público anterior será invalidado.')) return;
+    if (!window.confirm(uiText('Reabrir esta proposta como rascunho? O link público anterior será invalidado.'))) return;
     const id = reopenButton.dataset.reopen;
     const proposal = visibleProposals().find(item => item.id === id);
     if (!proposal) return;
@@ -1642,7 +1654,7 @@ function renderPublicProposal(proposal) {
   const discountAmount = Number.isFinite(Number(proposal.discountAmount)) ? Number(proposal.discountAmount) : Math.max(0, subtotal - Number(proposal.total || 0));
   const rows = items.map(item =>
     '<tr><td>' + escapeHtml(item.description || '') + '</td>' +
-    '<td class="number">' + Number(item.quantity || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '</td>' +
+    '<td class="number">' + Number(item.quantity || 0).toLocaleString(currentLocale(), { maximumFractionDigits: 2 }) + '</td>' +
     '<td class="number">' + formatCurrency(item.unitPrice) + '</td>' +
     '<td class="number">' + formatCurrency(item.subtotal) + '</td></tr>'
   ).join('');
@@ -1661,7 +1673,7 @@ function renderPublicProposal(proposal) {
       (discountAmount > 0 ? '<div class="document-discount"><span>Desconto</span><strong>− ' + formatCurrency(discountAmount) + '</strong></div>' : '') +
       '<div class="amount-line"><span>Total da proposta</span><strong class="amount">' + formatCurrency(proposal.total) + '</strong></div>' +
     '</div>' +
-    '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada') + '</p>' +
+    '<div class="public-details"><p><b>Prazo:</b> ' + escapeHtml(proposal.deadline || 'Não informado') + '</p><p><b>Pagamento:</b> ' + escapeHtml(proposal.terms || 'Não informado') + '</p><p><b>Validade:</b> ' + (proposal.validUntil ? new Date(proposal.validUntil + 'T00:00:00').toLocaleDateString(currentLocale()) : 'Não informada') + '</p>' +
     (proposal.businessPhone ? '<p><b>Contato:</b> ' + escapeHtml(proposal.businessPhone) + '</p>' : '') + '</div>' +
     (proposal.notes ? '<section class="proposal-notes public-notes"><span class="proposal-label">OBSERVAÇÕES</span><p>' + escapeHtml(proposal.notes) + '</p></section>' : '') +
     '<div class="public-document-actions"><button class="secondary" id="public-print" type="button">Imprimir / salvar PDF</button></div>' +
@@ -1732,11 +1744,27 @@ function initPublicProposalMode() {
   document.querySelector('#app-grid').hidden = true;
   document.querySelector('#benefits-section').hidden = true;
   document.querySelector('#local-import-banner').hidden = true;
-  document.querySelector('.nav-actions').hidden = true;
+  syncStatus.hidden = true;
+  accountOpenButton.hidden = true;
   document.querySelector('#public-proposal-view').hidden = false;
   loadPublicProposal();
 }
 
+
+window.addEventListener('app-language-change', () => {
+  updateTotal();
+  renderServiceSuggestions();
+  if (publicProposalMode) {
+    loadPublicProposal();
+    return;
+  }
+  renderHistory();
+  updateAccountUi();
+  if (openedProposalId) {
+    const proposal = visibleProposals().find(item => item.id === openedProposalId);
+    if (proposal) renderProposal(proposal);
+  }
+});
 
 if (publicProposalMode) {
   initPublicProposalMode();
