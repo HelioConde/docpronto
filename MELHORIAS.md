@@ -25,7 +25,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 - [ ] Duplicar cliente com novo orçamento em um clique.
 - [ ] Campo opcional de assinatura/aceite textual do cliente.
 - [ ] Histórico de mudanças de status.
-- [ ] Dashboard simples de conversão: enviadas → aprovadas.
+- [x] Dashboard simples de conversão: aprovadas ÷ propostas que já entraram no funil de envio.
 - [x] PWA instalável com manifest, service worker e modo local disponível offline após a primeira abertura.
 - [ ] Feedback beta dentro do produto.
 
