@@ -105,6 +105,9 @@ Deno.serve(async (request: Request) => {
     && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(p.businessLogo)
       ? p.businessLogo
       : "";
+  const acceptedBy = typeof p.acceptedBy === "string"
+    ? p.acceptedBy.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100)
+    : "";
   const subtotal = Number.isFinite(Number(p.subtotal)) ? Number(p.subtotal) : Number(data.total);
   const discountAmount = Number.isFinite(Number(p.discountAmount)) ? Math.max(0, Number(p.discountAmount)) : 0;
   const discountType = p.discountType === "percent" || p.discountType === "fixed" ? p.discountType : "none";
@@ -133,6 +136,7 @@ Deno.serve(async (request: Request) => {
     validUntil,
     brandColor,
     businessLogo,
+    acceptedBy,
     expired: Boolean(validUntil && isExpired(validUntil)),
   }, origin);
 });
