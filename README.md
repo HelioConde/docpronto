@@ -44,3 +44,16 @@ Tabelas:
 - `product_subscriptions`
 
 Veja `FULLSTACK.md` para arquitetura e próximos passos.
+
+
+## QA no navegador
+
+Além dos testes unitários/integração Node, o DocPronto agora usa **Playwright + Chromium** para cobrir:
+
+- criação local completa de proposta;
+- persistência de rascunho após recarregar;
+- busca, edição, mudança de status e exportação CSV;
+- página pública sanitizada;
+- aprovação de proposta pelo cliente.
+
+Execute com `npm install` e `npm run test:e2e`.
