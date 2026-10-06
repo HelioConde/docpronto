@@ -77,3 +77,6 @@ jobs:
           grep -qi 'statusHistory' app.js
           grep -qi 'status-history' theme-v2.css
           grep -qi 'statusHistory' supabase/functions/proposal-response/index.ts
+          grep -qi 'public-acceptance-name' app.js
+          grep -qi 'acceptedBy' supabase/functions/proposal-response/index.ts
+          grep -qi 'acceptedBy' supabase/functions/proposal-public/index.ts
