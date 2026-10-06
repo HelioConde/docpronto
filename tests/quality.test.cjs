@@ -15,6 +15,25 @@ test('calcula subtotais e total em centavos sem erro de ponto flutuante', () => 
   assert.equal(result.total, 110.5);
 });
 
+test('calcula desconto percentual e fixo em centavos', () => {
+  const percent = core.calculateDiscount(250, 'percent', 10);
+  assert.equal(percent.ok, true);
+  assert.equal(percent.subtotal, 250);
+  assert.equal(percent.discount, 25);
+  assert.equal(percent.total, 225);
+
+  const fixed = core.calculateDiscount(199.99, 'fixed', 19.99);
+  assert.equal(fixed.ok, true);
+  assert.equal(fixed.discount, 19.99);
+  assert.equal(fixed.total, 180);
+});
+
+test('rejeita desconto negativo, acima de 100% ou maior que o subtotal', () => {
+  assert.equal(core.calculateDiscount(100, 'percent', 101).ok, false);
+  assert.equal(core.calculateDiscount(100, 'fixed', 100.01).ok, false);
+  assert.equal(core.calculateDiscount(100, 'fixed', -1).ok, false);
+});
+
 test('rejeita descrição vazia, quantidade inválida e preço negativo', () => {
   assert.equal(core.validateItems([{ description: '', quantity: 1, unitPrice: 10 }], 10).ok, false);
   assert.equal(core.validateItems([{ description: 'Serviço', quantity: 0, unitPrice: 10 }], 10).ok, false);
@@ -188,6 +207,24 @@ test('identidade do negócio sincroniza por user_metadata e acompanha a proposta
   assert.match(css, /--proposal-accent/);
   assert.match(publicFn, /const brandColor/);
   assert.match(publicFn, /brandColor,/);
+});
+
+test('desconto aparece no formulário, documento e proposta pública', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  const publicFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-public', 'index.ts'), 'utf8');
+  assert.match(html, /id="discount-type"/);
+  assert.match(html, /id="discount-value"/);
+  assert.match(html, /id="form-subtotal"/);
+  assert.match(app, /function currentPricing/);
+  assert.match(app, /DocProntoCore\.calculateDiscount/);
+  assert.match(app, /discountAmount/);
+  assert.match(app, /document-totals/);
+  assert.match(css, /\.discount-controls/);
+  assert.match(css, /\.document-totals/);
+  assert.match(publicFn, /discountAmount/);
+  assert.match(publicFn, /discountType/);
 });
 
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
