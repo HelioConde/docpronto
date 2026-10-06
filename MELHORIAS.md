@@ -21,7 +21,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 ## P1 — produto
 
 - [ ] Logo do prestador no documento.
-- [ ] Modelos de proposta reutilizáveis por categoria.
+- [x] Modelos rápidos de proposta por categoria (elétrica, hidráulica, pintura e serviço digital), sem preços pré-definidos.
 - [x] Criar novo orçamento para cliente salvo em um clique, sempre saindo de eventual modo de edição.
 - [ ] Campo opcional de assinatura/aceite textual do cliente.
 - [ ] Histórico de mudanças de status.
