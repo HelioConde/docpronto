@@ -160,6 +160,19 @@ test('proposta pública usa expiração do servidor e respostas sem cache', () =
   assert.match(app, /typeof proposal\.expired === 'boolean'/);
 });
 
+test('campos de proposta têm limites para proteger layout e PDF', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /name="business"[^>]*maxlength="80"/);
+  assert.match(html, /name="client"[^>]*maxlength="100"/);
+  assert.match(html, /name="deadline"[^>]*maxlength="120"/);
+  assert.match(html, /name="terms"[^>]*maxlength="200"/);
+  assert.match(app, /data-description[^>]*maxlength="160"/);
+  assert.match(app, /name="businessPhone"[^>]*maxlength="30"/);
+  assert.match(css, /overflow-wrap:anywhere/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
