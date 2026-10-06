@@ -39,6 +39,9 @@ jobs:
           test -f icon.svg
           test -f sw.js
           test -f pwa.js
+          test -f ads-config.js
+          test -f ads.js
+          test -f ADS_SETUP.md
       - name: Check SEO and backend boot
         run: |
           grep -qi '<title' index.html
@@ -68,6 +71,11 @@ jobs:
           grep -qi 'serviceWorker' pwa.js
           grep -qi 'beforeinstallprompt' pwa.js
           grep -qi 'docpronto-shell-v1' sw.js
+          grep -qi 'DOCPRONTO_ADS' ads-config.js
+          grep -qi 'allowedPlacement' ads.js
+          grep -qi 'pagead2.googlesyndication.com' ads.js
+          grep -qi 'data-ad-placement="app-footer"' index.html
+          grep -qi 'data-ad-placement="public-footer"' index.html
           grep -qi 'proposal-template' index.html
           grep -qi 'proposalTemplates' app.js
           grep -qi 'applyProposalTemplate' app.js
