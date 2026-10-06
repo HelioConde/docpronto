@@ -386,6 +386,24 @@ test('histórico filtra propostas vencidas e oferece ordenações úteis', () =>
   assert.match(css, /grid-template-columns:minmax\(0,1fr\) 118px 145px auto/);
 });
 
+test('DocPronto oferece PT-BR principal e inglês persistido', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const i18n = fs.readFileSync(path.join(__dirname, '..', 'i18n.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /<html lang="pt-BR">/);
+  assert.match(html, /data-language="pt-BR"/);
+  assert.match(html, /data-language="en"/);
+  assert.match(html, /<script src="i18n\.js"><\/script>/);
+  assert.match(i18n, /docpronto-language/);
+  assert.match(i18n, /localStorage\.getItem\(storageKey\) === 'en' \? 'en' : 'pt-BR'/);
+  assert.match(i18n, /Professional quote\./);
+  assert.match(i18n, /MutationObserver/);
+  assert.match(app, /function currentLocale/);
+  assert.match(app, /window\.addEventListener\('app-language-change'/);
+  assert.match(css, /\.language-switcher/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
