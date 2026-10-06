@@ -67,3 +67,19 @@ button:focus-visible,input:focus-visible,dialog:focus-visible{outline:3px solid 
 [hidden]{display:none!important}
 @media(max-width:680px){.nav{height:64px}.nav-actions{gap:8px}.sync-status{display:none}.nav-actions .secondary{padding:9px 11px;font-size:12px}.local-import-banner{align-items:flex-start;flex-direction:column}.local-import-banner .secondary{width:100%}.benefit-grid{grid-template-columns:1fr}.benefits{margin-bottom:32px}.account-dialog{padding:22px}}
 @media(prefers-reduced-motion:reduce){.account-dialog[open]{animation:none}}
+
+.history-toolbar{display:flex;justify-content:flex-end;margin:-6px 0 4px}
+.history-toolbar label{display:block;min-width:140px}
+.history-toolbar span{display:block;margin-bottom:5px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+.history-toolbar select,.proposal-status-select{min-height:36px;padding:7px 28px 7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:11px}
+.item-title-line,.proposal-topline{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.proposal-status{display:inline-flex;align-items:center;padding:4px 8px;border-radius:99px;font-size:9px;font-weight:800;line-height:1.2}
+.status-draft{background:#f0eee9;color:#655d50}
+.status-sent{background:#e7eef7;color:#3d5e85}
+.status-approved{background:#e7f2e8;color:#2e6540}
+.status-rejected{background:#f7e8e5;color:#8a4338}
+.proposal-status-select{min-width:112px}
+.proposal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.proposal-actions .secondary{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+@media(max-width:560px){.history-toolbar{justify-content:stretch}.history-toolbar label{width:100%}.proposal-status-select{flex:1}.proposal-actions>*{flex:1}}
+@media print{.proposal-actions{display:none!important}.proposal-status{border:1px solid #bbb;background:#fff!important;color:#333!important}}
