@@ -339,6 +339,7 @@
   "Lembrete de follow-up copiado.": "Follow-up message copied.",
   "Não foi possível copiar o lembrete.": "Could not copy the follow-up message."
 });
+  Object.assign(translations, {"Pular para o conteúdo principal":"Skip to main content"});
   const reverse = Object.fromEntries(Object.entries(translations).map(([pt, en]) => [en, pt]));
   let activeLocale = localStorage.getItem(storageKey) === 'en' ? 'en' : 'pt-BR';
   let applying = false;
@@ -466,6 +467,12 @@
     if (ogTitle) ogTitle.content = document.title;
     const ogDescription = document.querySelector('meta[property="og:description"]');
     if (ogDescription) ogDescription.content = description?.content || '';
+    const ogLocale = document.querySelector('meta[property="og:locale"]');
+    if (ogLocale) ogLocale.content = english ? 'en_US' : 'pt_BR';
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.content = document.title;
+    const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDescription) twitterDescription.content = description?.content || '';
   }
 
   function updateControls() {
