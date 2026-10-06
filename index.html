@@ -41,13 +41,20 @@
         </label>
         <label class="field">
           <span>Senha</span>
-          <input name="password" type="password" autocomplete="current-password" minlength="8" required>
+          <input name="password" type="password" autocomplete="current-password" required>
         </label>
         <button class="primary" type="submit">Entrar</button>
         <div class="account-links">
           <button id="sign-up" class="secondary" type="button">Criar conta</button>
           <button id="reset-password" class="text-button" type="button">Esqueci a senha</button>
         </div>
+      </form>
+      <form id="password-recovery-form" hidden>
+        <label class="field">
+          <span>Nova senha</span>
+          <input name="new-password" type="password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <button class="primary" type="submit">Atualizar senha</button>
       </form>
       <div id="account-profile" hidden>
         <p>Conectado como <strong id="account-email"></strong></p>
