@@ -20,7 +20,12 @@ O DocPronto já possui um MVP fullstack funcional:
 - link público protegido por token para o cliente;
 - aprovação/recusa sem conta através das Edge Functions `proposal-public` e `proposal-response`;
 - impressão/salvamento em PDF A4 pelo navegador, tanto pelo prestador quanto pelo cliente;
-- CI com Static QA, testes Node e Browser E2E em Chromium.
+- CI com Static QA, testes Node e Browser E2E em Chromium;
+- PWA instalável e modo local offline;
+- backup/restauração local validado;
+- feedback beta com fila offline e endpoint publicado;
+- follow-up com exportação de calendário `.ics`;
+- monetização por anúncios preparada e desativada até existirem IDs reais.
 
 O backend compartilhado é o projeto Supabase `pizzaria-db`. O DocPronto usa apenas tabelas e funções com prefixo/escopo próprio.
 
@@ -57,25 +62,24 @@ Os links públicos não expõem acesso direto à tabela: o token bruto fica some
 
 ## QA
 
-Automatizado:
+Automatizado e homologado tecnicamente:
 
-- sintaxe JavaScript;
-- precisão monetária;
-- limites e validação dos itens;
-- presença de RLS/grants mínimos nas migrations;
-- presença das funções públicas seguras;
-- regressão do layout principal;
-- arquivos e metadados essenciais;
-- GitHub Actions em push e pull request.
+- sintaxe JavaScript, precisão monetária, limites e validação dos itens;
+- Static QA, testes Node e Browser E2E em Chromium;
+- criação/edição/status/CSV, templates, logo, timeline e aceite textual;
+- PWA offline, feedback beta, backup/restauração e exportação de calendário;
+- PDF A4 longo com 10 itens, desconto e observações;
+- smoke responsivo em 360 px, 768 px e 1440 px;
+- smoke básico de acessibilidade;
+- isolamento RLS de clientes/propostas em duas identidades autenticadas simuladas, executado em transação com rollback;
+- fluxo público ao vivo contra produção: `proposal-public` → `proposal-response` → `proposal-public`, incluindo `acceptedBy` e timeline persistidos;
+- limpeza dos usuários/dados QA após o teste live.
 
-O Browser E2E agora cobre o fluxo local completo e a página pública com backend controlado. Ainda exige homologação manual:
+Ainda exige homologação humana:
 
-- cadastro, confirmação de e-mail, login e recuperação de senha;
-- sincronização em duas contas diferentes para confirmar isolamento real;
-- expiração de sessão e falha de rede;
-- impressão/PDF com conteúdo longo;
-- revisão visual manual fina em 360 px, 768 px e 1440 px; o smoke automatizado nessas larguras já passa sem overflow;
-- fluxo completo do link público contra o backend real em um navegador separado.
+- cadastro, confirmação de e-mail, login, recuperação de senha e expiração/renovação de sessão;
+- repetição ponta a ponta com duas contas humanas reais;
+- rodada visual final no GitHub Pages e link público em navegador separado.
 
 ## UX/UI
 
@@ -89,9 +93,9 @@ A revisão visual de 2026-10-06 corrigiu:
 
 ## Próximas prioridades
 
-O backlog oficial está em `MELHORIAS.md`. A ordem imediata é:
+O backlog oficial está em `MELHORIAS.md`. O produto está tecnicamente homologado para beta. A ordem imediata agora é:
 
-1. homologar autenticação e isolamento entre duas contas reais;
-2. validar o link público contra o backend real em navegador separado;
-3. revisar impressão/PDF com conteúdo longo;
-4. somente depois avançar para branding, PWA, feedback e automações comerciais.
+1. homologar cadastro/login/recuperação e sessão com uma conta humana real;
+2. repetir o fluxo autenticado com duas contas humanas reais no navegador;
+3. fazer uma rodada visual final no GitHub Pages;
+4. iniciar validação com usuários antes de ampliar P2.
