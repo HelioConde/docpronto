@@ -8,6 +8,7 @@ const APP_SHELL = [
   './supabase-config.js',
   './ads-config.js',
   './ads.js',
+  './beta-feedback.js',
   './i18n.js',
   './pwa.js',
   './manifest.webmanifest',
