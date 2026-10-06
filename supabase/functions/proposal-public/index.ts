@@ -97,6 +97,9 @@ Deno.serve(async (request: Request) => {
 
   const p = data.proposal_data && typeof data.proposal_data === "object" ? data.proposal_data : {};
   const validUntil = typeof p.validUntil === "string" ? p.validUntil : "";
+  const brandColor = typeof p.brandColor === "string" && /^#[0-9a-f]{6}$/i.test(p.brandColor)
+    ? p.brandColor.toLowerCase()
+    : "#245d6c";
   return json(200, {
     id: data.id,
     number: data.proposal_number,
@@ -111,6 +114,7 @@ Deno.serve(async (request: Request) => {
     terms: typeof p.terms === "string" ? p.terms : "",
     businessPhone: typeof p.businessPhone === "string" ? p.businessPhone : "",
     validUntil,
+    brandColor,
     expired: Boolean(validUntil && isExpired(validUntil)),
   }, origin);
 });
