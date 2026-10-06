@@ -37,7 +37,7 @@ Os links públicos não expõem acesso direto à tabela: o token bruto fica some
 2. O total é calculado em centavos pelo `proposal-core.js`.
 3. A proposta é salva localmente ou na nuvem quando autenticado.
 4. O usuário pode editar, duplicar como modelo, excluir e alterar status.
-5. Com conta conectada, pode gerar um link seguro para o cliente. Reabrir uma proposta encerrada invalida explicitamente o link antigo.
+5. Com conta conectada, pode gerar ou enviar direto pelo WhatsApp um link seguro para o cliente. Reabrir uma proposta encerrada invalida explicitamente o link antigo.
 6. O cliente abre a proposta e aprova ou recusa sem cadastro.
 7. O status atualizado volta para o histórico do prestador; ao retornar à aba, o DocPronto atualiza as propostas automaticamente e mostra a data da resposta.
 
