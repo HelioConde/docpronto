@@ -1065,7 +1065,7 @@ function renderHistory() {
           : '') +
         validityBadge + '</div>' +
         '<div class="item-actions">' +
-          '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta">' +
+          '<select class="proposal-status-select" data-status-id="' + escapeHtml(proposal.id) + '" aria-label="Status da proposta"' + ((status === 'approved' || status === 'rejected') ? ' disabled' : '') + '>' +
             '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>Rascunho</option>' +
             '<option value="sent"' + (status === 'sent' ? ' selected' : '') + '>Enviada</option>' +
             '<option value="approved"' + (status === 'approved' ? ' selected' : '') + '>Aprovada</option>' +
@@ -1073,7 +1073,9 @@ function renderHistory() {
           '</select>' +
           '<button class="secondary" type="button" data-proposal="' + escapeHtml(proposal.id) + '">Abrir</button>' +
           '<button class="secondary" type="button" data-template="' + escapeHtml(proposal.id) + '">Usar como modelo</button>' +
-          '<button class="secondary" type="button" data-edit="' + escapeHtml(proposal.id) + '">Editar</button>' +
+          ((status === 'approved' || status === 'rejected')
+            ? '<button class="secondary" type="button" data-reopen="' + escapeHtml(proposal.id) + '">Reabrir</button>'
+            : '<button class="secondary" type="button" data-edit="' + escapeHtml(proposal.id) + '">Editar</button>') +
           '<button class="secondary" type="button" data-delete="' + escapeHtml(proposal.id) + '" aria-label="Excluir proposta">Excluir</button>' +
         '</div></div>';
     }).join('')
@@ -1233,6 +1235,42 @@ list.addEventListener('change', async event => {
 });
 
 list.addEventListener('click', async event => {
+  const reopenButton = event.target.closest('[data-reopen]');
+  if (reopenButton) {
+    if (!window.confirm('Reabrir esta proposta como rascunho? O link público anterior será invalidado.')) return;
+    const id = reopenButton.dataset.reopen;
+    const proposal = visibleProposals().find(item => item.id === id);
+    if (!proposal) return;
+    const updated = { ...proposal, status: 'draft', respondedAt: null, updatedAt: Date.now() };
+    reopenButton.disabled = true;
+    try {
+      if (currentUser) {
+        const { error } = await supabaseClient
+          .from(proposalTable)
+          .update({
+            status: 'draft',
+            responded_at: null,
+            share_token_hash: null,
+            proposal_data: updated,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+        if (error) throw error;
+        cloudProposals = cloudProposals.map(item => item.id === id ? updated : item);
+      } else {
+        localStorage.setItem(storageKey, JSON.stringify(readProposals().map(item => item.id === id ? updated : item)));
+      }
+      if (openedProposalId === id) renderProposal(updated);
+      renderHistory();
+      showToast('Proposta reaberta como rascunho.');
+    } catch (error) {
+      console.error(error);
+      reopenButton.disabled = false;
+      showToast('Não foi possível reabrir a proposta.');
+    }
+    return;
+  }
+
   const removeButton = event.target.closest('[data-delete]');
   if (removeButton) {
     if (!window.confirm(currentUser ? 'Excluir esta proposta da sua conta?' : 'Excluir esta proposta deste navegador?')) return;
