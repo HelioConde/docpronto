@@ -207,3 +207,22 @@ test('proposta longa gera PDF A4 sem estourar o documento', async ({ page }) => 
   expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
   expect(pdf.length).toBeGreaterThan(15000);
 });
+
+
+test('modo local continua utilizável offline após primeira abertura', async ({ page, context }) => {
+  await localMode(page);
+  await page.waitForFunction(() => navigator.serviceWorker?.controller || navigator.serviceWorker?.ready);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: /Orçamento profissional/i })).toBeVisible();
+
+  await context.setOffline(true);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: /Orçamento profissional/i })).toBeVisible();
+  await expect(page.locator('#form')).toBeVisible();
+
+  await fillBaseProposal(page, ' Offline');
+  await page.getByRole('button', { name: /Gerar proposta|Generate proposal/i }).click();
+  await expect(page.locator('#result')).toContainText('Cliente E2E Offline');
+
+  await context.setOffline(false);
+});
