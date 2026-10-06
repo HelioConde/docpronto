@@ -152,6 +152,22 @@
             <span>Nome do seu negócio</span>
             <input name="business" type="text" maxlength="80" placeholder="Ex.: Conde Elétrica" autocomplete="organization" required>
           </label>
+          <div class="business-logo-field">
+            <div class="business-logo-copy">
+              <span class="template-kicker">IDENTIDADE VISUAL</span>
+              <strong>Logo do negócio (opcional)</strong>
+              <small>PNG, JPG ou WebP até 2 MB. A imagem é reduzida no seu navegador.</small>
+            </div>
+            <div class="business-logo-actions">
+              <input id="business-logo-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              <button id="business-logo-choose" class="secondary" type="button">Adicionar logo</button>
+              <div id="business-logo-preview" class="business-logo-preview" hidden>
+                <img alt="Logo do negócio">
+                <button id="business-logo-remove" class="text-button" type="button">Remover</button>
+              </div>
+            </div>
+          </div>
+
           <label class="field">
             <span>Cliente</span>
             <input name="client" type="text" maxlength="100" list="client-suggestions" placeholder="Ex.: João Silva" autocomplete="name" required>
