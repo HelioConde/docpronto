@@ -28,7 +28,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 - [x] Dashboard simples de conversão: aprovadas ÷ propostas que já entraram no funil de envio.
 - [x] Fila visual de follow-up para propostas enviadas há 3 dias ou mais sem resposta, com ação rápida de WhatsApp/cópia.
 - [x] PWA instalável com manifest, service worker e modo local disponível offline após a primeira abertura.
-- [ ] Feedback beta dentro do produto.
+- [x] Feedback beta dentro do produto com nota, categoria e comentário; fila offline local e backend preparado sem coleta de dados pessoais.
 
 ## P2 — depois da validação
 
