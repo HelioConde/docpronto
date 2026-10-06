@@ -407,3 +407,13 @@ html[lang="en"] .hero h1{max-width:780px}
 .feedback-honeypot{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;overflow:hidden!important}
 @media(max-width:620px){.beta-feedback-card{grid-template-columns:1fr}.beta-feedback-card .secondary{justify-self:start}.feedback-actions{display:grid;grid-template-columns:1fr 1fr}.feedback-actions button{width:100%}}
 @media print{.beta-feedback-card,.beta-feedback-dialog{display:none!important}}
+
+.local-backup-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:#fafcfc}
+.local-backup-controls[hidden]{display:none!important}
+.local-backup-controls>div:first-child{display:grid;gap:2px}
+.local-backup-controls strong{font:700 10px Manrope}
+.local-backup-controls small{color:var(--muted);font-size:8px;line-height:1.4}
+.local-backup-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.local-backup-actions .secondary{padding:7px 9px;font-size:9px}
+@media(max-width:620px){.local-backup-controls{align-items:stretch;flex-direction:column}.local-backup-actions{display:grid;grid-template-columns:1fr 1fr}.local-backup-actions .secondary{width:100%}}
+@media print{.local-backup-controls{display:none!important}}
