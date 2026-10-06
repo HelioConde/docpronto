@@ -68,7 +68,7 @@ button:focus-visible,input:focus-visible,dialog:focus-visible{outline:3px solid 
 @media(max-width:680px){.nav{height:64px}.nav-actions{gap:8px}.sync-status{display:none}.nav-actions .secondary{padding:9px 11px;font-size:12px}.local-import-banner{align-items:flex-start;flex-direction:column}.local-import-banner .secondary{width:100%}.benefit-grid{grid-template-columns:1fr}.benefits{margin-bottom:32px}.account-dialog{padding:22px}}
 @media(prefers-reduced-motion:reduce){.account-dialog[open]{animation:none}}
 
-.history-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:10px;align-items:end;margin:-3px 0 8px}
+.history-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 132px auto;gap:10px;align-items:end;margin:-3px 0 8px}
 .history-toolbar label{display:block;min-width:0}
 .history-toolbar span{display:block;margin-bottom:5px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
 .history-toolbar select,.proposal-status-select{min-height:38px;padding:8px 28px 8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:11px}
@@ -266,3 +266,6 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #245d6c55;outline-
 .composer-actions .primary{margin:0}
 .composer-actions .secondary{white-space:nowrap}
 @media(max-width:500px){.composer-actions{grid-template-columns:1fr}.composer-actions .secondary{width:100%}}
+
+.history-export{min-height:38px;padding:8px 12px;white-space:nowrap}
+@media(max-width:560px){.history-export{width:100%}}
