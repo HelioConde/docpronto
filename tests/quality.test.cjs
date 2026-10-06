@@ -330,6 +330,18 @@ test('histórico exporta CSV compatível com Excel e mantém todos os registros 
   assert.match(css, /\.history-export/);
 });
 
+test('usuário autenticado pode gerar e enviar o link seguro direto no WhatsApp', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(app, /function buildClientShareUrl/);
+  assert.match(app, /async function publishClientProposal/);
+  assert.match(app, /id="send-client-link-whatsapp"/);
+  assert.match(app, /Abra a proposta para ver os detalhes e responder:/);
+  assert.match(app, /window\.open\('about:blank', '_blank'\)/);
+  assert.match(app, /publishClientProposal\(proposal\)/);
+  assert.match(css, /#send-client-link-whatsapp/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
