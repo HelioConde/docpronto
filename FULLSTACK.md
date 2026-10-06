@@ -12,9 +12,11 @@ O DocPronto já possui um MVP fullstack funcional:
 - propostas persistidas em `docpronto_proposals`;
 - clientes reutilizáveis em `docpronto_clients`;
 - status comercial: rascunho, enviada, aprovada e recusada;
+- busca no histórico e resumo comercial com filtros rápidos;
+- sinalização de propostas expiradas ou próximas do vencimento;
 - link público protegido por token para o cliente;
 - aprovação/recusa sem conta através das Edge Functions `proposal-public` e `proposal-response`;
-- impressão/salvamento em PDF pelo navegador;
+- impressão/salvamento em PDF A4 pelo navegador, tanto pelo prestador quanto pelo cliente;
 - CI com Static QA e testes Node.
 
 O backend compartilhado é o projeto Supabase `pizzaria-db`. O DocPronto usa apenas tabelas e funções com prefixo/escopo próprio.
