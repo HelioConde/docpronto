@@ -693,6 +693,12 @@ function renderHistory() {
   const proposals = source
     .filter(proposal => selectedStatus === 'all' || (proposal.status || 'draft') === selectedStatus)
     .slice(0, 10);
+  const emptyTitle = source.length ? 'Nenhuma proposta neste status' : 'Sua primeira proposta começa aqui';
+  const emptyText = source.length
+    ? 'Altere o filtro para ver as outras propostas.'
+    : currentUser
+      ? 'Crie um orçamento ao lado. Ele será salvo na sua conta e aparecerá aqui.'
+      : 'Preencha o orçamento ao lado. Depois de gerar, ele fica salvo neste navegador e aparece aqui.';
   list.innerHTML = proposals.length
     ? proposals.map(proposal => {
       const total = Number.isFinite(Number(proposal.total)) ? Number(proposal.total) : Number(proposal.amount) || 0;
@@ -712,7 +718,7 @@ function renderHistory() {
           '<button class="secondary" type="button" data-delete="' + escapeHtml(proposal.id) + '" aria-label="Excluir proposta">Excluir</button>' +
         '</div></div>';
     }).join('')
-    : '<div class="empty">' + (currentUser ? 'Sua conta ainda não tem propostas.' : 'As propostas salvas neste navegador aparecem aqui.') + '</div>';
+    : '<div class="empty"><span class="empty-icon" aria-hidden="true">＋</span><strong>' + emptyTitle + '</strong><span>' + emptyText + '</span></div>';
 }
 
 form.addEventListener('submit', async event => {
