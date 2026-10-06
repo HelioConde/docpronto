@@ -19,6 +19,9 @@ jobs:
           node --check app.js
           node --check i18n.js
           node --check supabase-config.js
+          node --check pwa.js
+          node --check ads.js
+          node --check beta-feedback.js
       - name: Check required files
         run: |
           test -f index.html
