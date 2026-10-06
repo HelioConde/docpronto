@@ -26,7 +26,7 @@ Este é o backlog oficial do produto. A prioridade é homologar o que já existe
 - [ ] Campo opcional de assinatura/aceite textual do cliente.
 - [ ] Histórico de mudanças de status.
 - [ ] Dashboard simples de conversão: enviadas → aprovadas.
-- [ ] PWA instalável.
+- [x] PWA instalável com manifest, service worker e modo local disponível offline após a primeira abertura.
 - [ ] Feedback beta dentro do produto.
 
 ## P2 — depois da validação
