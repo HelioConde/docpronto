@@ -1,73 +1,97 @@
 # Auditoria do produto — DocPronto
 
-Revisão de código e da captura enviada em 6 de outubro de 2026. Os pontos abaixo distinguem o que foi implementado do que ainda depende de validação no navegador e no painel Supabase.
+Atualizado em 6 de outubro de 2026 após homologação técnica do frontend, backend e fluxos públicos.
 
 ## UX/UI
 
-**Avaliação: boa base de MVP, com uma dependência de configuração para sincronização.**
+**Avaliação: MVP tecnicamente maduro e pronto para beta controlado.**
 
-- O gerador abre direto, sem forçar cadastro; isso preserva o fluxo rápido para quem só quer montar um orçamento.
-- O formulário aceita itens, calcula totais, gera prévia e imprime/salva PDF.
-- Histórico, edição e uso como modelo cobrem os casos mais repetidos.
-- Desconto percentual/fixo, observações, identidade do negócio e dados reutilizáveis de clientes aproximam o produto de uso comercial real.
-- Clientes salvos podem ser usados ou excluídos pela conta, e serviços/materiais recorrentes reaproveitam o último preço unitário.
-- As respostas do cliente são atualizadas ao voltar para a aba e propostas encerradas só podem ser reabertas com invalidação explícita do link anterior.
-- A conta é opcional. A sincronização separa propostas por usuário no banco.
-- O histórico carrega até 100 propostas, exibe 10 inicialmente e permite revelar as demais em blocos de 10. Possui busca por cliente/empresa/número, filtros de status, resumo comercial e exportação CSV.
-- A sincronização exige redirect URL e entrega de e-mail válidos no Supabase; a interface informa erros de configuração.
+- O gerador continua abrindo direto, sem forçar cadastro.
+- O formulário suporta até 10 itens, desconto percentual/fixo, observações, validade, dados completos do cliente e identidade do negócio.
+- Histórico, edição, duplicação, modelos rápidos, busca, filtros, ordenação, CSV e carregamento progressivo cobrem o uso recorrente.
+- A fila **Sem resposta** destaca propostas enviadas há 3 dias ou mais e oferece follow-up por WhatsApp ou cópia de mensagem.
+- A timeline registra mudanças de status com data/hora e origem.
+- O cliente pode aprovar ou recusar sem conta e, na aprovação, informar opcionalmente o nome do responsável pelo aceite.
+- Logo, cor e dados do prestador acompanham o documento e o link público.
+- PWA, backup/restauração local e modo offline reduzem risco para quem usa sem conta.
+- PT-BR é o idioma padrão e o inglês possui paridade nos fluxos principais.
+- A revisão visual já cobre 360 px, 768 px e 1440 px por smoke automatizado; ainda é recomendada uma rodada visual humana antes de divulgação ampla.
 
 ## QA e segurança
 
-**Avaliação: QA automatizado fortalecido com Browser E2E; falta apenas homologação autenticada contra contas reais.**
+**Avaliação: homologação técnica forte; pendências restantes dependem de contas e uso humano reais.**
 
-Implementado:
+Implementado e validado:
 
-- Testes Node para quantidades, limites, campos inválidos, arredondamento monetário e valores fora do limite.
-- Verificação de sintaxe JS.
-- Workflow GitHub Actions para executar as verificações em push e pull request.
-- Browser E2E em Chromium cobre criação local, rascunho, edição, status, CSV e proposta pública/aprovação com backend controlado.
-- Nova tabela `docpronto_proposals`, separada das tabelas da pizzaria e do AgendaLeve.
-- RLS habilitado; usuários só acessam linhas com `owner_id = auth.uid()`. `anon` e `PUBLIC` não têm acesso à tabela, e `authenticated` recebeu apenas SELECT, INSERT, UPDATE e DELETE — sem TRUNCATE.
-- A chave do frontend é publishable; nenhuma chave privilegiada é necessária ou incluída.
+- testes Node para cálculo monetário, limites, validações e regressões;
+- Static QA e Browser E2E em Chromium;
+- PDF A4 longo com 10 itens, desconto e observações;
+- PWA/offline, feedback beta, backup/restauração e calendário;
+- isolamento RLS validado tecnicamente entre duas identidades autenticadas em transação com rollback;
+- `docpronto_proposals` e `docpronto_clients` protegidas por RLS por proprietário;
+- frontend usa apenas chave publishable;
+- link público usa token bruto somente no cliente e armazena SHA-256 no banco;
+- `proposal-public` ativa em produção e retorna somente payload sanitizado;
+- `proposal-response` ativa em produção e registra resposta, aceite textual e timeline;
+- fluxo público real homologado contra produção: abrir → aprovar → consultar novamente;
+- `docpronto_beta_feedback` com RLS habilitado e sem acesso direto para `anon`; gravação acontece pela Edge Function validada `beta-feedback`;
+- dados QA do smoke de produção foram removidos ao final.
 
-Pendente para homologação:
+Pendências que continuam humanas/externas:
 
-- Criar uma conta de teste, confirmar o e-mail, entrar, importar propostas, editar, excluir e repetir em outra conta.
-- Testar falha de rede, sessão expirada e redirecionamento de redefinição de senha.
-- Rever visualmente desktop e mobile após a publicação do novo fluxo; o E2E reduz regressões funcionais, mas não substitui homologação visual.
-- Confirmar a lista de Redirect URLs e o provedor de e-mail do projeto compartilhado.
+- cadastro, confirmação de e-mail, login, recuperação e expiração/renovação de sessão com uma conta humana real;
+- repetir o fluxo autenticado ponta a ponta com duas contas humanas reais;
+- abrir o link público em outro navegador/dispositivo com uma pessoa real;
+- validar configuração de e-mail transacional e Redirect URLs durante essa rodada humana.
 
-A auditoria automática do Supabase também reportou alertas em objetos preexistentes do pizzaria-db ligados ao AgendaLeve e às rotinas da pizzaria. Eles não foram alterados nesta entrega, pois estão fora das tabelas do DocPronto.
+Os findings de segurança restantes no projeto Supabase compartilhado pertencem majoritariamente a outros módulos do `pizzaria-db` e não devem ser alterados como parte do DocPronto sem uma auditoria específica desses produtos.
 
-## Negócio / visão de CEO
+## Negócio / visão de produto
 
-**Avaliação: proposta clara; monetização ainda não validada.**
+**Avaliação: proposta de valor clara; o próximo risco é de mercado, não de implementação básica.**
 
-- Público inicial: prestadores autônomos que precisam apresentar orçamento sem montar documento manualmente.
-- Valor principal: transformar descrição, itens e preço em uma proposta imprimível com pouca fricção.
-- Manter uso local sem conta reduz barreira; sincronizar passa a ser um benefício para quem retorna.
-- Os preços ilustrativos foram removidos porque não havia checkout ou cobrança. Isso evita prometer uma oferta que ainda não existe.
-- Próxima validação: observar criação da primeira proposta, exportação em PDF e retorno semanal com um grupo pequeno de prestadores.
-- Só depois de validar recorrência faz sentido testar recursos pagos. Cor de identidade, modelos reutilizáveis e histórico ampliado já fazem parte do MVP; logo, limites comerciais e cobrança continuam fora do escopo.
+- Público inicial: prestadores autônomos e pequenos negócios que precisam criar, enviar e acompanhar orçamentos rapidamente.
+- Valor central: sair de um formulário simples para uma proposta profissional, compartilhável e acompanhável com pouca fricção.
+- O modo local sem conta reduz barreira de entrada; sincronização vira benefício para quem retorna.
+- Monetização do portfólio está definida por anúncios. O DocPronto já possui slots responsivos preparados e desativados até existirem Publisher ID/slots aprovados.
+- Checkout, assinatura e limites comerciais foram retirados do roadmap atual.
+- A próxima validação deve medir primeira proposta criada, envio ao cliente, aprovação, retorno semanal e uso do follow-up.
 
 ## Design
 
-**Avaliação: linguagem visual consistente e adequada ao público.**
+**Avaliação: identidade consistente, com hierarquia adequada ao contexto comercial.**
 
-- A paleta foi migrada para azul-petróleo com neutros frios e cobre como detalhe, reforçando confiança e hierarquia sem competir com o documento.
-- A hierarquia coloca formulário, total e prévia na frente.
-- O diálogo de conta e a faixa de importação usam os mesmos tokens visuais; foco de teclado e movimento reduzido foram considerados.
-- Próxima checagem visual: larguras de 360 px, 768 px e 1440 px, incluindo formulário de itens, diálogo e tabela de impressão.
+- A paleta atual usa azul-petróleo, neutros frios e acento quente com contraste revisado.
+- Formulário e acompanhamento comercial continuam sendo os elementos dominantes.
+- Histórico não estica mais artificialmente até a altura do formulário.
+- Estados vazios, validade, follow-up, timeline e aprovação possuem sinais visuais específicos.
+- Foco visível, `prefers-reduced-motion` e skip link para o conteúdo principal estão implementados.
+- O documento/PDF mantém aparência mais neutra que a interface para preservar legibilidade de impressão.
 
 ## SEO e descoberta
 
-- Título, descrição, canonical e Open Graph foram definidos para o endereço do GitHub Pages.
-- Para crescer organicamente, criar páginas úteis (ex.: como montar orçamento de elétrica, pintura ou manutenção), com exemplos reais e links para o gerador.
-- `sitemap.xml` e `robots.txt` já estão publicados. Ainda faltam Search Console e uma revisão de indexação após estabilizar o produto. Não há dados para afirmar tráfego ou conversão.
+Implementado:
+
+- title, description, canonical, Open Graph e `og:locale` PT-BR/EN;
+- metadados Twitter/X;
+- dados estruturados `WebApplication` com idiomas e recursos;
+- `robots.txt` e `sitemap.xml`;
+- metadados sociais atualizados conforme a troca PT-BR/EN;
+- GitHub Pages como URL canônica atual.
+
+Pendente fora do código:
+
+- configurar/acompanhar Search Console;
+- validar indexação depois da estabilização;
+- produzir conteúdo editorial útil somente depois de confirmar quais categorias de prestadores realmente usam o produto.
+
+## Estado de produção
+
+O DocPronto está **tecnicamente homologado para beta controlado**. A próxima etapa não é ampliar o número de features: é executar a homologação humana restante e observar uso real.
 
 ## Próximas prioridades
 
-1. Adicionar a URL do GitHub Pages aos Redirect URLs do Supabase e configurar e-mail transacional, sem substituir configurações dos outros apps.
-2. Executar o fluxo autenticado em duas contas para confirmar isolamento e sincronização.
-3. Rodar a revisão visual em mobile e desktop com a versão publicada.
-4. Validar uso recorrente antes de criar preços, checkout ou limites comerciais.
+1. Homologar cadastro/login/recuperação/sessão com uma conta humana real.
+2. Repetir isolamento e sincronização em dois navegadores com duas contas humanas reais.
+3. Fazer uma rodada visual final e abrir um link público em navegador/dispositivo separado.
+4. Iniciar validação com prestadores reais antes de avançar para lembretes automáticos, push ou CRM.
