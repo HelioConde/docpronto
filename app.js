@@ -1255,6 +1255,10 @@ function addItem(values = {}) {
   updateTotal();
 }
 
+function normalizeAcceptedBy(value) {
+  return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
+}
+
 function normalizeStatusHistory(proposal) {
   const allowed = new Set(['draft', 'sent', 'approved', 'rejected']);
   const normalized = Array.isArray(proposal?.statusHistory)
@@ -1474,6 +1478,7 @@ function renderProposal(proposal) {
   const status = proposal.status || 'draft';
   const brandColor = normalizeBrandColor(proposal.brandColor);
   const businessLogo = safeBusinessLogo(proposal.businessLogo);
+  const acceptedBy = normalizeAcceptedBy(proposal.acceptedBy);
   const clientDetails = [
     proposal.clientDocument ? '<span><b>Documento:</b> ' + escapeHtml(proposal.clientDocument) + '</span>' : '',
     proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
@@ -1518,6 +1523,9 @@ function renderProposal(proposal) {
       '<p><b>Prazo:</b> ' + escapeHtml(proposal.deadline) + '</p>' +
       '<p><b>Condições de pagamento:</b> ' + escapeHtml(proposal.terms) + '</p>' +
       (proposal.notes ? '<section class="proposal-notes"><span class="proposal-label">OBSERVAÇÕES</span><p>' + escapeHtml(proposal.notes) + '</p></section>' : '') +
+      (status === 'approved' && acceptedBy
+        ? '<div class="proposal-acceptance"><span>' + uiText('Aceite registrado por') + '</span><strong>' + escapeHtml(acceptedBy) + '</strong></div>'
+        : '') +
       statusHistoryMarkup(proposal) +
       '<div class="proposal-actions">' +
         '<button class="secondary" id="print" type="button">Imprimir / salvar PDF</button>' +
@@ -1992,6 +2000,7 @@ function renderPublicProposal(proposal) {
   const container = document.querySelector('#public-proposal-content');
   const brandColor = normalizeBrandColor(proposal.brandColor);
   const businessLogo = safeBusinessLogo(proposal.businessLogo);
+  const acceptedBy = normalizeAcceptedBy(proposal.acceptedBy);
   const publicClientDetails = [
     proposal.clientDocument ? '<span><b>Documento:</b> ' + escapeHtml(proposal.clientDocument) + '</span>' : '',
     proposal.clientEmail ? '<span><b>E-mail:</b> ' + escapeHtml(proposal.clientEmail) + '</span>' : '',
@@ -2030,9 +2039,11 @@ function renderPublicProposal(proposal) {
     (proposal.notes ? '<section class="proposal-notes public-notes"><span class="proposal-label">OBSERVAÇÕES</span><p>' + escapeHtml(proposal.notes) + '</p></section>' : '') +
     '<div class="public-document-actions"><button class="secondary" id="public-print" type="button">Imprimir / salvar PDF</button></div>' +
         (expired ? '<div class="public-response-note">Esta proposta expirou.</div>' :
-      proposal.status === 'approved' ? '<div class="public-response-note success">Você aprovou esta proposta.</div>' :
+      proposal.status === 'approved' ? '<div class="public-response-note success">Você aprovou esta proposta.' +
+        (acceptedBy ? '<small>' + uiText('Aceite registrado por') + ' <strong>' + escapeHtml(acceptedBy) + '</strong>.</small>' : '') +
+        '</div>' :
       proposal.status === 'rejected' ? '<div class="public-response-note rejected">Você recusou esta proposta.</div>' :
-      canRespond ? '<div class="public-response-actions"><button class="primary" id="public-approve" type="button">Aprovar proposta</button><button class="secondary public-reject" id="public-reject" type="button">Recusar</button></div>' :
+      canRespond ? '<div class="public-acceptance-input"><label><span>' + uiText('Nome para aceite (opcional)') + '</span><input id="public-acceptance-name" type="text" maxlength="100" autocomplete="name" placeholder="' + uiText('Ex.: João Silva') + '"><small>' + uiText('Se preenchido, o nome ficará registrado junto da aprovação.') + '</small></label></div><div class="public-response-actions"><button class="primary" id="public-approve" type="button">Aprovar proposta</button><button class="secondary public-reject" id="public-reject" type="button">Recusar</button></div>' :
       '<div class="public-response-note">Esta proposta não está disponível para resposta.</div>');
 
   document.querySelector('#public-print')?.addEventListener('click', () => {
@@ -2072,8 +2083,11 @@ async function submitPublicResponse(decision) {
   if (approve) approve.disabled = true;
   if (reject) reject.disabled = true;
   try {
+    const acceptedBy = decision === 'approved'
+      ? normalizeAcceptedBy(document.querySelector('#public-acceptance-name')?.value)
+      : '';
     const { data, error } = await supabaseClient.functions.invoke('proposal-response', {
-      body: { proposalId: publicProposalId, token: publicProposalToken, decision }
+      body: { proposalId: publicProposalId, token: publicProposalToken, decision, acceptedBy }
     });
     if (error) throw error;
     const refreshed = await supabaseClient.functions.invoke('proposal-public', {
