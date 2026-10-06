@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: docpronto-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -25,5 +29,8 @@ jobs:
           node --check i18n.js
           node --check proposal-core.js
           node --check supabase-config.js
+          node --check pwa.js
+          node --check ads.js
+          node --check beta-feedback.js
       - name: Run proposal and integration tests
         run: npm test
