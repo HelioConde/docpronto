@@ -464,3 +464,27 @@ test('feedback beta entra na fila local sem backend e não pede dados pessoais',
   expect(queue[0]).not.toHaveProperty('email');
   expect(queue[0]).not.toHaveProperty('client');
 });
+
+
+test('proposta enviada exporta follow-up em ICS', async ({ page }) => {
+  await localMode(page);
+  await fillBaseProposal(page, ' Calendário');
+  await page.getByRole('button', { name: /Gerar proposta|Generate proposal/i }).click();
+
+  let item = page.locator('#list .item').filter({ hasText: 'Cliente E2E Calendário' }).first();
+  await item.locator('[data-status-id]').selectOption('sent');
+  item = page.locator('#list .item').filter({ hasText: 'Cliente E2E Calendário' }).first();
+
+  const downloadPromise = page.waitForEvent('download');
+  await item.locator('[data-followup-calendar]').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^docpronto-followup-DP-.*\.ics$/);
+
+  const stream = await download.createReadStream();
+  let content = '';
+  for await (const chunk of stream) content += chunk.toString();
+  expect(content).toContain('BEGIN:VCALENDAR');
+  expect(content).toContain('SUMMARY:Follow-up DocPronto');
+  expect(content).toContain('DTSTART;VALUE=DATE:');
+  expect(content).toContain('END:VCALENDAR');
+});
