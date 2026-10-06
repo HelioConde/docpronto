@@ -7,6 +7,9 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 - composição de orçamento com até 10 itens;
 - cálculo de total e validade;
 - edição, duplicação como modelo e exclusão;
+- acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
+- filtro do histórico por status;
+- compartilhamento de resumo por WhatsApp e cópia rápida;
 - impressão/salvamento em PDF pelo navegador;
 - modo local sem conta;
 - Supabase Auth;
