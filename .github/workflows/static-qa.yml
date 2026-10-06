@@ -24,6 +24,9 @@ jobs:
           test -f theme-v2.css
           test -f README.md
           test -f FULLSTACK.md
+          test -f supabase/functions/proposal-public/index.ts
+          test -f supabase/functions/proposal-response/index.ts
+          test -f supabase/migrations/20261006054500_public_proposal_response.sql
           test -f supabase/migrations/20261006052000_proposal_status.sql
       - name: Check SEO and backend boot
         run: |
@@ -35,3 +38,7 @@ jobs:
           grep -qi 'proposal-status-filter' index.html
           grep -qi 'data-status-id' app.js
           grep -qi 'share-whatsapp' app.js
+          grep -qi 'create-client-link' app.js
+          grep -qi 'public-proposal-view' index.html
+          grep -qi 'proposal-public' app.js
+          grep -qi 'proposal-response' app.js
