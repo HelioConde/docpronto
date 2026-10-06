@@ -227,6 +227,20 @@ test('desconto aparece no formulário, documento e proposta pública', () => {
   assert.match(publicFn, /discountType/);
 });
 
+test('observações opcionais acompanham rascunho, PDF e proposta pública', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  const publicFn = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'proposal-public', 'index.ts'), 'utf8');
+  assert.match(html, /name="notes"[^>]*maxlength="600"/);
+  assert.match(app, /draft\.notes/);
+  assert.match(app, /proposal\.notes/);
+  assert.match(app, /proposal-notes/);
+  assert.match(css, /\.proposal-notes/);
+  assert.match(publicFn, /notes: typeof p\.notes === "string"/);
+  assert.match(publicFn, /slice\(0, 600\)/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
