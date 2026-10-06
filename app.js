@@ -74,6 +74,10 @@ const historySummary = document.querySelector('#history-summary');
 const historyMoreButton = document.querySelector('#history-more');
 const exportCsvButton = document.querySelector('#export-csv');
 const clearComposerButton = document.querySelector('#clear-composer');
+const localBackupControls = document.querySelector('#local-backup-controls');
+const exportBackupButton = document.querySelector('#export-backup');
+const importBackupButton = document.querySelector('#import-backup');
+const importBackupFile = document.querySelector('#import-backup-file');
 const proposalTemplateSelect = document.querySelector('#proposal-template');
 const applyTemplateButton = document.querySelector('#apply-template');
 const businessLogoInput = document.querySelector('#business-logo-input');
@@ -311,6 +315,137 @@ function escapeHtml(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   })[char]);
+}
+
+function safeBackupText(value, max) {
+  return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function safeBackupNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : fallback;
+}
+
+function sanitizeImportedProposal(raw, index = 0) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const rawItems = Array.isArray(raw.items) && raw.items.length
+    ? raw.items
+    : [{ description: raw.scope || 'Serviço', quantity: 1, unitPrice: raw.amount || 0 }];
+
+  const items = rawItems.slice(0, maxItems).map(item => {
+    const description = safeBackupText(item?.description, 180);
+    const quantity = Math.max(0.01, Math.min(99999, safeBackupNumber(item?.quantity, 1)));
+    const unitPrice = Math.min(999999999, safeBackupNumber(item?.unitPrice, 0));
+    return description ? {
+      description,
+      quantity,
+      unitPrice,
+      subtotal: quantity * unitPrice
+    } : null;
+  }).filter(Boolean);
+
+  if (!items.length) return null;
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const requestedDiscount = Math.min(subtotal, safeBackupNumber(raw.discountAmount, 0));
+  const status = ['draft', 'sent', 'approved', 'rejected'].includes(raw.status) ? raw.status : 'draft';
+  const createdAt = Number.isFinite(Number(raw.createdAt)) ? Number(raw.createdAt) : Date.now();
+  const updatedAt = Number.isFinite(Number(raw.updatedAt)) ? Number(raw.updatedAt) : createdAt;
+  const respondedAt = Number.isFinite(Number(raw.respondedAt)) ? Number(raw.respondedAt) : null;
+  const validUntil = /^\d{4}-\d{2}-\d{2}$/.test(String(raw.validUntil || '')) ? String(raw.validUntil) : defaultValidityDate();
+  const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(raw.id || ''))
+    ? String(raw.id)
+    : makeUuid();
+
+  const normalized = {
+    id,
+    number: safeBackupText(raw.number, 50) || ('DP-BACKUP-' + String(index + 1).padStart(4, '0')),
+    business: safeBackupText(raw.business, 80),
+    businessPhone: safeBackupText(raw.businessPhone, 30),
+    businessLogo: safeBusinessLogo(raw.businessLogo),
+    brandColor: normalizeBrandColor(raw.brandColor),
+    client: safeBackupText(raw.client, 100),
+    clientPhone: safeBackupText(raw.clientPhone, 30),
+    clientEmail: safeBackupText(raw.clientEmail, 160),
+    clientDocument: safeBackupText(raw.clientDocument, 30),
+    clientAddress: safeBackupText(raw.clientAddress, 240),
+    items,
+    subtotal,
+    discountType: ['percent', 'fixed'].includes(raw.discountType) ? raw.discountType : 'none',
+    discountValue: safeBackupNumber(raw.discountValue, 0),
+    discountAmount: requestedDiscount,
+    total: Math.max(0, subtotal - requestedDiscount),
+    amount: Math.max(0, subtotal - requestedDiscount),
+    scope: items.map(item => item.description).join(', '),
+    deadline: safeBackupText(raw.deadline, 120),
+    terms: safeBackupText(raw.terms, 200),
+    notes: safeBackupText(raw.notes, 600),
+    validUntil,
+    acceptedBy: normalizeAcceptedBy(raw.acceptedBy),
+    status,
+    createdAt,
+    updatedAt,
+    respondedAt
+  };
+  normalized.statusHistory = normalizeStatusHistory({ ...normalized, statusHistory: raw.statusHistory });
+  return normalized;
+}
+
+function exportLocalBackup() {
+  if (currentUser) return;
+  const payload = {
+    format: 'docpronto-backup',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    proposals: readProposals().slice(-100),
+    businessLogo: currentBusinessLogo
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'docpronto-backup-' + localDate(new Date()) + '.json';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Backup exportado.');
+}
+
+async function restoreLocalBackup(file) {
+  if (currentUser || !file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('O arquivo de backup é muito grande.');
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(await file.text());
+  } catch {
+    showToast('Arquivo de backup inválido.');
+    return;
+  }
+
+  if (!parsed || parsed.format !== 'docpronto-backup' || parsed.version !== 1 || !Array.isArray(parsed.proposals)) {
+    showToast('Arquivo de backup inválido.');
+    return;
+  }
+  if (!window.confirm(uiText('Restaurar este backup substituirá as propostas locais atuais. Continuar?'))) return;
+
+  const proposals = parsed.proposals.slice(-100)
+    .map((proposal, index) => sanitizeImportedProposal(proposal, index))
+    .filter(Boolean);
+
+  localStorage.setItem(storageKey, JSON.stringify(proposals));
+  storeBusinessLogo(parsed.businessLogo || '');
+  clearComposerDraft();
+  openedProposalId = null;
+  result.classList.remove('show');
+  result.innerHTML = '';
+  resetComposer();
+  prefillBusinessFields(proposals);
+  renderHistory();
+  showToast('Backup restaurado.');
 }
 
 function readProposals() {
@@ -704,6 +839,7 @@ function updateAccountUi() {
     ? (cloudLoading ? 'Carregando propostas…' : 'Nuvem · ' + currentUser.email)
     : (supabaseClient ? 'Salvo neste dispositivo' : 'Modo local');
   accountForm.hidden = !supabaseClient || Boolean(currentUser) || passwordRecovery;
+  if (localBackupControls) localBackupControls.hidden = Boolean(currentUser);
   accountProfile.hidden = !currentUser || passwordRecovery;
   passwordRecoveryForm.hidden = !passwordRecovery;
   if (currentUser) {
@@ -1900,6 +2036,16 @@ historyMoreButton?.addEventListener('click', () => {
   renderHistory();
 });
 exportCsvButton?.addEventListener('click', exportProposalsCsv);
+exportBackupButton?.addEventListener('click', exportLocalBackup);
+importBackupButton?.addEventListener('click', () => importBackupFile?.click());
+importBackupFile?.addEventListener('change', async () => {
+  const file = importBackupFile.files?.[0];
+  try {
+    await restoreLocalBackup(file);
+  } finally {
+    importBackupFile.value = '';
+  }
+});
 historySummary?.addEventListener('click', event => {
   const button = event.target.closest('[data-summary-status]');
   if (!button || !proposalStatusFilter) return;
