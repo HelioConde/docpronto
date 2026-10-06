@@ -24,7 +24,7 @@ Implementado:
 - Verificação de sintaxe JS.
 - Workflow GitHub Actions para executar as verificações em push e pull request.
 - Nova tabela `docpronto_proposals`, separada das tabelas da pizzaria e do AgendaLeve.
-- RLS habilitado; operações da tabela ficam disponíveis apenas para usuários autenticados com `owner_id = auth.uid()`.
+- RLS habilitado; usuários só acessam linhas com `owner_id = auth.uid()`. `anon` e `PUBLIC` não têm acesso à tabela, e `authenticated` recebeu apenas SELECT, INSERT, UPDATE e DELETE — sem TRUNCATE.
 - A chave do frontend é publishable; nenhuma chave privilegiada é necessária ou incluída.
 
 Pendente para homologação:
