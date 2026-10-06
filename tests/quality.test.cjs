@@ -370,6 +370,22 @@ test('serviços usados antes viram sugestões com reaproveitamento do último pr
   assert.match(app, /itemFields\.addEventListener\('change'/);
 });
 
+test('histórico filtra propostas vencidas e oferece ordenações úteis', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'theme-v2.css'), 'utf8');
+  assert.match(html, /value="expired">Vencidas/);
+  assert.match(html, /id="proposal-sort"/);
+  assert.match(html, /value="value-desc">Maior valor/);
+  assert.match(html, /value="expiry">Vencimento próximo/);
+  assert.match(app, /function proposalIsExpired/);
+  assert.match(app, /selectedStatus === 'expired'/);
+  assert.match(app, /selectedSort === 'value-desc'/);
+  assert.match(app, /selectedSort === 'expiry'/);
+  assert.match(app, /proposalSort\?\.addEventListener\('change'/);
+  assert.match(css, /grid-template-columns:minmax\(0,1fr\) 118px 145px auto/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
