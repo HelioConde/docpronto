@@ -289,6 +289,10 @@
   Object.assign(translations, {
   "Aguardando resposta": "Awaiting response",
   "Aprovar proposta": "Approve proposal",
+  "Nome para aceite (opcional)": "Name for acceptance (optional)",
+  "Se preenchido, o nome ficará registrado junto da aprovação.": "If provided, the name will be recorded with the approval.",
+  "Aceite registrado por": "Accepted by",
+  "Ex.: João Silva": "Ex.: John Smith",
   "Recusar": "Reject",
   "Emitida em": "Issued on",
   "válida até": "valid until",
