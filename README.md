@@ -83,3 +83,10 @@ O DocPronto pode ser instalado como aplicativo em navegadores compatíveis. Depo
 ## Monetização por anúncios
 
 O DocPronto está preparado para permanecer gratuito e monetizar com anúncios responsivos em áreas não críticas. A integração fica desligada até existirem Publisher ID e slots reais. Consulte [ADS_SETUP.md](./ADS_SETUP.md).
+
+
+## Feedback beta
+
+O produto inclui feedback interno com nota de 1–5, categoria e comentário. O frontend não envia nome, telefone, e-mail, cliente nem conteúdo de proposta. Quando o backend estiver indisponível, os envios ficam em uma fila local de até 20 itens e são reenviados automaticamente quando o endpoint estiver disponível.
+
+A migration e a Edge Function `beta-feedback` já estão versionadas; a publicação no Supabase real depende da restauração do acesso administrativo.
