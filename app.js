@@ -35,11 +35,11 @@ let openedProposalId = null;
 
 const contactField = document.createElement('label');
 contactField.className = 'field';
-contactField.innerHTML = '<span>Telefone ou WhatsApp do negócio (opcional)</span><input name="businessPhone" type="tel" placeholder="(11) 99999-9999">';
+contactField.innerHTML = '<span>Telefone ou WhatsApp do negócio (opcional)</span><input name="businessPhone" type="tel" maxlength="30" placeholder="(11) 99999-9999">';
 form.querySelector('[name="business"]').closest('label').after(contactField);
 const clientContactField = document.createElement('label');
 clientContactField.className = 'field';
-clientContactField.innerHTML = '<span>WhatsApp do cliente (opcional)</span><input name="clientPhone" type="tel" inputmode="tel" placeholder="(11) 99999-9999"><small class="field-help">Usado apenas para facilitar o compartilhamento da proposta.</small>';
+clientContactField.innerHTML = '<span>WhatsApp do cliente (opcional)</span><input name="clientPhone" type="tel" maxlength="30" inputmode="tel" placeholder="(11) 99999-9999"><small class="field-help">Usado apenas para facilitar o compartilhamento da proposta.</small>';
 form.querySelector('[name="client"]').closest('label').after(clientContactField);
 const validityField = document.createElement('label');
 validityField.className = 'field';
@@ -668,7 +668,7 @@ function addItem(values = {}) {
   row.className = 'line-item';
   row.innerHTML =
     '<label class="field item-description"><span>Descrição</span>' +
-      '<input data-description type="text" placeholder="Ex.: Instalação de tomadas" required>' +
+      '<input data-description type="text" maxlength="160" placeholder="Ex.: Instalação de tomadas" required>' +
     '</label>' +
     '<label class="field item-quantity"><span>Qtd.</span>' +
       '<input data-quantity type="number" min="0.01" step="0.01" value="1" inputmode="decimal" required>' +
