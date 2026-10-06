@@ -358,6 +358,18 @@ test('conta permite usar e excluir clientes salvos sem alterar propostas existen
   assert.match(css, /\.saved-clients/);
 });
 
+test('serviços usados antes viram sugestões com reaproveitamento do último preço', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.match(html, /id="service-suggestions"/);
+  assert.match(app, /function recentServiceCatalog/);
+  assert.match(app, /function renderServiceSuggestions/);
+  assert.match(app, /function applySavedService/);
+  assert.match(app, /list="service-suggestions"/);
+  assert.match(app, /Último preço deste item preenchido/);
+  assert.match(app, /itemFields\.addEventListener\('change'/);
+});
+
 test('a tabela concede apenas as operações necessárias ao usuário autenticado', () => {
   const grantsPath = path.join(__dirname, '..', 'supabase', 'migrations', '20261006024300_docpronto_minimal_grants.sql');
   const sql = fs.readFileSync(grantsPath, 'utf8');
