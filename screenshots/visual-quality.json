@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-10-07T06:52:18.984Z",
+  "passed": false,
+  "failures": [
+    "desktop-full.png: 1 broken image(s)",
+    "mobile-full.png: 1 broken image(s)",
+    "mobile-full.png: 10 small tap target(s)"
+  ]
+}

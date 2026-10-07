@@ -1,0 +1,370 @@
+{
+  "generatedAt": "2026-10-07T06:52:18.984Z",
+  "baseUrl": "http://127.0.0.1:4173/",
+  "captures": [
+    {
+      "name": "desktop-full.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "title": "DocPronto — Propostas profissionais sem complicação",
+      "width": 1440,
+      "height": 2601,
+      "viewportWidth": 1440,
+      "viewportHeight": 1000,
+      "overflow": [],
+      "smallTapTargets": [
+        {
+          "tag": "a",
+          "id": "",
+          "className": "brand",
+          "width": 98,
+          "height": 26,
+          "text": "DocPronto."
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "active",
+          "width": 34,
+          "height": 28,
+          "text": "PT"
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "",
+          "width": 34,
+          "height": 28,
+          "text": "EN"
+        },
+        {
+          "tag": "button",
+          "id": "business-logo-choose",
+          "className": "secondary",
+          "width": 115,
+          "height": 24,
+          "text": "Adicionar logo"
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "remove-item",
+          "width": 32,
+          "height": 38,
+          "text": "×"
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "primary",
+          "width": 361,
+          "height": 24,
+          "text": "Gerar proposta"
+        },
+        {
+          "tag": "button",
+          "id": "clear-composer",
+          "className": "secondary",
+          "width": 138,
+          "height": 24,
+          "text": "Limpar formulário"
+        },
+        {
+          "tag": "input",
+          "id": "proposal-search",
+          "className": "",
+          "width": 22,
+          "height": 38,
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "id": "export-backup",
+          "className": "secondary",
+          "width": 89,
+          "height": 28,
+          "text": "Exportar backup"
+        },
+        {
+          "tag": "button",
+          "id": "import-backup",
+          "className": "secondary",
+          "width": 94,
+          "height": 28,
+          "text": "Restaurar backup"
+        },
+        {
+          "tag": "button",
+          "id": "beta-feedback-open",
+          "className": "secondary",
+          "width": 108,
+          "height": 24,
+          "text": "Dar feedback"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "1 · CRIAR",
+          "fontSize": 9
+        },
+        {
+          "text": "IDENTIDADE VISUAL",
+          "fontSize": 8
+        },
+        {
+          "text": "PNG, JPG ou WebP até 2 MB. A imagem é reduzida no seu navegador.",
+          "fontSize": 9
+        },
+        {
+          "text": "MODELO RÁPIDO",
+          "fontSize": 8
+        },
+        {
+          "text": "O modelo preenche serviços, prazo e pagamento. Você define os valores.",
+          "fontSize": 9
+        },
+        {
+          "text": "2 · ACOMPANHAR",
+          "fontSize": 9
+        },
+        {
+          "text": "Todas",
+          "fontSize": 9
+        },
+        {
+          "text": "Enviadas",
+          "fontSize": 9
+        },
+        {
+          "text": "Aprovadas",
+          "fontSize": 9
+        },
+        {
+          "text": "Sem resposta",
+          "fontSize": 9
+        },
+        {
+          "text": "enviadas há 3 dias ou mais",
+          "fontSize": 8
+        },
+        {
+          "text": "Conversão",
+          "fontSize": 9
+        },
+        {
+          "text": "0 / 0 aprovadas / enviadas",
+          "fontSize": 8
+        },
+        {
+          "text": "Buscar",
+          "fontSize": 9
+        },
+        {
+          "text": "Status",
+          "fontSize": 9
+        },
+        {
+          "text": "Ordenar",
+          "fontSize": 9
+        },
+        {
+          "text": "O arquivo inclui os dados das propostas salvas neste dispositivo.",
+          "fontSize": 8
+        },
+        {
+          "text": "Exportar backup",
+          "fontSize": 9
+        },
+        {
+          "text": "Restaurar backup",
+          "fontSize": 9
+        }
+      ],
+      "brokenImages": [
+        "http://127.0.0.1:4173/"
+      ],
+      "consoleErrors": [],
+      "failedRequests": []
+    },
+    {
+      "name": "mobile-full.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "title": "DocPronto — Propostas profissionais sem complicação",
+      "width": 390,
+      "height": 4196,
+      "viewportWidth": 390,
+      "viewportHeight": 844,
+      "overflow": [],
+      "smallTapTargets": [
+        {
+          "tag": "a",
+          "id": "",
+          "className": "brand",
+          "width": 98,
+          "height": 26,
+          "text": "DocPronto."
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "active",
+          "width": 31,
+          "height": 28,
+          "text": "PT"
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "",
+          "width": 31,
+          "height": 28,
+          "text": "EN"
+        },
+        {
+          "tag": "button",
+          "id": "business-logo-choose",
+          "className": "secondary",
+          "width": 115,
+          "height": 24,
+          "text": "Adicionar logo"
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "remove-item",
+          "width": 32,
+          "height": 38,
+          "text": "×"
+        },
+        {
+          "tag": "button",
+          "id": "",
+          "className": "primary",
+          "width": 314,
+          "height": 24,
+          "text": "Gerar proposta"
+        },
+        {
+          "tag": "button",
+          "id": "clear-composer",
+          "className": "secondary",
+          "width": 314,
+          "height": 24,
+          "text": "Limpar formulário"
+        },
+        {
+          "tag": "button",
+          "id": "export-backup",
+          "className": "secondary",
+          "width": 142,
+          "height": 28,
+          "text": "Exportar backup"
+        },
+        {
+          "tag": "button",
+          "id": "import-backup",
+          "className": "secondary",
+          "width": 142,
+          "height": 28,
+          "text": "Restaurar backup"
+        },
+        {
+          "tag": "button",
+          "id": "beta-feedback-open",
+          "className": "secondary",
+          "width": 108,
+          "height": 24,
+          "text": "Dar feedback"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "1 · CRIAR",
+          "fontSize": 9
+        },
+        {
+          "text": "IDENTIDADE VISUAL",
+          "fontSize": 8
+        },
+        {
+          "text": "PNG, JPG ou WebP até 2 MB. A imagem é reduzida no seu navegador.",
+          "fontSize": 9
+        },
+        {
+          "text": "MODELO RÁPIDO",
+          "fontSize": 8
+        },
+        {
+          "text": "O modelo preenche serviços, prazo e pagamento. Você define os valores.",
+          "fontSize": 9
+        },
+        {
+          "text": "2 · ACOMPANHAR",
+          "fontSize": 9
+        },
+        {
+          "text": "Todas",
+          "fontSize": 9
+        },
+        {
+          "text": "Enviadas",
+          "fontSize": 9
+        },
+        {
+          "text": "Aprovadas",
+          "fontSize": 9
+        },
+        {
+          "text": "Sem resposta",
+          "fontSize": 9
+        },
+        {
+          "text": "enviadas há 3 dias ou mais",
+          "fontSize": 8
+        },
+        {
+          "text": "Conversão",
+          "fontSize": 9
+        },
+        {
+          "text": "0 / 0 aprovadas / enviadas",
+          "fontSize": 8
+        },
+        {
+          "text": "Buscar",
+          "fontSize": 9
+        },
+        {
+          "text": "Status",
+          "fontSize": 9
+        },
+        {
+          "text": "Ordenar",
+          "fontSize": 9
+        },
+        {
+          "text": "O arquivo inclui os dados das propostas salvas neste dispositivo.",
+          "fontSize": 8
+        },
+        {
+          "text": "Exportar backup",
+          "fontSize": 9
+        },
+        {
+          "text": "Restaurar backup",
+          "fontSize": 9
+        }
+      ],
+      "brokenImages": [
+        "http://127.0.0.1:4173/"
+      ],
+      "consoleErrors": [],
+      "failedRequests": []
+    }
+  ]
+}
