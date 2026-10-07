@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T06:57:20.555Z",
+  "generatedAt": "2026-10-07T06:59:05.282Z",
   "baseUrl": "http://127.0.0.1:4173/",
   "captures": [
     {
@@ -10,70 +10,12 @@
       },
       "title": "DocPronto — Propostas profissionais sem complicação",
       "width": 1440,
-      "height": 2631,
+      "height": 2632,
       "viewportWidth": 1440,
       "viewportHeight": 1000,
       "overflow": [],
-      "smallTapTargets": [
-        {
-          "tag": "input",
-          "id": "proposal-search",
-          "className": "",
-          "width": 22,
-          "height": 40,
-          "text": ""
-        }
-      ],
-      "tinyText": [
-        {
-          "text": "1 · CRIAR",
-          "fontSize": 9
-        },
-        {
-          "text": "2 · ACOMPANHAR",
-          "fontSize": 9
-        },
-        {
-          "text": "Todas",
-          "fontSize": 9
-        },
-        {
-          "text": "Enviadas",
-          "fontSize": 9
-        },
-        {
-          "text": "Aprovadas",
-          "fontSize": 9
-        },
-        {
-          "text": "Sem resposta",
-          "fontSize": 9
-        },
-        {
-          "text": "Conversão",
-          "fontSize": 9
-        },
-        {
-          "text": "Buscar",
-          "fontSize": 9
-        },
-        {
-          "text": "Status",
-          "fontSize": 9
-        },
-        {
-          "text": "Ordenar",
-          "fontSize": 9
-        },
-        {
-          "text": "Exportar backup",
-          "fontSize": 9
-        },
-        {
-          "text": "Restaurar backup",
-          "fontSize": 9
-        }
-      ],
+      "smallTapTargets": [],
+      "tinyText": [],
       "brokenImages": [],
       "consoleErrors": [],
       "failedRequests": []
@@ -86,61 +28,12 @@
       },
       "title": "DocPronto — Propostas profissionais sem complicação",
       "width": 390,
-      "height": 4326,
+      "height": 4449,
       "viewportWidth": 390,
       "viewportHeight": 844,
       "overflow": [],
       "smallTapTargets": [],
-      "tinyText": [
-        {
-          "text": "1 · CRIAR",
-          "fontSize": 9
-        },
-        {
-          "text": "2 · ACOMPANHAR",
-          "fontSize": 9
-        },
-        {
-          "text": "Todas",
-          "fontSize": 9
-        },
-        {
-          "text": "Enviadas",
-          "fontSize": 9
-        },
-        {
-          "text": "Aprovadas",
-          "fontSize": 9
-        },
-        {
-          "text": "Sem resposta",
-          "fontSize": 9
-        },
-        {
-          "text": "Conversão",
-          "fontSize": 9
-        },
-        {
-          "text": "Buscar",
-          "fontSize": 9
-        },
-        {
-          "text": "Status",
-          "fontSize": 9
-        },
-        {
-          "text": "Ordenar",
-          "fontSize": 9
-        },
-        {
-          "text": "Exportar backup",
-          "fontSize": 9
-        },
-        {
-          "text": "Restaurar backup",
-          "fontSize": 9
-        }
-      ],
+      "tinyText": [],
       "brokenImages": [],
       "consoleErrors": [],
       "failedRequests": []
