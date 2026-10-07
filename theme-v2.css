@@ -420,3 +420,62 @@ html[lang="en"] .hero h1{max-width:780px}
 
 .skip-link{position:fixed;z-index:1000;top:10px;left:10px;padding:10px 14px;border-radius:9px;background:var(--ink);color:#fff;font-size:12px;font-weight:800;text-decoration:none;transform:translateY(-160%);transition:transform .16s ease}
 .skip-link:focus{transform:translateY(0);outline:3px solid #ffffff;outline-offset:2px;box-shadow:0 0 0 5px var(--accent)}
+
+
+/* Visual audit controls — 07/10/2026 */
+.brand{
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+}
+.language-switcher button{
+  min-width:36px;
+  height:36px;
+  min-height:36px;
+}
+.primary,
+.secondary{
+  min-height:40px;
+  padding:9px 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.remove-item{
+  width:40px;
+  height:40px;
+  min-width:40px;
+}
+.business-logo-actions .secondary,
+.local-backup-actions .secondary,
+.beta-feedback-card .secondary{
+  min-height:40px;
+}
+.history-search{min-width:0}
+.history-search input{
+  min-width:0;
+  width:100%;
+  min-height:40px;
+}
+.template-kicker,
+.template-picker small,
+.business-logo-copy small,
+.local-backup-controls small,
+.summary-card small{
+  font-size:10px;
+  line-height:1.45;
+}
+@media(max-width:680px){
+  .language-switcher button{
+    min-width:36px;
+    height:36px;
+    padding:0 7px;
+  }
+}
+@media(max-width:500px){
+  .brand{min-height:40px}
+  .remove-item{
+    width:40px;
+    height:40px;
+  }
+}
