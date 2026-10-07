@@ -1,6 +1,6 @@
 # Visual audit
 
-Generated: 2026-10-07T06:53:16.976Z
+Generated: 2026-10-07T06:56:39.115Z
 
 ## desktop-full.png
 
@@ -11,7 +11,7 @@ Generated: 2026-10-07T06:53:16.976Z
 - Tiny text nodes (<10px): 19
 - Console errors: 0
 - Failed requests: 0
-- Broken images: 1
+- Broken images: 0
 
 ### Small tap targets
 - a#.brand: 98×26px — DocPronto.
@@ -56,7 +56,7 @@ Generated: 2026-10-07T06:53:16.976Z
 - Tiny text nodes (<10px): 19
 - Console errors: 0
 - Failed requests: 0
-- Broken images: 1
+- Broken images: 0
 
 ### Small tap targets
 - a#.brand: 98×26px — DocPronto.

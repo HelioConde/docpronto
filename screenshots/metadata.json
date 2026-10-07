@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T06:53:16.976Z",
+  "generatedAt": "2026-10-07T06:56:39.115Z",
   "baseUrl": "http://127.0.0.1:4173/",
   "captures": [
     {
@@ -182,9 +182,7 @@
           "fontSize": 9
         }
       ],
-      "brokenImages": [
-        "http://127.0.0.1:4173/"
-      ],
+      "brokenImages": [],
       "consoleErrors": [],
       "failedRequests": []
     },
@@ -360,9 +358,7 @@
           "fontSize": 9
         }
       ],
-      "brokenImages": [
-        "http://127.0.0.1:4173/"
-      ],
+      "brokenImages": [],
       "consoleErrors": [],
       "failedRequests": []
     }
