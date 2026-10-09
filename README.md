@@ -4,7 +4,7 @@ Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 
 ## Status de desenvolvimento
 
-**MVP técnico concluído e publicado.** O DocPronto sai da fase de desenvolvimento principal e entra em **homologação humana / validação pós-MVP**.
+**DocPronto 1.0: desenvolvimento principal concluído e publicado.** O produto está pronto para **beta controlado**, enquanto a homologação humana e as integrações externas permanecem pendentes. Consulte o [relatório de encerramento técnico](RELEASE_V1.md), com evidências do QA, segurança do PWA, revogação de permissões legadas no Supabase e checklist de lançamento.
 
 - Static QA, Quality Checks, Browser E2E e GitHub Pages aprovados.
 - Edge Functions públicas, feedback beta, RLS e fluxo de aprovação estão publicados no Supabase.
