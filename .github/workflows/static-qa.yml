@@ -24,6 +24,9 @@ jobs:
           node --check i18n.js
           node --check supabase-config.js
           node --check pwa.js
+          node --check sw.js
+          node --check live-update.js
+          node --check tests/e2e/pwa-cache.spec.js
           node --check ads.js
           node --check beta-feedback.js
       - name: Check required files
@@ -41,6 +44,7 @@ jobs:
           test -f package.json
           test -f playwright.config.js
           test -f tests/e2e/critical-flow.spec.js
+          test -f tests/e2e/pwa-cache.spec.js
           test -f .github/workflows/e2e.yml
           test -f manifest.webmanifest
           test -f icon.svg
@@ -83,7 +87,10 @@ jobs:
           grep -qi 'pwa.js' index.html
           grep -qi 'serviceWorker' pwa.js
           grep -qi 'beforeinstallprompt' pwa.js
-          grep -qi 'docpronto-shell-v1' sw.js
+          grep -qi 'docpronto-shell-v2' sw.js
+          grep -qi "url.search" sw.js
+          grep -qi "registration.scope" sw.js
+          grep -qi "docpronto-shell-" live-update.js
           grep -qi 'DOCPRONTO_ADS' ads-config.js
           grep -qi 'allowedPlacement' ads.js
           grep -qi 'pagead2.googlesyndication.com' ads.js
