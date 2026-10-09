@@ -30,6 +30,8 @@ jobs:
           node --check proposal-core.js
           node --check supabase-config.js
           node --check pwa.js
+          node --check sw.js
+          node --check live-update.js
           node --check ads.js
           node --check beta-feedback.js
       - name: Run proposal and integration tests
