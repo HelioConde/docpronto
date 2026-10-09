@@ -43,6 +43,6 @@ test('PWA mantém edição local offline após ativação do service worker', as
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('form#proposal-form, form#proposalForm').first()).toBeAttached();
+  await expect(page.locator('form#form')).toBeAttached();
   await context.setOffline(false);
 });
