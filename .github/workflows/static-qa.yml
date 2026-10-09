@@ -40,6 +40,7 @@ jobs:
           test -f supabase/functions/proposal-response/index.ts
           test -f supabase/migrations/20261006054500_public_proposal_response.sql
           test -f supabase/migrations/20261006063000_reusable_clients.sql
+          test -f supabase/migrations/20261009094447_docpronto_revoke_legacy_anonymous_table_access.sql
           test -f supabase/migrations/20261006052000_proposal_status.sql
           test -f package.json
           test -f playwright.config.js
@@ -88,6 +89,7 @@ jobs:
           grep -qi 'serviceWorker' pwa.js
           grep -qi 'beforeinstallprompt' pwa.js
           grep -qi 'docpronto-shell-v2' sw.js
+          grep -qi 'REVOKE ALL PRIVILEGES ON TABLE public.docpronto_documents' supabase/migrations/20261009094447_docpronto_revoke_legacy_anonymous_table_access.sql
           grep -qi "url.search" sw.js
           grep -qi "registration.scope" sw.js
           grep -qi "docpronto-shell-" live-update.js
