@@ -4,6 +4,8 @@
   const VERSION_URL = 'version.json';
   const CACHE_BUST_PARAM = '__v';
   const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
+  // The root origin may also host other GitHub Pages apps; only touch this app's SW.
+  const APP_SCOPE = new URL('./', document.currentScript?.src || window.location.href).pathname;
   if (LOCAL_HOSTS.has(window.location.hostname)) return;
 
   const currentUrl = new URL(window.location.href);
@@ -49,13 +51,17 @@
     try {
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.allSettled(registrations.map(registration => registration.update()));
+        await Promise.allSettled(registrations
+          .filter(registration => new URL(registration.scope).pathname === APP_SCOPE)
+          .map(registration => registration.update()));
       }
     } catch {}
     try {
       if ('caches' in window) {
         const keys = await caches.keys();
-        await Promise.allSettled(keys.map(key => caches.delete(key)));
+        await Promise.allSettled(keys
+          .filter(key => key.startsWith('docpronto-shell-'))
+          .map(key => caches.delete(key)));
       }
     } catch {}
   }
