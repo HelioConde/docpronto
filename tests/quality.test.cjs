@@ -472,3 +472,19 @@ test('clientes reutilizáveis têm grant mínimo, chave normalizada e UI de suge
   assert.match(app, /syncClientRecord/);
   assert.match(app, /loadCloudClients/);
 });
+
+test('migration fecha permissões anônimas de documentos legados sem afetar proprietários', () => {
+  const sql = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261009094447_docpronto_revoke_legacy_anonymous_table_access.sql'), 'utf8');
+  assert.match(sql, /REVOKE ALL PRIVILEGES ON TABLE public\.docpronto_documents, public\.docpronto_items FROM anon/i);
+  assert.doesNotMatch(sql, /(?:REVOKE|DROP)\s+.*\b(?:authenticated|service_role)\b/i);
+});
+
+test('PWA não limpa caches de outros projetos nem armazena propostas com token', () => {
+  const worker = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  const updater = fs.readFileSync(path.join(__dirname, '..', 'live-update.js'), 'utf8');
+  assert.match(worker, /docpronto-shell-v2/);
+  assert.match(worker, /!url\.search && SHELL_PATHS\.has\(url\.pathname\)/);
+  assert.match(worker, /key\.startsWith\('docpronto-shell-'\)/);
+  assert.match(updater, /key\.startsWith\('docpronto-shell-'\)/);
+  assert.match(updater, /registration\.scope/);
+});
