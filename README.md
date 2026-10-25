@@ -1,25 +1,39 @@
-# DocPronto — Orçamentos e propostas profissionais
+<div align="center">
+  <h1>📑 DocPronto</h1>
+  <p><strong>Orçamentos e propostas profissionais, do rascunho ao acompanhamento.</strong></p>
+  <p><img alt="Status" src="https://img.shields.io/badge/status-beta%20controlado-64748b"> <img alt="PDF" src="https://img.shields.io/badge/sa%C3%ADda-PDF-2563eb"></p>
+  <p><a href="RELEASE_V1.md"><strong>Relatório técnico</strong></a> · <a href="FULLSTACK.md"><strong>Arquitetura</strong></a> · <a href="#desenvolvimento-r%C3%A1pido"><strong>Executar</strong></a></p>
+</div>
 
-**Crie, envie e acompanhe propostas de serviço com cálculo automático, histórico e geração de PDF.**
+## A proposta
 
-[**Repositório**](https://github.com/HelioConde/docpronto) · [**Notas técnicas do beta**](RELEASE_V1.md)
+O **DocPronto** ajuda profissionais autônomos e prestadores de serviços a preparar propostas, calcular valores e acompanhar o retorno de clientes — sem começar cada orçamento do zero.
 
-![Status](https://img.shields.io/badge/status-beta%20controlado-64748b)
+**Fluxo:** montar itens e condições → calcular o valor → exportar PDF → acompanhar aprovação, recusa ou follow-up.
 
-## O que você encontra
+| Recurso | Uso |
+| --- | --- |
+| **Editor de propostas** | Itens, condições, descontos, validade e observações |
+| **Exportação** | Documento PDF pronto para enviar |
+| **Acompanhamento** | Status, histórico e lembretes de retorno |
+| **Dados** | Modo local, backup e sincronização mediante configuração |
+| **Personalização** | Identidade visual e opções de apresentação |
 
-- Criação de propostas com itens, descontos, condições e validade.
-- Acompanhamento por status e organização de follow-ups.
-- Exportação em PDF, histórico e preferências visuais.
-- Uso local/offline e opções de sincronização conforme configuração.
+**Status:** desenvolvimento principal do MVP descrito como concluído, com **beta controlado** e validações humanas ainda abertas. Não é um serviço fiscal ou jurídico; o usuário é responsável por revisar os termos que envia.
 
-**Estado:** a base do MVP está documentada como concluída; homologação com usuários e integrações externas continuam sendo etapas separadas.
+## Desenvolvimento rápido
 
-A seguir estão os detalhes de produto, segurança, QA e roadmap.
+```bash
+git clone https://github.com/HelioConde/docpronto.git
+cd docpronto
+python -m http.server 8000
+```
+
+Abra `http://localhost:8000`. Para testes: `npm install`, `npm test` e `npm run test:e2e` com Playwright configurado.
+
+O site estático pode rodar localmente, mas recursos remotos exigem Supabase e permissões adequadas. Não publique tokens privados no JavaScript.
 
 ---
-
-Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 
 ## Status de desenvolvimento
 
