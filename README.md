@@ -1,4 +1,23 @@
-# DocPronto
+# DocPronto — Orçamentos e propostas profissionais
+
+**Crie, envie e acompanhe propostas de serviço com cálculo automático, histórico e geração de PDF.**
+
+[**Repositório**](https://github.com/HelioConde/docpronto) · [**Notas técnicas do beta**](RELEASE_V1.md)
+
+![Status](https://img.shields.io/badge/status-beta%20controlado-64748b)
+
+## O que você encontra
+
+- Criação de propostas com itens, descontos, condições e validade.
+- Acompanhamento por status e organização de follow-ups.
+- Exportação em PDF, histórico e preferências visuais.
+- Uso local/offline e opções de sincronização conforme configuração.
+
+**Estado:** a base do MVP está documentada como concluída; homologação com usuários e integrações externas continuam sendo etapas separadas.
+
+A seguir estão os detalhes de produto, segurança, QA e roadmap.
+
+---
 
 Gerador de propostas e orçamentos profissionais para prestadores de serviço.
 
