@@ -1,27 +1,44 @@
 <div align="center">
   <h1>📑 DocPronto</h1>
-  <p><strong>Orçamentos e propostas profissionais, do rascunho ao acompanhamento.</strong></p>
-  <p><img alt="Status" src="https://img.shields.io/badge/status-beta%20controlado-64748b"> <img alt="PDF" src="https://img.shields.io/badge/sa%C3%ADda-PDF-2563eb"></p>
-  <p><a href="RELEASE_V1.md"><strong>Relatório técnico</strong></a> · <a href="FULLSTACK.md"><strong>Arquitetura</strong></a> · <a href="#desenvolvimento-r%C3%A1pido"><strong>Executar</strong></a></p>
+  <p><strong>Orçamentos e propostas profissionais, da elaboração ao acompanhamento do cliente.</strong></p>
+  <p><img alt="Beta controlado" src="https://img.shields.io/badge/status-beta%20controlado-64748b"> <img alt="Exportação PDF" src="https://img.shields.io/badge/exporta%C3%A7%C3%A3o-PDF-2563eb"></p>
+  <p><a href="RELEASE_V1.md"><strong>Relatório 1.0</strong></a> · <a href="FULLSTACK.md"><strong>Arquitetura</strong></a> · <a href="#executar-localmente"><strong>Executar</strong></a></p>
 </div>
 
-## A proposta
+---
 
-O **DocPronto** ajuda profissionais autônomos e prestadores de serviços a preparar propostas, calcular valores e acompanhar o retorno de clientes — sem começar cada orçamento do zero.
+## Transforme um orçamento em uma proposta acompanhável
 
-**Fluxo:** montar itens e condições → calcular o valor → exportar PDF → acompanhar aprovação, recusa ou follow-up.
+O **DocPronto** é uma ferramenta web para autônomos e prestadores de serviços que precisam **montar propostas, revisar valores, exportar documentos e acompanhar respostas**.
 
-| Recurso | Uso |
+```text
+Cliente e itens → Cálculo do orçamento → PDF / compartilhamento
+                                          ↓
+                              Enviada → Aprovada / Recusada
+                                          ↓
+                                Histórico e follow-up
+```
+
+O desenvolvimento principal da versão **1.0 está concluído para beta controlado**. A plataforma ainda exige validação humana e revisão das integrações antes de uma operação comercial ampla.
+
+## Funcionalidades
+
+| Área | O que já foi desenvolvido |
 | --- | --- |
-| **Editor de propostas** | Itens, condições, descontos, validade e observações |
-| **Exportação** | Documento PDF pronto para enviar |
-| **Acompanhamento** | Status, histórico e lembretes de retorno |
-| **Dados** | Modo local, backup e sincronização mediante configuração |
-| **Personalização** | Identidade visual e opções de apresentação |
+| **Propostas** | Até dez itens, descontos percentuais/fixos, observações e prazo de validade |
+| **Identidade** | Ajustes de apresentação e branding |
+| **Documentos** | Exportação em PDF e compartilhamento por WhatsApp |
+| **Gestão** | Rascunho, enviada, aprovada e recusada; busca e ordenação |
+| **Histórico** | Linha do tempo de status, CSV e avisos de vencimento |
+| **Follow-up** | Fila de propostas enviadas sem resposta |
+| **Cliente** | Link de proposta e resposta protegidos por token, quando o backend está configurado |
+| **Dados** | Uso local e sincronização opcional via Supabase |
 
-**Status:** desenvolvimento principal do MVP descrito como concluído, com **beta controlado** e validações humanas ainda abertas. Não é um serviço fiscal ou jurídico; o usuário é responsável por revisar os termos que envia.
+A visualização ou aprovação por um link público **precisa ser protegida no servidor**. O conteúdo exportado deve ser conferido pelo usuário antes de envio; o sistema não substitui assessoria fiscal ou jurídica.
 
-## Desenvolvimento rápido
+## Executar localmente
+
+O frontend é estático e pode ser visualizado sem um processo de build:
 
 ```bash
 git clone https://github.com/HelioConde/docpronto.git
@@ -29,113 +46,37 @@ cd docpronto
 python -m http.server 8000
 ```
 
-Abra `http://localhost:8000`. Para testes: `npm install`, `npm test` e `npm run test:e2e` com Playwright configurado.
+Abra `http://localhost:8000`. Para os testes declarados no projeto:
 
-O site estático pode rodar localmente, mas recursos remotos exigem Supabase e permissões adequadas. Não publique tokens privados no JavaScript.
+```bash
+npm install
+npm test
+npx playwright install
+npm run test:e2e
+```
+
+O script `npm run screenshots` gera capturas quando o ambiente está preparado. **Esta revisão não executou nem aprovou os testes.**
+
+## Arquitetura, persistência e segurança
+
+A aplicação utiliza **HTML, CSS e JavaScript** no frontend, com fluxos locais e integrações Supabase para autenticação, compartilhamento, persistência e operações protegidas.
+
+Antes de disponibilizar propostas reais:
+
+- Reforce RLS e regras de autorização nas tabelas e Edge Functions.
+- Não inclua `service_role`, segredos ou tokens privados no frontend.
+- Valide o acesso aos links públicos e a expiração/revogação de permissões.
+- Preserve privacidade dos dados de clientes e permita exclusão de informações quando aplicável.
+- Não confunda a exportação de PDF com validade jurídica automática do documento.
+
+## Estado do lançamento
+
+**v1.0 — MVP tecnicamente concluído, aguardando homologação humana e configuração final de serviços externos.**
+
+O repositório inclui documentação do QA histórico e das decisões de segurança. Consulte evidências e testes atuais antes de concluir que uma implantação está pronta.
+
+[Relatório técnico](RELEASE_V1.md) · [Arquitetura](FULLSTACK.md) · [Pendências do beta](https://github.com/HelioConde/docpronto/issues/1) · [Histórico completo anterior](docs/README_HISTORY_2026-10-27.md)
 
 ---
 
-## Status de desenvolvimento
-
-**DocPronto 1.0: desenvolvimento principal concluído e publicado.** O produto está pronto para **beta controlado**, enquanto a homologação humana e as integrações externas permanecem pendentes. Consulte o [relatório de encerramento técnico](RELEASE_V1.md), com evidências do QA, segurança do PWA, revogação de permissões legadas no Supabase e checklist de lançamento.
-
-- Static QA, Quality Checks, Browser E2E e GitHub Pages aprovados.
-- Edge Functions públicas, feedback beta, RLS e fluxo de aprovação estão publicados no Supabase.
-- PT-BR/EN, PWA/offline, backup, PDF, branding, follow-up, timeline e anúncios preparados concluídos.
-- Pendências humanas foram movidas para a [issue #1 — Homologação humana e validação real](https://github.com/HelioConde/docpronto/issues/1).
-- Novas automações comerciais/CRM ficam pausadas até surgir feedback real, bug crítico ou requisito de segurança.
-
-## Estado atual
-
-- composição de orçamento com até 10 itens;
-- desconto percentual ou fixo com subtotal e total final;
-- observações opcionais para garantia, exclusões e condições especiais;
-- cálculo de total e validade;
-- edição, duplicação como modelo e exclusão;
-- acompanhamento comercial por status: rascunho, enviada, aprovada e recusada;
-- timeline de mudanças de status com data/hora e origem da alteração;
-- filtro do histórico por status (incluindo vencidas), busca por cliente/empresa/número e ordenação por data, valor ou vencimento;
-- resumo comercial com total de propostas, enviadas e valor aprovado;
-- fila de follow-up para propostas enviadas há 3 dias ou mais sem resposta, com filtro e ação rápida de retorno;
-- histórico progressivo em blocos de 10 e exportação do histórico em CSV compatível com Excel;
-- aviso visual para propostas vencidas ou próximas da validade;
-- compartilhamento de resumo por WhatsApp e cópia rápida;
-- envio do link seguro direto pelo WhatsApp em uma única ação para usuários conectados;
-- link público seguro para o cliente abrir a proposta;
-- aprovação ou recusa da proposta sem conta, protegida por token;
-- aceite textual opcional com nome do cliente registrado junto da aprovação;
-- atualização automática das respostas do cliente ao voltar para a aba, com data/hora da resposta;
-- novos links públicos mantêm o token no fragmento da URL e usam noindex/no-referrer;
-- impressão/salvamento em PDF A4 pelo navegador, inclusive na proposta compartilhada;
-- modo local sem conta;
-- Supabase Auth;
-- sincronização das propostas em `docpronto_proposals`;
-- importação de histórico local;
-- cadastro reutilizável de clientes na nuvem, incluindo telefone, e-mail, documento e endereço;
-- gerenciamento de clientes salvos pela conta, com ações de usar e excluir;
-- identidade do negócio sincronizada na conta, com nome, telefone e cor da proposta;
-- preenchimento automático de dados de clientes já usados;
-- sugestões de serviços e materiais já utilizados, com reaproveitamento do último preço unitário;
-- dados privados por RLS;
-- GitHub Pages + CI;
-- SEO básico.
-
-## Idiomas
-
-- **PT-BR** é o idioma principal, padrão e fallback.
-- **English (EN)** está disponível pelo seletor no topo.
-- A preferência fica salva no navegador.
-- Fluxos principais, mensagens, estados dinâmicos, datas e valores acompanham o idioma ativo.
-- Conteúdo cadastrado pelo usuário, como nomes de clientes, serviços e negócios, não é traduzido automaticamente.
-
-## Backend
-
-Tabelas:
-- `docpronto_clients`
-- `docpronto_documents`
-- `docpronto_items`
-- `docpronto_proposals`
-- `product_subscriptions`
-
-Veja `FULLSTACK.md` para arquitetura e próximos passos.
-
-
-## QA no navegador
-
-Além dos testes unitários/integração Node, o DocPronto usa **Playwright + Chromium** para cobrir criação local, rascunho, busca/edição/status/CSV, templates, logo, PDF A4 longo, PWA offline, feedback beta, backup/restauração, calendário e acessibilidade básica.
-
-O backend também foi homologado contra o Supabase real: o isolamento RLS foi validado em duas identidades autenticadas dentro de uma transação com rollback, e o fluxo público de produção abriu uma proposta, registrou aprovação com aceite textual e retornou o estado aprovado com timeline persistida. Os dados QA usados nesse smoke foram apagados ao final.
-
-Execute com `npm install` e `npm run test:e2e`.
-
-
-## Roadmap
-
-O backlog priorizado de homologação e evolução fica em [MELHORIAS.md](./MELHORIAS.md).
-
-
-## PWA / modo offline
-
-O DocPronto pode ser instalado como aplicativo em navegadores compatíveis. Depois da primeira abertura, o shell principal fica em cache e o modo local continua disponível sem conexão. Recursos de nuvem, login e sincronização continuam exigindo internet.
-
-
-## Monetização por anúncios
-
-O DocPronto está preparado para permanecer gratuito e monetizar com anúncios responsivos em áreas não críticas. A integração fica desligada até existirem Publisher ID e slots reais. Consulte [ADS_SETUP.md](./ADS_SETUP.md).
-
-
-## Feedback beta
-
-O produto inclui feedback interno com nota de 1–5, categoria e comentário. O frontend não envia nome, telefone, e-mail, cliente nem conteúdo de proposta. Quando o backend estiver indisponível, os envios ficam em uma fila local de até 20 itens e são reenviados automaticamente quando o endpoint estiver disponível.
-
-A migration `docpronto_beta_feedback` está aplicada no Supabase e a Edge Function `beta-feedback` está ativa em produção. O navegador envia feedback pela função pública validada; a tabela permanece sem acesso direto para `anon`.
-
-
-## Calendário
-
-Propostas enviadas podem gerar um arquivo `.ics` de follow-up para três dias após o envio. O arquivo funciona com calendários compatíveis sem exigir integração externa.
-
-
-## Backup local
-
-Quem usa o DocPronto sem conta pode exportar e restaurar um backup JSON das propostas do navegador. A restauração valida o formato, limita a 100 propostas e 10 itens por proposta e substitui apenas os dados locais após confirmação. O arquivo de backup pode conter dados de clientes presentes nas propostas e deve ser armazenado com cuidado.
+<div align="center"><strong>Desenvolvido por <a href="https://github.com/HelioConde">Hélio Conde</a></strong></div>
